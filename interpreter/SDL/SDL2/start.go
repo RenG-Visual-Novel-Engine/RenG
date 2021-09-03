@@ -103,7 +103,7 @@ func close() {
 	C.SDL_Quit()
 }
 
-func main() {
+func Start() {
 	defer close()
 
 	if !SDLInit() {

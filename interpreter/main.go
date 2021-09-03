@@ -3,8 +3,8 @@ package main
 import (
 	"io/ioutil"
 
-	"github.com/alvin1007/RenG/interpreter/lexer"
-	"github.com/alvin1007/RenG/interpreter/parser"
+	"RenG/interpreter/lexer"
+	"RenG/interpreter/parser"
 )
 
 func main() {
