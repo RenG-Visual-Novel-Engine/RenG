@@ -13,7 +13,7 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 	}
 	leftExp := prefix()
 
-	for !p.peekTokenIS(token.ENDSENTENCE) && precedence < p.peekPrecedence() {
+	for !p.peekTokenIs(token.ENDSENTENCE) && precedence < p.peekPrecedence() {
 		infix := p.infixParseFns[p.peekToken.Type]
 		if infix == nil {
 			return leftExp
@@ -31,7 +31,7 @@ func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 	stmt := &ast.ExpressionStatement{Token: p.curToken}
 	stmt.Expression = p.parseExpression(LOWEST)
 
-	if p.peekTokenIS(token.ENDSENTENCE) {
+	if p.peekTokenIs(token.ENDSENTENCE) {
 		p.nextToken()
 	}
 

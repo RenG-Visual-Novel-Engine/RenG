@@ -60,12 +60,7 @@ func (l *Lexer) NextToken() token.Token {
 			tok = newToken(token.LBRACE, l.ch)
 		}
 	case '}':
-		if l.peekChar() == 13 {
-			tok = newToken(token.RBRACE, l.ch)
-			l.jumpWhiteSpace()
-		} else {
-			tok = newToken(token.RBRACE, l.ch)
-		}
+		tok = newToken(token.RBRACE, l.ch)
 	case '\n':
 		tok.Literal = "\n"
 		tok.Type = token.ENDSENTENCE

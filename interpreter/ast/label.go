@@ -16,8 +16,8 @@ func (le *LabelExpression) TokenLiteral() string { return le.Token.Literal }
 func (le *LabelExpression) String() string {
 	var out bytes.Buffer
 
-	out.WriteString("label")
-	out.WriteString(le.Name.String())
+	out.WriteString("label ")
+	out.WriteString(le.Name.String() + "\n")
 	out.WriteString(le.Body.String())
 
 	return out.String()
