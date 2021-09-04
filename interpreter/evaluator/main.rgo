@@ -1,15 +1,15 @@
-def add(a, b) {
-    a + b
+def max(x, y) {
+    if (x < y) {
+        return y
+    } else {
+        return x
+    }
 }
 
-def sub(a, b) {
-    a - b
+def print(num) {
+    num
 }
 
-def applyFunc(a, b, func) {
-    func(a, b) 
-}
+$a = max(5, 6)
 
-applyFunc(2, 2, add)
-applyFunc(2, 2, sub)
-sub(321, 21)
+print(a)

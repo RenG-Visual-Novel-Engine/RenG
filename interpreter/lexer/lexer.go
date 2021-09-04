@@ -61,6 +61,8 @@ func (l *Lexer) NextToken() token.Token {
 		}
 	case '}':
 		tok = newToken(token.RBRACE, l.ch)
+	case '$':
+		tok = newToken(token.VAR, l.ch)
 	case '\n':
 		tok.Literal = "\n"
 		tok.Type = token.ENDSENTENCE

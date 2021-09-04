@@ -4,6 +4,7 @@ import (
 	"RenG/interpreter/lexer"
 	"RenG/interpreter/object"
 	"RenG/interpreter/parser"
+	"fmt"
 	"io/ioutil"
 	"testing"
 )
@@ -14,7 +15,8 @@ func TestFunction(t *testing.T) {
 		panic(err)
 	}
 
-	testEval(string(code))
+	obj := testEval(string(code))
+	fmt.Println(obj.(*object.Integer).Value)
 }
 
 func testIntegerObject(t *testing.T, obj object.Object, expected int64) bool {
