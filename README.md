@@ -21,16 +21,16 @@
 def add(a, b) {
     return a + b
 }
-var a = 1 + 1
-var b = 2 - 2
-var c = add(a, b)
-```
 
-```
-define ch_example = Character("ex", color="#c8ffc8")
+define ch_example1 = Character("ex1", color="#c8ffc8")
+define ch_example2 = Character("ex2", color="#ffffff")
 
 label start {
-    ch_example "Hello, World!"
+    ch_example1 "안녕? 혹시 1 + 1이 뭐야?"
+
+    var result = add(1, 1)
+
+    ch_example2 "답은 [result]야!"
 }
 ```
 
