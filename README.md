@@ -21,13 +21,13 @@
 def add(a, b) {
     return a + b
 }
-a = 1 + 1
-b = 2 - 2
-c = add(a, b)
+var a = 1 + 1
+var b = 2 - 2
+var c = add(a, b)
 ```
 
 ```
-ch_example = Character("ex", color="#c8ffc8")
+define ch_example = Character("ex", color="#c8ffc8")
 
 label start {
     ch_example "Hello, World!"
