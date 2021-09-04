@@ -1,0 +1,15 @@
+def add(a, b) {
+    a + b
+}
+
+def sub(a, b) {
+    a - b
+}
+
+def applyFunc(a, b, func) {
+    func(a, b) 
+}
+
+applyFunc(2, 2, add)
+applyFunc(2, 2, sub)
+sub(321, 21)

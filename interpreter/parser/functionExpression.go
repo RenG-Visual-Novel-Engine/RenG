@@ -5,8 +5,8 @@ import (
 	"RenG/interpreter/token"
 )
 
-func (p *Parser) parseFunctionLiteral() ast.Expression {
-	lit := &ast.FunctionLiteral{Token: p.curToken}
+func (p *Parser) parseFunctionExpression() ast.Expression {
+	lit := &ast.FunctionExpression{Token: p.curToken}
 
 	p.nextToken()
 
