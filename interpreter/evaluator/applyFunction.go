@@ -2,6 +2,7 @@ package evaluator
 
 import (
 	"RenG/interpreter/object"
+	"fmt"
 )
 
 func applyFunction(def object.Object, args []object.Object) object.Object {
@@ -27,6 +28,7 @@ func extendFunctionEnv(def *object.Function, args []object.Object) *object.Envir
 
 func unwrapReturnValue(obj object.Object) object.Object {
 	if returnValue, ok := obj.(*object.ReturnValue); ok {
+		fmt.Println(returnValue.Value.(*object.Integer).Value)
 		return returnValue.Value
 	}
 	return obj

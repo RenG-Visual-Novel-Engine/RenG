@@ -13,7 +13,21 @@ func evalIfExpression(ie *ast.IfExpression, env *object.Environment) object.Obje
 
 	if isTruthy(condition) {
 		return Eval(ie.Consequence, env)
-	} else if ie.Alternative != nil {
+	}
+
+	for _, ee := range ie.Elif {
+		if ee != nil {
+			elifCondition := Eval(ee.Condition, env)
+			if isError(elifCondition) {
+				return elifCondition
+			}
+			if isTruthy(elifCondition) {
+				return Eval(ee.Consequence, env)
+			}
+		}
+	}
+
+	if ie.Alternative != nil {
 		return Eval(ie.Alternative, env)
 	} else {
 		return NULL

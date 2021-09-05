@@ -2,11 +2,12 @@ package parser
 
 import (
 	"RenG/interpreter/lexer"
+	"fmt"
 	"io/ioutil"
 	"testing"
 )
 
-func TestLebelExpression(t *testing.T) {
+func TestLabelExpression(t *testing.T) {
 	code, err := ioutil.ReadFile("main.rgo")
 	if err != nil {
 		panic(err)
@@ -16,5 +17,5 @@ func TestLebelExpression(t *testing.T) {
 	p := New(l)
 	program := p.ParseProgram()
 
-	program.String()
+	fmt.Println(program.String())
 }

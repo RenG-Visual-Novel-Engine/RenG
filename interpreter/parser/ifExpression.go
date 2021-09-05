@@ -5,7 +5,6 @@ import (
 	"RenG/interpreter/token"
 )
 
-// TODO : elif 키워드 파싱하기
 func (p *Parser) parseIfExpression() ast.Expression {
 	expression := &ast.IfExpression{Token: p.curToken}
 
@@ -26,6 +25,32 @@ func (p *Parser) parseIfExpression() ast.Expression {
 	}
 
 	expression.Consequence = p.parseBlockStatement()
+
+	for p.peekTokenIs(token.ELIF) {
+		p.nextToken()
+
+		elifExpression := &ast.ElifExpression{Token: p.curToken}
+
+		if !p.expectPeek(token.LPAREN) {
+			return nil
+		}
+
+		p.nextToken()
+
+		elifExpression.Condition = p.parseExpression(LOWEST)
+
+		if !p.expectPeek(token.RPAREN) {
+			return nil
+		}
+
+		if !p.expectPeek(token.LBRACE) {
+			return nil
+		}
+
+		elifExpression.Consequence = p.parseBlockStatement()
+
+		expression.Elif = append(expression.Elif, elifExpression)
+	}
 
 	if p.peekTokenIs(token.ELSE) {
 		p.nextToken()

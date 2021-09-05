@@ -1,15 +1,16 @@
-def max(x, y) {
-    if (x < y) {
-        return y
+def print(num)  {
+    return num
+}
+
+$a = 0
+
+while(a < 10)  {
+    if (a < 5) {
+        print(0)
+    } elif (a > 5) {
+        print(1)
     } else {
-        return x
+        print(-1)
     }
+    $a = a + 1
 }
-
-def print(num) {
-    num
-}
-
-$a = max(5, 6)
-
-print(a)

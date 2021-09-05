@@ -64,8 +64,15 @@ func (l *Lexer) NextToken() token.Token {
 	case '$':
 		tok = newToken(token.VAR, l.ch)
 	case '\n':
-		tok.Literal = "\n"
-		tok.Type = token.ENDSENTENCE
+		tok = newToken(token.ENDSENTENCE, l.ch)
+	case ';':
+		tok = newToken(token.SEMICOLON, l.ch)
+	case '#':
+		for !(l.peekChar() == 13) {
+			l.readChar()
+		}
+		l.readChar()
+		tok = newToken(token.ENDSENTENCE, l.ch)
 	case 0:
 		tok.Literal = ""
 		tok.Type = token.EOF

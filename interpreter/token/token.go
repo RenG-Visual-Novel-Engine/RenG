@@ -28,11 +28,19 @@ const (
 	// 구분자
 	COMMA       = ","
 	ENDSENTENCE = "\n"
+	SEMICOLON   = ";"
 
 	LPAREN = "("
 	RPAREN = ")"
 	LBRACE = "{"
 	RBRACE = "}"
+
+	// 주석
+	COMMENT = "#"
+
+	// 반복문
+	FOR   = "FOR"
+	WHILE = "WHILE"
 
 	// 예약어
 	FUNCTION = "FUNCTION"
@@ -56,6 +64,8 @@ var keywords = map[string]TokenType{
 	"elif":   ELIF,
 	"else":   ELSE,
 	"return": RETURN,
+	"for":    FOR,
+	"while":  WHILE,
 	"label":  LABEL,
 }
 

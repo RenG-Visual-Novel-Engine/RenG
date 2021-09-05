@@ -27,8 +27,9 @@ func (fe *FunctionExpression) String() string {
 	out.WriteString(fe.Name.String())
 	out.WriteString("(")
 	out.WriteString(strings.Join(params, ","))
-	out.WriteString(") ")
+	out.WriteString(") {\n")
 	out.WriteString(fe.Body.String())
+	out.WriteString("\n}")
 
 	return out.String()
 }

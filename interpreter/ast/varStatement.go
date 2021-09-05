@@ -24,7 +24,5 @@ func (vs *VarStatement) String() string {
 		out.WriteString(vs.Value.String())
 	}
 
-	out.WriteString(";")
-
 	return out.String()
 }
