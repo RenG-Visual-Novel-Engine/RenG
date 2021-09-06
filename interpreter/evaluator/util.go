@@ -18,6 +18,15 @@ func isTruthy(obj object.Object) bool {
 	}
 }
 
+func isAssign(operator string) bool {
+	switch operator {
+	case "=":
+		return true
+	default:
+		return false
+	}
+}
+
 func isError(obj object.Object) bool {
 	if obj != nil {
 		return obj.Type() == object.ERROR_OBJ

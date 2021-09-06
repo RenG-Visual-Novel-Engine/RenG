@@ -5,13 +5,15 @@ import (
 	"RenG/interpreter/object"
 )
 
-func evalWhileExpression(node *ast.WhileExpression, env *object.Environment) object.Object {
+func evalForExpression(node *ast.ForExpression, env *object.Environment) object.Object {
+	Eval(node.Define, env)
 	condition := Eval(node.Condition, env)
 	for isTruthy(condition) {
 		result := Eval(node.Body, env)
 		if _, ok := result.(*object.ReturnValue); ok {
 			return result
 		}
+		Eval(node.Run, env)
 		condition = Eval(node.Condition, env)
 	}
 	return nil

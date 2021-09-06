@@ -1,16 +1,22 @@
-def print(num)  {
-    return num
+def print(n) {
+    return n
 }
 
-$a = 0
-
-while(a < 10)  {
-    if (a < 5) {
-        print(0)
-    } elif (a > 5) {
-        print(1)
-    } else {
-        print(-1)
+def isPrime(n) {
+    last = n / 2
+    if (n <= 1) {
+        return false
     }
-    $a = a + 1
+    for (i = 2; i <= last; i = i + 1) {
+        if (n % i == 0) {
+            return false
+        }
+    }
+    return true
+}
+
+for (i = 1; i <= 100; i = i + 1) {
+    if (isPrime(i)) {
+        print(i)
+    }
 }

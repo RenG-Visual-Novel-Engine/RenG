@@ -1,6 +1,7 @@
 package evaluator
 
 import (
+	"RenG/interpreter/ast"
 	"RenG/interpreter/object"
 )
 
@@ -19,6 +20,13 @@ func evalInfixExpression(operator string, left, right object.Object) object.Obje
 	}
 }
 
+func evalAssignInfixExpression(operator string, left *ast.Identifier, right object.Object, env *object.Environment) {
+	switch operator {
+	case "=":
+		env.Set(left.Value, right)
+	}
+}
+
 func evalIntegerInfixExpression(operator string, left, right object.Object) object.Object {
 	leftVal := left.(*object.Integer).Value
 	rightVal := right.(*object.Integer).Value
@@ -31,10 +39,16 @@ func evalIntegerInfixExpression(operator string, left, right object.Object) obje
 		return &object.Integer{Value: leftVal * rightVal}
 	case "/":
 		return &object.Integer{Value: leftVal / rightVal}
+	case "%":
+		return &object.Integer{Value: leftVal % rightVal}
 	case "<":
 		return nativeBoolToBooleanObject(leftVal < rightVal)
 	case ">":
 		return nativeBoolToBooleanObject(leftVal > rightVal)
+	case "<=":
+		return nativeBoolToBooleanObject(leftVal <= rightVal)
+	case ">=":
+		return nativeBoolToBooleanObject(leftVal >= rightVal)
 	case "==":
 		return nativeBoolToBooleanObject(leftVal == rightVal)
 	case "!=":

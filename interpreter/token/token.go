@@ -11,12 +11,13 @@ const (
 	INT = "INT"
 
 	// 연산자
-	ASSIGN   = "="
-	PLUS     = "+"
-	MINUS    = "-"
-	BANG     = "!"
-	ASTERISK = "*"
-	SLASH    = "/"
+	ASSIGN    = "="
+	PLUS      = "+"
+	MINUS     = "-"
+	BANG      = "!"
+	ASTERISK  = "*"
+	SLASH     = "/"
+	REMAINDER = "%"
 
 	// 불 연산
 	EQ     = "=="
@@ -25,10 +26,12 @@ const (
 	LT = "<"
 	GT = ">"
 
+	LT_EQ = "<="
+	GT_EQ = ">="
+
 	// 구분자
 	COMMA       = ","
-	ENDSENTENCE = "\n"
-	SEMICOLON   = ";"
+	ENDSENTENCE = "ENDSENTENCE"
 
 	LPAREN = "("
 	RPAREN = ")"
@@ -52,7 +55,6 @@ const (
 	ELSE     = "ELSE"
 	RETURN   = "RETURN"
 	LABEL    = "LABEL"
-	VAR      = "VAR"
 )
 
 var keywords = map[string]TokenType{

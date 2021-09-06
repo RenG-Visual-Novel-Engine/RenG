@@ -26,21 +26,21 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		}
 		return evalPrefixExpression(node.Operator, right)
 	case *ast.InfixExpression:
-		left := Eval(node.Left, env)
-		if isError(left) {
-			return left
+		var left object.Object
+		if leftValue, ok := node.Left.(*ast.Identifier); ok && isAssign(node.Operator) {
+			right := Eval(node.Right, env)
+			evalAssignInfixExpression(node.Operator, leftValue, right, env)
+		} else {
+			left = Eval(node.Left, env)
+			if isError(left) {
+				return left
+			}
+			right := Eval(node.Right, env)
+			if isError(right) {
+				return right
+			}
+			return evalInfixExpression(node.Operator, left, right)
 		}
-		right := Eval(node.Right, env)
-		if isError(right) {
-			return right
-		}
-		return evalInfixExpression(node.Operator, left, right)
-	case *ast.VarStatement:
-		val := Eval(node.Value, env)
-		if isError(val) {
-			return val
-		}
-		env.Set(node.Name.Value, val)
 	case *ast.ReturnStatement:
 		val := Eval(node.ReturnValue, env)
 		if isError(val) {
@@ -68,7 +68,9 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		}
 		return applyFunction(function, args)
 	case *ast.WhileExpression:
-		evalWhileExpression(node, env)
+		return evalWhileExpression(node, env)
+	case *ast.ForExpression:
+		return evalForExpression(node, env)
 	}
 	return nil
 }
