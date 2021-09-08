@@ -22,6 +22,16 @@ func isAssign(operator string) bool {
 	switch operator {
 	case "=":
 		return true
+	case "+=":
+		return true
+	case "-=":
+		return true
+	case "*=":
+		return true
+	case "/=":
+		return true
+	case "%=":
+		return true
 	default:
 		return false
 	}

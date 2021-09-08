@@ -28,7 +28,7 @@ define ch_example2 = Character("ex2", color="#ffffff")
 label start {
     ch_example1 "안녕? 혹시 1 + 1이 뭐야?"
 
-    var result = add(1, 1)
+    result = add(1, 1)
 
     ch_example2 "답은 [result]야!"
 }
@@ -58,7 +58,7 @@ label start {
 git clone "https://github.com/alvin1007/RenG"
 ```
 
-- 파일 위치는 "Go/src/github.com/alvin1007/RenG"에 해두는 것이 가장 좋습니다.
+- 파일 위치는 "Go/src/RenG"에 해두는 것이 가장 좋습니다.
 
 # 커밋 규칙
 

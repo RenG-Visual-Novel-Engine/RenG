@@ -7,11 +7,21 @@ const (
 	// 변수
 	IDENT = "IDENT"
 
-	// 정수
-	INT = "INT"
+	// 타입
+	INT    = "INT"
+	STRING = "STRING"
 
 	// 연산자
-	ASSIGN    = "="
+	ASSIGN           = "="
+	PLUS_ASSIGN      = "+="
+	MINUS_ASSIGN     = "-="
+	ASTERISK_ASSIGN  = "*="
+	SLASH_ASSIGN     = "/="
+	REMAINDER_ASSIGN = "%="
+
+	PLUS_PLUS   = "++"
+	MINUS_MINUS = "--"
+
 	PLUS      = "+"
 	MINUS     = "-"
 	BANG      = "!"

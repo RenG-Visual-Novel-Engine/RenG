@@ -24,6 +24,21 @@ func evalAssignInfixExpression(operator string, left *ast.Identifier, right obje
 	switch operator {
 	case "=":
 		env.Set(left.Value, right)
+	case "+=":
+		leftVal, _ := env.Get(left.Value)
+		env.Set(left.Value, &object.Integer{Value: leftVal.(*object.Integer).Value + right.(*object.Integer).Value})
+	case "-=":
+		leftVal, _ := env.Get(left.Value)
+		env.Set(left.Value, &object.Integer{Value: leftVal.(*object.Integer).Value - right.(*object.Integer).Value})
+	case "*=":
+		leftVal, _ := env.Get(left.Value)
+		env.Set(left.Value, &object.Integer{Value: leftVal.(*object.Integer).Value * right.(*object.Integer).Value})
+	case "/=":
+		leftVal, _ := env.Get(left.Value)
+		env.Set(left.Value, &object.Integer{Value: leftVal.(*object.Integer).Value / right.(*object.Integer).Value})
+	case "%=":
+		leftVal, _ := env.Get(left.Value)
+		env.Set(left.Value, &object.Integer{Value: leftVal.(*object.Integer).Value % right.(*object.Integer).Value})
 	}
 }
 

@@ -1,6 +1,9 @@
 package evaluator
 
-import "RenG/interpreter/object"
+import (
+	"RenG/interpreter/ast"
+	"RenG/interpreter/object"
+)
 
 func evalPrefixExpression(operator string, right object.Object) object.Object {
 	switch operator {
@@ -10,6 +13,17 @@ func evalPrefixExpression(operator string, right object.Object) object.Object {
 		return evalMinusPrefixOperatorExpression(right)
 	default:
 		return newError("unknown operator: %s%s", operator, right.Type())
+	}
+}
+
+func evalAssignPrefixExpression(operator string, right *ast.Identifier, env *object.Environment) object.Object {
+	switch operator {
+	case "++":
+		return evalAssignPrefixPLUS_PLUSExpression(right, env)
+	case "--":
+		return evalAssignPrefixMINUS_MINUSExpression(right, env)
+	default:
+		return newError("unknown operator: %s", operator)
 	}
 }
 
@@ -32,4 +46,24 @@ func evalMinusPrefixOperatorExpression(right object.Object) object.Object {
 	}
 	value := right.(*object.Integer).Value
 	return &object.Integer{Value: -value}
+}
+
+func evalAssignPrefixPLUS_PLUSExpression(right *ast.Identifier, env *object.Environment) object.Object {
+	rightVal, ok := env.Get(right.Value)
+	if !ok {
+		return newError("Ident has not Value")
+	}
+	result := &object.Integer{Value: rightVal.(*object.Integer).Value + 1}
+	env.Set(right.Value, result)
+	return result
+}
+
+func evalAssignPrefixMINUS_MINUSExpression(right *ast.Identifier, env *object.Environment) object.Object {
+	rightVal, ok := env.Get(right.Value)
+	if !ok {
+		return newError("Ident has not Value")
+	}
+	result := &object.Integer{Value: rightVal.(*object.Integer).Value - 1}
+	env.Set(right.Value, result)
+	return result
 }

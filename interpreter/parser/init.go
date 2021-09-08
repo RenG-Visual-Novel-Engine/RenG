@@ -19,19 +19,26 @@ const (
 )
 
 var precedences = map[token.TokenType]int{
-	token.ASSIGN:    ASSIGNMENT,
-	token.EQ:        EQUALS,
-	token.NOT_EQ:    EQUALS,
-	token.LT:        LESSGREATER,
-	token.GT:        LESSGREATER,
-	token.LT_EQ:     LESSGREATER,
-	token.GT_EQ:     LESSGREATER,
-	token.PLUS:      SUM,
-	token.MINUS:     SUM,
-	token.SLASH:     PRODUCT,
-	token.ASTERISK:  PRODUCT,
-	token.REMAINDER: PRODUCT,
-	token.LPAREN:    CALL,
+	token.ASSIGN:           ASSIGNMENT,
+	token.PLUS_ASSIGN:      ASSIGNMENT,
+	token.MINUS_ASSIGN:     ASSIGNMENT,
+	token.ASTERISK_ASSIGN:  ASSIGNMENT,
+	token.SLASH_ASSIGN:     ASSIGNMENT,
+	token.REMAINDER_ASSIGN: ASSIGNMENT,
+	token.EQ:               EQUALS,
+	token.NOT_EQ:           EQUALS,
+	token.LT:               LESSGREATER,
+	token.GT:               LESSGREATER,
+	token.LT_EQ:            LESSGREATER,
+	token.GT_EQ:            LESSGREATER,
+	token.PLUS:             SUM,
+	token.MINUS:            SUM,
+	token.PLUS_PLUS:        SUM,
+	token.MINUS_MINUS:      SUM,
+	token.SLASH:            PRODUCT,
+	token.ASTERISK:         PRODUCT,
+	token.REMAINDER:        PRODUCT,
+	token.LPAREN:           CALL,
 }
 
 type Parser struct {
@@ -69,8 +76,11 @@ func New(l *lexer.Lexer) *Parser {
 	p.prefixParseFns = make(map[token.TokenType]prefixParseFn)
 	p.registerPrefix(token.IDENT, p.parseIdentifier)
 	p.registerPrefix(token.INT, p.parseIntegerLiteral)
+	p.registerPrefix(token.STRING, p.parseStringLiteral)
 	p.registerPrefix(token.BANG, p.parsePrefixExpression)
 	p.registerPrefix(token.MINUS, p.parsePrefixExpression)
+	p.registerPrefix(token.PLUS_PLUS, p.parsePrefixExpression)
+	p.registerPrefix(token.MINUS_MINUS, p.parsePrefixExpression)
 	p.registerPrefix(token.TRUE, p.parseBoolean)
 	p.registerPrefix(token.FALSE, p.parseBoolean)
 	p.registerPrefix(token.LPAREN, p.parseGroupExpression)
@@ -94,6 +104,11 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerInfix(token.GT_EQ, p.parseInfixExpression)
 	p.registerInfix(token.LPAREN, p.parseCallExpression)
 	p.registerInfix(token.ASSIGN, p.parseInfixExpression)
+	p.registerInfix(token.PLUS_ASSIGN, p.parseInfixExpression)
+	p.registerInfix(token.MINUS_ASSIGN, p.parseInfixExpression)
+	p.registerInfix(token.ASTERISK_ASSIGN, p.parseInfixExpression)
+	p.registerInfix(token.SLASH_ASSIGN, p.parseInfixExpression)
+	p.registerInfix(token.REMAINDER_ASSIGN, p.parseInfixExpression)
 
 	return p
 }

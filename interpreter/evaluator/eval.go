@@ -20,18 +20,21 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	case *ast.Identifier:
 		return evalIdentifier(node, env)
 	case *ast.PrefixExpression:
-		right := Eval(node.Right, env)
-		if isError(right) {
-			return right
+		if rightValue, ok := node.Right.(*ast.Identifier); ok {
+			return evalAssignPrefixExpression(node.Operator, rightValue, env)
+		} else {
+			right := Eval(node.Right, env)
+			if isError(right) {
+				return right
+			}
+			return evalPrefixExpression(node.Operator, right)
 		}
-		return evalPrefixExpression(node.Operator, right)
 	case *ast.InfixExpression:
-		var left object.Object
 		if leftValue, ok := node.Left.(*ast.Identifier); ok && isAssign(node.Operator) {
 			right := Eval(node.Right, env)
 			evalAssignInfixExpression(node.Operator, leftValue, right, env)
 		} else {
-			left = Eval(node.Left, env)
+			left := Eval(node.Left, env)
 			if isError(left) {
 				return left
 			}
@@ -51,6 +54,8 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return &object.Integer{Value: node.Value}
 	case *ast.Boolean:
 		return &object.Boolean{Value: node.Value}
+	case *ast.StringLiteral:
+		return &object.String{Value: node.Value}
 	case *ast.BlockStatement:
 		return evalBlockStatements(node, env)
 	case *ast.IfExpression:

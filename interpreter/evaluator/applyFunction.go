@@ -26,19 +26,9 @@ func extendFunctionEnv(def *object.Function, args []object.Object) *object.Envir
 	return env
 }
 
-var status = false
-
 func unwrapReturnValue(obj object.Object) object.Object {
 	if returnValue, ok := obj.(*object.ReturnValue); ok {
-		if value, ok := returnValue.Value.(*object.Integer); ok && status {
-			fmt.Println(value.Value)
-		} else if boolean, ok := returnValue.Value.(*object.Boolean); ok {
-			if boolean.Value == false {
-				status = false
-			} else {
-				status = true
-			}
-		}
+		fmt.Println(returnValue.Value)
 		return returnValue.Value
 	}
 	return obj
