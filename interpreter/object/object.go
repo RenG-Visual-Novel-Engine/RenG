@@ -8,6 +8,7 @@ const (
 	ERROR_OBJ        = "ERROR_OBJ"
 	FUNCTION_OBJ     = "FUNCTION"
 	STRING_OBJ       = "STRING"
+	BUILTIN_OBJ      = "BUILTIN"
 )
 
 type ObjectType string

@@ -5,15 +5,17 @@ import (
 	"fmt"
 )
 
-func applyFunction(def object.Object, args []object.Object) object.Object {
-	function, ok := def.(*object.Function)
-	if !ok {
-		return newError("not a function: %s", def.Type())
+func applyFunction(fn object.Object, args []object.Object) object.Object {
+	switch fn := fn.(type) {
+	case *object.Function:
+		extendedEnv := extendFunctionEnv(fn, args)
+		evaluated := Eval(fn.Body, extendedEnv)
+		return unwrapReturnValue(evaluated)
+	case *object.Builtin:
+		return fn.Fn(args...)
+	default:
+		return newError("not a function: %s", fn.Type())
 	}
-
-	extendedEnv := extendFunctionEnv(function, args)
-	evaluated := Eval(function.Body, extendedEnv)
-	return unwrapReturnValue(evaluated)
 }
 
 func extendFunctionEnv(def *object.Function, args []object.Object) *object.Environment {
