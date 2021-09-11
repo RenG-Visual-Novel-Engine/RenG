@@ -2,6 +2,12 @@ def print(a) {
     return a
 }
 
-a = "hello" + " " + "World"
+a = 0.3
 print(a)
-print(len(a))
+a *= 0.1
+print(a)
+a += 0.07
+print(a)
+if (a == 0.1) {
+    print(true)
+}

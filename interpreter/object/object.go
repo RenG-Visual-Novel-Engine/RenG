@@ -1,14 +1,17 @@
 package object
 
 const (
-	INTEGER_OBJ      = "INTEGER"
-	BOOLEAN_OBJ      = "BOOLEAN"
-	NULL_OBJ         = "NULL"
+	INTEGER_OBJ = "INTEGER"
+	FLOAT_OBJ   = "FLOAT"
+	BOOLEAN_OBJ = "BOOLEAN"
+	STRING_OBJ  = "STRING"
+	NULL_OBJ    = "NULL"
+
+	FUNCTION_OBJ = "FUNCTION"
+	BUILTIN_OBJ  = "BUILTIN"
+
 	RETURN_VALUE_OBJ = "RETURN_VALUE"
 	ERROR_OBJ        = "ERROR_OBJ"
-	FUNCTION_OBJ     = "FUNCTION"
-	STRING_OBJ       = "STRING"
-	BUILTIN_OBJ      = "BUILTIN"
 )
 
 type ObjectType string

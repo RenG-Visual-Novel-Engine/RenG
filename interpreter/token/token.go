@@ -9,6 +9,7 @@ const (
 
 	// 타입
 	INT    = "INT"
+	FLOAT  = "FLOAT"
 	STRING = "STRING"
 
 	// 연산자

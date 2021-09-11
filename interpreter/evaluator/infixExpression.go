@@ -9,6 +9,8 @@ func evalInfixExpression(operator string, left, right object.Object) object.Obje
 	switch {
 	case left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
 		return evalIntegerInfixExpression(operator, left, right)
+	case left.Type() == object.FLOAT_OBJ && right.Type() == object.FLOAT_OBJ:
+		return evalFloatInfixExpression(operator, left, right)
 	case left.Type() == object.STRING_OBJ && right.Type() == object.STRING_OBJ:
 		return evalStringInfixExpression(operator, left, right)
 	case operator == "==":
@@ -22,25 +24,47 @@ func evalInfixExpression(operator string, left, right object.Object) object.Obje
 	}
 }
 
-func evalAssignInfixExpression(operator string, left *ast.Identifier, right object.Object, env *object.Environment) {
+func evalIntegerAssignInfixExpression(operator string, left *ast.Identifier, leftVal, right object.Object, env *object.Environment) {
 	switch operator {
-	case "=":
-		env.Set(left.Value, right)
 	case "+=":
-		leftVal, _ := env.Get(left.Value)
 		env.Set(left.Value, &object.Integer{Value: leftVal.(*object.Integer).Value + right.(*object.Integer).Value})
 	case "-=":
-		leftVal, _ := env.Get(left.Value)
 		env.Set(left.Value, &object.Integer{Value: leftVal.(*object.Integer).Value - right.(*object.Integer).Value})
 	case "*=":
-		leftVal, _ := env.Get(left.Value)
 		env.Set(left.Value, &object.Integer{Value: leftVal.(*object.Integer).Value * right.(*object.Integer).Value})
 	case "/=":
-		leftVal, _ := env.Get(left.Value)
 		env.Set(left.Value, &object.Integer{Value: leftVal.(*object.Integer).Value / right.(*object.Integer).Value})
 	case "%=":
-		leftVal, _ := env.Get(left.Value)
 		env.Set(left.Value, &object.Integer{Value: leftVal.(*object.Integer).Value % right.(*object.Integer).Value})
+	}
+}
+
+func evalFloatAssignInfixExpression(operator string, left *ast.Identifier, leftVal, right object.Object, env *object.Environment) {
+	switch operator {
+	case "+=":
+		env.Set(left.Value, &object.Float{Value: leftVal.(*object.Float).Value + right.(*object.Float).Value})
+	case "-=":
+		env.Set(left.Value, &object.Float{Value: leftVal.(*object.Float).Value - right.(*object.Float).Value})
+	case "*=":
+		env.Set(left.Value, &object.Float{Value: leftVal.(*object.Float).Value * right.(*object.Float).Value})
+	case "/=":
+		env.Set(left.Value, &object.Float{Value: leftVal.(*object.Float).Value / right.(*object.Float).Value})
+	}
+}
+
+func evalAssignInfixExpression(operator string, left *ast.Identifier, right object.Object, env *object.Environment) {
+	if val, ok := env.Get(left.Value); ok {
+		switch {
+		case val.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
+			evalIntegerAssignInfixExpression(operator, left, val, right, env)
+		case val.Type() == object.FLOAT_OBJ && right.Type() == object.FLOAT_OBJ:
+			evalFloatAssignInfixExpression(operator, left, val, right, env)
+		}
+	} else {
+		switch operator {
+		case "=":
+			env.Set(left.Value, right)
+		}
 	}
 }
 
@@ -52,6 +76,35 @@ func evalStringInfixExpression(operator string, left, right object.Object) objec
 	leftVal := left.(*object.String).Value
 	rightVal := right.(*object.String).Value
 	return &object.String{Value: leftVal + rightVal}
+}
+
+func evalFloatInfixExpression(operator string, left, right object.Object) object.Object {
+	leftVal := left.(*object.Float).Value
+	rightVal := right.(*object.Float).Value
+	switch operator {
+	case "+":
+		return &object.Float{Value: leftVal + rightVal}
+	case "-":
+		return &object.Float{Value: leftVal - rightVal}
+	case "*":
+		return &object.Float{Value: leftVal * rightVal}
+	case "/":
+		return &object.Float{Value: leftVal / rightVal}
+	case "<":
+		return nativeBoolToBooleanObject(leftVal < rightVal)
+	case ">":
+		return nativeBoolToBooleanObject(leftVal > rightVal)
+	case "<=":
+		return nativeBoolToBooleanObject(leftVal <= rightVal)
+	case ">=":
+		return nativeBoolToBooleanObject(leftVal >= rightVal)
+	case "==":
+		return nativeBoolToBooleanObject(leftVal == rightVal)
+	case "!=":
+		return nativeBoolToBooleanObject(leftVal != rightVal)
+	default:
+		return newError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
+	}
 }
 
 func evalIntegerInfixExpression(operator string, left, right object.Object) object.Object {
