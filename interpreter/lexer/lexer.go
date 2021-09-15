@@ -94,6 +94,12 @@ func (l *Lexer) NextToken() token.Token {
 			tok = newToken(token.REMAINDER, l.ch)
 		}
 	case '"':
+		if nowString {
+			tok.Literal = ""
+			tok.Type = token.STRING
+			l.readChar()
+			return tok
+		}
 		nowString = true
 		tok.Type = token.STRING
 		if l.peekChar() == '[' {
@@ -135,14 +141,11 @@ func (l *Lexer) NextToken() token.Token {
 	case '}':
 		tok = newToken(token.RBRACE, l.ch)
 	case '[':
+		nowString = false
 		tok = newToken(token.LBRACKET, l.ch)
 	case ']':
-		if nowString {
-			tok.Type = token.STRING
-			tok.Literal = l.readString()
-		} else {
-			tok = newToken(token.RBRACKET, l.ch)
-		}
+		nowString = true
+		tok = newToken(token.RBRACKET, l.ch)
 	case '\n':
 		tok = newToken(token.ENDSENTENCE, l.ch)
 	case ';':
@@ -157,6 +160,12 @@ func (l *Lexer) NextToken() token.Token {
 		tok.Literal = ""
 		tok.Type = token.EOF
 	default:
+		if nowString {
+			tok.Literal = l.readString()
+			tok.Type = token.STRING
+			l.readChar()
+			return tok
+		}
 		if isLetter(l.ch) {
 			tok.Literal = l.readIdentifier()
 			tok.Type = token.LookupIdent(tok.Literal)
@@ -228,10 +237,13 @@ func (l *Lexer) readNumberAndIsInt() (string, bool) {
 func (l *Lexer) readString() string {
 	position := l.position + 1
 
+	if l.ch != '"' {
+		position -= 1
+	}
+
 	for {
 		l.readChar()
 		if l.ch == '"' || l.ch == 0 {
-			nowString = false
 			break
 		} else if l.peekChar() == '[' {
 			return l.input[position : l.position+1]

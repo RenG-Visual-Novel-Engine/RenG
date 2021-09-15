@@ -6,12 +6,22 @@ import (
 )
 
 func (p *Parser) parseStringLiteral() ast.Expression {
+	result := &ast.StringLiteral{Token: p.curToken, Value: p.curToken.Literal}
+
 	for p.peekTokenIs(token.LBRACKET) {
+
 		p.nextToken()
 		p.nextToken()
 
+		result.Exp = append(result.Exp, p.parseExpression(LOWEST))
+
+		p.nextToken()
+		p.nextToken()
+
+		result.Values = append(result.Values, p.curToken.Literal)
 	}
-	return &ast.StringLiteral{Token: p.curToken, Value: p.curToken.Literal}
+
+	return result
 }
 
 // 항상 STRING이 여러개 이상이면 그 사이에 표현식이 들어가야 함.
