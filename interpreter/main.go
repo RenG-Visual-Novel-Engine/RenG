@@ -1,10 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 
 	"RenG/interpreter/lexer"
-	"RenG/interpreter/parser"
+	"RenG/interpreter/token"
 )
 
 func main() {
@@ -14,8 +15,8 @@ func main() {
 	}
 
 	l := lexer.New(string(code))
-	p := parser.New(l)
-	program := p.ParseProgram()
 
-	program.String()
+	for i := l.NextToken(); i.Type != token.EOF; i = l.NextToken() {
+		fmt.Println(i)
+	}
 }

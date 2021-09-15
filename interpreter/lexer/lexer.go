@@ -4,6 +4,10 @@ import (
 	"RenG/interpreter/token"
 )
 
+var (
+	nowString = false
+)
+
 func New(input string) *Lexer {
 	l := &Lexer{input: input}
 	l.readChar()
@@ -90,8 +94,13 @@ func (l *Lexer) NextToken() token.Token {
 			tok = newToken(token.REMAINDER, l.ch)
 		}
 	case '"':
+		nowString = true
 		tok.Type = token.STRING
-		tok.Literal = l.readString()
+		if l.peekChar() == '[' {
+			tok.Literal = ""
+		} else {
+			tok.Literal = l.readString()
+		}
 	case '<':
 		if l.peekChar() == '=' {
 			ch := l.ch
@@ -125,6 +134,15 @@ func (l *Lexer) NextToken() token.Token {
 		}
 	case '}':
 		tok = newToken(token.RBRACE, l.ch)
+	case '[':
+		tok = newToken(token.LBRACKET, l.ch)
+	case ']':
+		if nowString {
+			tok.Type = token.STRING
+			tok.Literal = l.readString()
+		} else {
+			tok = newToken(token.RBRACKET, l.ch)
+		}
 	case '\n':
 		tok = newToken(token.ENDSENTENCE, l.ch)
 	case ';':
@@ -209,15 +227,20 @@ func (l *Lexer) readNumberAndIsInt() (string, bool) {
 
 func (l *Lexer) readString() string {
 	position := l.position + 1
+
 	for {
 		l.readChar()
 		if l.ch == '"' || l.ch == 0 {
+			nowString = false
 			break
+		} else if l.peekChar() == '[' {
+			return l.input[position : l.position+1]
 		}
 	}
 
 	return l.input[position:l.position]
 }
+
 func isLetter(ch byte) bool {
 	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_'
 }

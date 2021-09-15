@@ -44,10 +44,12 @@ const (
 	COMMA       = ","
 	ENDSENTENCE = "ENDSENTENCE"
 
-	LPAREN = "("
-	RPAREN = ")"
-	LBRACE = "{"
-	RBRACE = "}"
+	LPAREN   = "("
+	RPAREN   = ")"
+	LBRACE   = "{"
+	RBRACE   = "}"
+	LBRACKET = "["
+	RBRACKET = "]"
 
 	// 주석
 	COMMENT = "#"
