@@ -5,6 +5,7 @@ import (
 	"RenG/interpreter/token"
 )
 
+// { } 로 묶인 것들을 처리합니다.
 func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 	block := &ast.BlockStatement{Token: p.curToken}
 	block.Statements = []ast.Statement{}

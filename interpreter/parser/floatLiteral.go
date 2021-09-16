@@ -6,6 +6,7 @@ import (
 	"strconv"
 )
 
+// float 오브젝트를 반환합니다.
 func (p *Parser) parseFloatLiteral() ast.Expression {
 	lit := &ast.FloatLiteral{Token: p.curToken}
 

@@ -192,10 +192,12 @@ func (l *Lexer) NextToken() token.Token {
 	return tok
 }
 
+// 새로운 토큰을 생성합니다.
 func newToken(tokenType token.TokenType, ch byte) token.Token {
 	return token.Token{Type: tokenType, Literal: string(ch)}
 }
 
+// 문자 하나를 읽고, readPosition,position 모두 +1 증가시킵니다.
 func (l *Lexer) readChar() {
 	if l.readPosition >= len(l.input) {
 		l.ch = 0
@@ -206,6 +208,8 @@ func (l *Lexer) readChar() {
 	}
 }
 
+// 현재 해당하는 position보다 +1 되어 있는 문자를 가르킵니다.
+//     이를 통해 +=, -= 과 같이 2글자로 된 연산자를 렉싱할 수 있게 됩니다.
 func (l *Lexer) peekChar() byte {
 	if l.readPosition >= len(l.input) {
 		return 0
@@ -237,6 +241,7 @@ func (l *Lexer) readNumberAndIsInt() (string, bool) {
 	return l.input[position:l.position], true
 }
 
+// 문자열을 모두 읽어들입니다.
 func (l *Lexer) readString() string {
 	position := l.position + 1
 
@@ -255,20 +260,26 @@ func (l *Lexer) readString() string {
 	return l.input[position:l.position]
 }
 
+// 문자열에 해당하는지 판단
 func isLetter(ch byte) bool {
 	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_'
 }
 
+// 정수인지 판단
 func isDigit(ch byte) bool {
 	return '0' <= ch && ch <= '9'
 }
 
+// 화이트 스페이스를 모두 스킵합니다.
+//     ' ', \t, \r
 func (l *Lexer) skipWhiteSpace() {
 	for l.ch == ' ' || l.ch == '\t' || l.ch == '\r' {
 		l.readChar()
 	}
 }
 
+// \n 개행문자를 스킵하는 역할입니다.
+//     필요성 : 개행문자를 하나의 ENDSENTENCE 토큰으로 판단하므로 필요합니다.
 func (l *Lexer) jumpWhiteSpace() {
 	for l.peekChar() == 13 || l.ch == 13 {
 		l.readChar()

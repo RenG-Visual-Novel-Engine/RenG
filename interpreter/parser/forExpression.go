@@ -5,6 +5,9 @@ import (
 	"RenG/interpreter/token"
 )
 
+// for 문을 파싱했습니다.
+// ex)
+//    for (<Expression>; <Expression>; <Expression>) { ... }
 func (p *Parser) parseForExpression() ast.Expression {
 	exp := &ast.ForExpression{Token: p.curToken}
 
