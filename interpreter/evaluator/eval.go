@@ -57,7 +57,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	case *ast.Boolean:
 		return &object.Boolean{Value: node.Value}
 	case *ast.StringLiteral:
-		return &object.String{Value: node.Value}
+		return evalStringLiteral(node, env)
 	case *ast.BlockStatement:
 		return evalBlockStatements(node, env)
 	case *ast.IfExpression:

@@ -17,7 +17,9 @@ func New(input string) *Lexer {
 func (l *Lexer) NextToken() token.Token {
 	var tok token.Token
 
-	l.skipWhiteSpace()
+	if !nowString {
+		l.skipWhiteSpace()
+	}
 
 	switch l.ch {
 	case '=':
@@ -98,6 +100,7 @@ func (l *Lexer) NextToken() token.Token {
 			tok.Literal = ""
 			tok.Type = token.STRING
 			l.readChar()
+			nowString = false
 			return tok
 		}
 		nowString = true
@@ -237,18 +240,17 @@ func (l *Lexer) readNumberAndIsInt() (string, bool) {
 func (l *Lexer) readString() string {
 	position := l.position + 1
 
-	if l.ch != '"' {
-		position -= 1
-	}
-
 	for {
+		if l.peekChar() == '[' {
+			return l.input[position-1 : l.position+1]
+		}
 		l.readChar()
 		if l.ch == '"' || l.ch == 0 {
 			break
-		} else if l.peekChar() == '[' {
-			return l.input[position : l.position+1]
 		}
 	}
+
+	nowString = false
 
 	return l.input[position:l.position]
 }

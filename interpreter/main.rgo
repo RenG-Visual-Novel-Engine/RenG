@@ -1,1 +1,9 @@
-a = "hello[b + 3]wow[sans] wow"
+def print(a) {
+    return a
+}
+
+a = "Hello World"
+
+for (i = 0; i < len(a); ++i) {
+    print("[i + 1] [a] 입니다 아니 님 [1.1 + 2.3][10 + 20 / 3]")
+}
