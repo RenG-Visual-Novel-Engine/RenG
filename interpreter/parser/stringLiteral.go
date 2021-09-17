@@ -8,17 +8,24 @@ import (
 func (p *Parser) parseStringLiteral() ast.Expression {
 	result := &ast.StringLiteral{Token: p.curToken, Value: p.curToken.Literal}
 
+	i := 0
+
 	for p.peekTokenIs(token.LBRACKET) {
 
 		p.nextToken()
 		p.nextToken()
 
-		result.Exp = append(result.Exp, p.parseExpression(LOWEST))
+		result.Exp = append(result.Exp, ast.ExpressionIndex{Exp: p.parseExpression(LOWEST), Index: i})
+
+		i++
 
 		p.nextToken()
-		p.nextToken()
 
-		result.Values = append(result.Values, p.curToken.Literal)
+		if p.peekToken.Type == token.STRING {
+			p.nextToken()
+			result.Values = append(result.Values, ast.StringIndex{Str: p.curToken.Literal, Index: i})
+			i++
+		}
 	}
 
 	return result

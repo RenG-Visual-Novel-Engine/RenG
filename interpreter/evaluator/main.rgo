@@ -2,8 +2,12 @@ def print(a) {
     return a
 }
 
-a = "Hello World"
+a = "Hello"
+b = " "
+c = "World"
+d = true
+e = false
+f = 10
+g = 20
 
-for (i = 0; i < len(a); ++i) {
-    print("[a]")
-}
+print("[a][b][c] [d != e] [f + g] " + a + b + c)

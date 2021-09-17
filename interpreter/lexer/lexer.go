@@ -245,9 +245,13 @@ func (l *Lexer) readNumberAndIsInt() (string, bool) {
 func (l *Lexer) readString() string {
 	position := l.position + 1
 
+	if l.ch != '"' {
+		position--
+	}
+
 	for {
 		if l.peekChar() == '[' {
-			return l.input[position-1 : l.position+1]
+			return l.input[position : l.position+1]
 		}
 		l.readChar()
 		if l.ch == '"' || l.ch == 0 {

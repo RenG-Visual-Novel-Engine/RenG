@@ -2,8 +2,8 @@ def print(a) {
     return a
 }
 
-a = "Hello World"
+a = "Hello"
+b = " "
+c = "World"
 
-for (i = 0; i < len(a); ++i) {
-    print("[i + 1][a] 입니다 [1.1 + 2.3][10 + 20 / 3] ")
-}
+print("[a][b][c] sans")

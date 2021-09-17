@@ -58,7 +58,7 @@ label start {
 git clone "https://github.com/alvin1007/RenG"
 ```
 
-- 파일 위치는 "Go/src/RenG"에 해두는 것이 가장 좋습니다.
+- 파일 위치는 "{GOPATH}/src/RenG"에 해두는 것이 가장 좋습니다.
 
 # 커밋 규칙
 
