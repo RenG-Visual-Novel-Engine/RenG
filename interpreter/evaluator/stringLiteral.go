@@ -15,8 +15,7 @@ func evalStringLiteral(str *ast.StringLiteral, env *object.Environment) *object.
 	result := &object.String{Value: str.Value}
 
 	// TODO : 최적화하기
-	// STRING + EXPRESSION + STRING 형식이 아닐시에 일어나는 오류
-	// 강제적으로 [] [] 사이에는 띄어쓰기가 필요함 -> 언젠가 아이디어가 생기면 고쳐보자 -> 일단 고쳤지만 여러 최적화가 필요할듯
+	// 일단 고쳤지만 여러 최적화가 필요할듯
 
 	for stringIndex := 0; stringIndex < len(str.Values); stringIndex++ {
 

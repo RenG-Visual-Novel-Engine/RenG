@@ -5,7 +5,8 @@ import (
 )
 
 var (
-	nowString = false
+	inString  = false // [ ] 토큰이 현재 문자열 범위인지 판단하는 역할
+	nowString = false // 현재 " " 범위 안에 존재하는 판단하고 [ ] 범위는 문자열이라고 판단한지 못하도록 함
 )
 
 func New(input string) *Lexer {
@@ -144,10 +145,16 @@ func (l *Lexer) NextToken() token.Token {
 	case '}':
 		tok = newToken(token.RBRACE, l.ch)
 	case '[':
-		nowString = false
+		if nowString {
+			inString = true
+			nowString = false
+		}
 		tok = newToken(token.LBRACKET, l.ch)
 	case ']':
-		nowString = true
+		if inString {
+			inString = false
+			nowString = true
+		}
 		tok = newToken(token.RBRACKET, l.ch)
 	case '\n':
 		tok = newToken(token.ENDSENTENCE, l.ch)

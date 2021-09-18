@@ -16,6 +16,7 @@ const (
 	PRODUCT
 	PREFIX
 	CALL
+	INDEX
 )
 
 var precedences = map[token.TokenType]int{
@@ -39,6 +40,7 @@ var precedences = map[token.TokenType]int{
 	token.ASTERISK:         PRODUCT,
 	token.REMAINDER:        PRODUCT,
 	token.LPAREN:           CALL,
+	token.LBRACKET:         INDEX,
 }
 
 type Parser struct {
@@ -78,6 +80,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.INT, p.parseIntegerLiteral)
 	p.registerPrefix(token.FLOAT, p.parseFloatLiteral)
 	p.registerPrefix(token.STRING, p.parseStringLiteral)
+	p.registerPrefix(token.LBRACKET, p.parseArrayLiteral)
 	p.registerPrefix(token.BANG, p.parsePrefixExpression)
 	p.registerPrefix(token.MINUS, p.parsePrefixExpression)
 	p.registerPrefix(token.PLUS_PLUS, p.parsePrefixExpression)
@@ -104,6 +107,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerInfix(token.LT_EQ, p.parseInfixExpression)
 	p.registerInfix(token.GT_EQ, p.parseInfixExpression)
 	p.registerInfix(token.LPAREN, p.parseCallExpression)
+	p.registerInfix(token.LBRACKET, p.parseIndexExpression)
 	p.registerInfix(token.ASSIGN, p.parseInfixExpression)
 	p.registerInfix(token.PLUS_ASSIGN, p.parseInfixExpression)
 	p.registerInfix(token.MINUS_ASSIGN, p.parseInfixExpression)

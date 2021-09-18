@@ -58,6 +58,12 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return &object.Boolean{Value: node.Value}
 	case *ast.StringLiteral:
 		return evalStringLiteral(node, env)
+	case *ast.ArrayLiteral:
+		elements := evalExpressions(node.Elements, env)
+		if len(elements) == 1 && isError(elements[0]) {
+			return elements[0]
+		}
+		return &object.Array{Elements: elements}
 	case *ast.BlockStatement:
 		return evalBlockStatements(node, env)
 	case *ast.IfExpression:
@@ -74,6 +80,17 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 			return args[0]
 		}
 		return applyFunction(function, args)
+	case *ast.IndexExpression:
+		left := Eval(node.Left, env)
+		if isError(left) {
+			return left
+		}
+		index := Eval(node.Index, env)
+
+		if isError(index) {
+			return index
+		}
+		return evalIndexExpression(left, index)
 	case *ast.WhileExpression:
 		return evalWhileExpression(node, env)
 	case *ast.ForExpression:

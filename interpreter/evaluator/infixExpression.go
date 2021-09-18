@@ -53,17 +53,16 @@ func evalFloatAssignInfixExpression(operator string, left *ast.Identifier, leftV
 }
 
 func evalAssignInfixExpression(operator string, left *ast.Identifier, right object.Object, env *object.Environment) {
+	switch operator {
+	case "=":
+		env.Set(left.Value, right)
+	}
 	if val, ok := env.Get(left.Value); ok {
 		switch {
 		case val.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
 			evalIntegerAssignInfixExpression(operator, left, val, right, env)
 		case val.Type() == object.FLOAT_OBJ && right.Type() == object.FLOAT_OBJ:
 			evalFloatAssignInfixExpression(operator, left, val, right, env)
-		}
-	} else {
-		switch operator {
-		case "=":
-			env.Set(left.Value, right)
 		}
 	}
 }

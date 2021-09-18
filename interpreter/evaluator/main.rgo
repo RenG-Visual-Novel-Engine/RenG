@@ -1,13 +1,5 @@
-def print(a) {
-    return a
-}
+arr = [1, 2, 3, "hello"]
+print(arr)
 
-a = "Hello"
-b = " "
-c = "World"
-d = true
-e = false
-f = 10
-g = 20
-
-print("[a][b][c] [d != e] [f + g] " + a + b + c)
+arr = push(arr, "world")
+print(arr)
