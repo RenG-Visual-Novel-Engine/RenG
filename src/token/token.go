@@ -47,6 +47,14 @@ const (
 	LT_EQ = "<="
 	GT_EQ = ">="
 
+	AND_BOOL = "&&"
+	OR_BOOL  = "||"
+
+	// 비트 연산
+	AND = "&"
+	OR  = "|"
+	XOR = "^"
+
 	// 구분자
 	COMMA       = ","
 	ENDSENTENCE = "ENDSENTENCE"

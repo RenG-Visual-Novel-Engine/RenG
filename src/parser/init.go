@@ -10,6 +10,11 @@ const (
 	_ int = iota
 	LOWEST
 	ASSIGNMENT
+	OR_BOOL
+	AND_BOOL
+	OR
+	XOR
+	AND
 	EQUALS
 	LESSGREATER
 	SUM
@@ -26,6 +31,11 @@ var precedences = map[token.TokenType]int{
 	token.ASTERISK_ASSIGN:  ASSIGNMENT,
 	token.SLASH_ASSIGN:     ASSIGNMENT,
 	token.REMAINDER_ASSIGN: ASSIGNMENT,
+	token.OR_BOOL:          OR_BOOL,
+	token.AND_BOOL:         AND_BOOL,
+	token.OR:               OR,
+	token.XOR:              XOR,
+	token.AND:              AND,
 	token.EQ:               EQUALS,
 	token.NOT_EQ:           EQUALS,
 	token.LT:               LESSGREATER,
@@ -108,6 +118,11 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerInfix(token.GT_EQ, p.parseInfixExpression)
 	p.registerInfix(token.LPAREN, p.parseCallExpression)
 	p.registerInfix(token.LBRACKET, p.parseIndexExpression)
+	p.registerInfix(token.AND_BOOL, p.parseInfixExpression)
+	p.registerInfix(token.OR_BOOL, p.parseInfixExpression)
+	p.registerInfix(token.OR, p.parseInfixExpression)
+	p.registerInfix(token.XOR, p.parseInfixExpression)
+	p.registerInfix(token.AND, p.parseInfixExpression)
 	p.registerInfix(token.ASSIGN, p.parseInfixExpression)
 	p.registerInfix(token.PLUS_ASSIGN, p.parseInfixExpression)
 	p.registerInfix(token.MINUS_ASSIGN, p.parseInfixExpression)
