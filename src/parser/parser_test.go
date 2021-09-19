@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"RenG/interpreter/lexer"
+	"RenG/src/lexer"
 	"fmt"
 	"io/ioutil"
 	"testing"

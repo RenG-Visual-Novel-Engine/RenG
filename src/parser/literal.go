@@ -1,8 +1,8 @@
 package parser
 
 import (
-	"RenG/interpreter/ast"
-	"RenG/interpreter/token"
+	"RenG/src/ast"
+	"RenG/src/token"
 	"fmt"
 	"strconv"
 )

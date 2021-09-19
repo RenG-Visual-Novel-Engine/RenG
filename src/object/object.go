@@ -1,7 +1,7 @@
 package object
 
 import (
-	"RenG/interpreter/ast"
+	"RenG/src/ast"
 	"bytes"
 	"fmt"
 	"strings"

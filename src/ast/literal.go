@@ -1,7 +1,7 @@
 package ast
 
 import (
-	"RenG/interpreter/token"
+	"RenG/src/token"
 	"bytes"
 	"strings"
 )

@@ -1,7 +1,7 @@
 package lexer
 
 import (
-	"RenG/interpreter/token"
+	"RenG/src/token"
 )
 
 type Lexer struct {

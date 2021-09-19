@@ -1,9 +1,9 @@
 package evaluator
 
 import (
-	"RenG/interpreter/lexer"
-	"RenG/interpreter/object"
-	"RenG/interpreter/parser"
+	"RenG/src/lexer"
+	"RenG/src/object"
+	"RenG/src/parser"
 	"fmt"
 	"io/ioutil"
 	"testing"

@@ -1,7 +1,7 @@
 package evaluator
 
 import (
-	"RenG/interpreter/object"
+	"RenG/src/object"
 	"fmt"
 )
 

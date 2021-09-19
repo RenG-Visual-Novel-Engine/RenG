@@ -1,8 +1,8 @@
 package evaluator
 
 import (
-	"RenG/interpreter/ast"
-	"RenG/interpreter/object"
+	"RenG/src/ast"
+	"RenG/src/object"
 )
 
 func evalInfixExpression(operator string, left, right object.Object) object.Object {

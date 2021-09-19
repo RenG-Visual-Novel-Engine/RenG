@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"RenG/interpreter/lexer"
-	"RenG/interpreter/token"
+	"RenG/src/lexer"
+	"RenG/src/token"
 )
 
 func main() {

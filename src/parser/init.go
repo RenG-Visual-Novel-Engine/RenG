@@ -1,9 +1,9 @@
 package parser
 
 import (
-	"RenG/interpreter/ast"
-	"RenG/interpreter/lexer"
-	"RenG/interpreter/token"
+	"RenG/src/ast"
+	"RenG/src/lexer"
+	"RenG/src/token"
 )
 
 const (

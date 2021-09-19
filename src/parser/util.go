@@ -3,7 +3,7 @@ package parser
 import (
 	"fmt"
 
-	"RenG/interpreter/token"
+	"RenG/src/token"
 )
 
 /*---------------error----------------*/
