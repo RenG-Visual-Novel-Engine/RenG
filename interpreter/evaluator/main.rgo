@@ -1,5 +1,12 @@
-arr = [1, 2, 3, "hello"]
+a = 10; b = 20;
+print("10 + 20 = [a + b]")
+
+arr = [1, 2, true, false, "hello"]
 print(arr)
 
 arr = push(arr, "world")
 print(arr)
+
+print(arr[0] + arr[1])
+print(arr[2] != arr[3])
+print(arr[4] + " " + arr[5])
