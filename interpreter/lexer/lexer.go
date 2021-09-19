@@ -4,6 +4,13 @@ import (
 	"RenG/interpreter/token"
 )
 
+type Lexer struct {
+	input        string
+	position     int
+	readPosition int
+	ch           byte
+}
+
 var (
 	inString  = false // [ ] 토큰이 현재 문자열 범위인지 판단하는 역할
 	nowString = false // 현재 " " 범위 안에 존재하는 판단하고 [ ] 범위는 문자열이라고 판단한지 못하도록 함
@@ -227,7 +234,7 @@ func (l *Lexer) peekChar() byte {
 
 func (l *Lexer) readIdentifier() string {
 	position := l.position
-	for isLetter(l.ch) {
+	for isLetter(l.ch) || isDigit(l.ch) {
 		l.readChar()
 	}
 	return l.input[position:l.position]

@@ -1,5 +1,5 @@
-a = 10; b = 20;
-print("10 + 20 = [a + b]")
+a1 = 10; a2 = 20;
+print("10 + 20 = [a1 + a2]")
 
 arr = [1, 2, true, false, "hello"]
 print(arr)

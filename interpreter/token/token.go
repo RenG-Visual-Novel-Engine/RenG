@@ -1,5 +1,12 @@
 package token
 
+type TokenType string
+
+type Token struct {
+	Type    TokenType
+	Literal string
+}
+
 const (
 	ILLEGAL = "ILLEGAL"
 	EOF     = "EOF"
@@ -60,19 +67,24 @@ const (
 
 	// 예약어
 	FUNCTION = "FUNCTION"
-	SCREEN   = "SCREEN"
 	TRUE     = "TRUE"
 	FALSE    = "FALSE"
 	IF       = "IF"
 	ELIF     = "ELIF"
 	ELSE     = "ELSE"
 	RETURN   = "RETURN"
-	LABEL    = "LABEL"
+)
+
+const (
+	LABEL  = "LABEL"
+	SCREEN = "SCREEN"
+
+	IMAGE     = "IMAGE"
+	CHARACTER = "CHARACTER"
 )
 
 var keywords = map[string]TokenType{
 	"def":    FUNCTION,
-	"screen": SCREEN,
 	"true":   TRUE,
 	"false":  FALSE,
 	"if":     IF,
@@ -81,7 +93,12 @@ var keywords = map[string]TokenType{
 	"return": RETURN,
 	"for":    FOR,
 	"while":  WHILE,
+
 	"label":  LABEL,
+	"screen": SCREEN,
+
+	"image":     IMAGE,
+	"character": CHARACTER,
 }
 
 func LookupIdent(ident string) TokenType {
