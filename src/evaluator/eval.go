@@ -4,6 +4,7 @@ import (
 	"RenG/src/ast"
 	"RenG/src/object"
 	"fmt"
+	"strconv"
 )
 
 var (
@@ -99,6 +100,9 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 			return elements[0]
 		}
 		return &object.Array{Elements: elements}
+	/*-------RenG Expression-------*/
+	case *ast.LabelExpression:
+		evalLabelExpression(node, env)
 	}
 	return nil
 }
@@ -212,7 +216,6 @@ func extendFunctionEnv(def *object.Function, args []object.Object) *object.Envir
 
 func unwrapReturnValue(obj object.Object) object.Object {
 	if returnValue, ok := obj.(*object.ReturnValue); ok {
-		fmt.Println(returnValue.Value)
 		return returnValue.Value
 	}
 	return obj
@@ -293,14 +296,11 @@ func evalStringLiteral(str *ast.StringLiteral, env *object.Environment) *object.
 
 			switch value := val.(type) {
 			case *object.Integer:
-				s := fmt.Sprintf("%d", value.Value)
-				result.Value += s
+				result.Value += strconv.Itoa(int(value.Value))
 			case *object.Float:
-				s := fmt.Sprintf("%f", value.Value)
-				result.Value += s
+				result.Value += fmt.Sprintf("%f", value.Value)
 			case *object.Boolean:
-				s := fmt.Sprintf("%t", value.Value)
-				result.Value += s
+				result.Value += strconv.FormatBool(value.Value)
 			case *object.String:
 				result.Value += value.Value
 			default:

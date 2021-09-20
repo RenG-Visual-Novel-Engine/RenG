@@ -10,7 +10,7 @@ func (p *Parser) parseLabelExpression() ast.Expression {
 
 	p.nextToken()
 
-	expression.Name = p.parseExpression(LOWEST)
+	expression.Name = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
 
 	if !p.expectPeek(token.LBRACE) {
 		return nil

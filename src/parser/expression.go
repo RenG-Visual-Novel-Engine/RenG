@@ -264,7 +264,7 @@ func (p *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
 	return exp
 }
 
-func (p *Parser) parseWhielExpression() ast.Expression {
+func (p *Parser) parseWhileExpression() ast.Expression {
 	exp := &ast.WhileExpression{Token: p.curToken}
 
 	if !p.expectPeek(token.LPAREN) {

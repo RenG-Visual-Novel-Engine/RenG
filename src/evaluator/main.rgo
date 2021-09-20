@@ -1,5 +1,2 @@
-a1 = "Hello"
-a2 = "Hello"
-b = "World"
-print(a1 == a2)
-print(a1 == b)
+a = -10.0
+print(a / 2.0)

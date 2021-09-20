@@ -7,7 +7,7 @@ import (
 
 type LabelExpression struct {
 	Token token.Token
-	Name  Expression
+	Name  *Identifier
 	Body  *BlockStatement
 }
 
@@ -17,7 +17,7 @@ func (le *LabelExpression) String() string {
 	var out bytes.Buffer
 
 	out.WriteString("label ")
-	out.WriteString(le.Name.String() + "\n")
+	out.WriteString(le.Name.String())
 	out.WriteString(le.Body.String())
 
 	return out.String()

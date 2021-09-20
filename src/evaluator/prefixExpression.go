@@ -41,11 +41,17 @@ func evalBangOperatorExpression(right object.Object) object.Object {
 }
 
 func evalMinusPrefixOperatorExpression(right object.Object) object.Object {
-	if right.Type() != object.INTEGER_OBJ {
-		return newError("unknown operator: -%s", right.Type())
+	if right.Type() != object.INTEGER_OBJ && right.Type() != object.FLOAT_OBJ {
+		return newError("Wrong Type: -%s", right.Type())
 	}
-	value := right.(*object.Integer).Value
-	return &object.Integer{Value: -value}
+	switch rightVal := right.(type) {
+	case *object.Integer:
+		return &object.Integer{Value: -rightVal.Value}
+	case *object.Float:
+		return &object.Float{Value: -rightVal.Value}
+	default:
+		return newError("Wrong Type: -%s", rightVal)
+	}
 }
 
 func evalAssignPrefixPLUS_PLUSExpression(right *ast.Identifier, env *object.Environment) object.Object {

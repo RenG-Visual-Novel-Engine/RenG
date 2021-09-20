@@ -101,7 +101,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.LABEL, p.parseLabelExpression)
 	p.registerPrefix(token.IF, p.parseIfExpression)
 	p.registerPrefix(token.FUNCTION, p.parseFunctionExpression)
-	p.registerPrefix(token.WHILE, p.parseWhielExpression)
+	p.registerPrefix(token.WHILE, p.parseWhileExpression)
 	p.registerPrefix(token.FOR, p.parseForExpression)
 
 	p.infixParseFns = make(map[token.TokenType]infixParseFn)

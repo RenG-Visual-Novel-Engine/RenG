@@ -21,6 +21,8 @@ const (
 
 	RETURN_VALUE_OBJ = "RETURN_VALUE"
 	ERROR_OBJ        = "ERROR_OBJ"
+
+	LABEL_OBJ = "LABEL_OBJ"
 )
 
 type ObjectType string
@@ -130,3 +132,20 @@ type Error struct {
 
 func (e *Error) Type() ObjectType { return ERROR_OBJ }
 func (e *Error) Inspect() string  { return "ERROR: " + e.Message }
+
+type Label struct {
+	Name *ast.Identifier
+	Body *ast.BlockStatement
+	Env  *Environment
+}
+
+func (l *Label) Type() ObjectType { return LABEL_OBJ }
+func (l *Label) Inspect() string {
+	var out bytes.Buffer
+
+	out.WriteString("label ")
+	out.WriteString(l.Name.String())
+	out.WriteString(l.Body.String())
+
+	return out.String()
+}
