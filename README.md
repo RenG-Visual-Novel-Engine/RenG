@@ -138,6 +138,13 @@ label <Identifier> {
 
 <br>
 
+# 디스코드
+<a href="https://discord.gg/JkkvP6U9qk" terget="_blank">
+<img src="https://img.shields.io/badge/-Discord-5865F2?logo=Discord&logoColor=white&style=flat"/>
+</a>
+
+<br><br>
+
 # 개발 참가 전 알아야 할 사항들
 
 - Ren'G 엔진은 cgo를 이용하므로 gcc 혹은 clang 등의 C언어 컴파일 환경이 필요합니다. 윈도우 유저시라면 mingw-w64를 사용할 것을 권장합니다.
@@ -168,7 +175,7 @@ git clone "https://github.com/RenG-Visual-Novel-Engine/RenG"
 git commit -m "<본인의 계정 이름> : <수정 내용>"
 ```
 
-# 디스코드
-<a href="https://discord.gg/JkkvP6U9qk" terget="_blank">
-<img src="https://img.shields.io/badge/-Discord-5865F2?logo=Discord&logoColor=white&style=flat"/>
-</a>
+# 라이선스
+
+- 본 저작물은 MIT LICENSE를 따르고 있습니다.
+- 본 저작물에서 사용한 제주고딕체는 공공누리 제1유형에 의거하여 [해당](https://www.jeju.go.kr/jeju/symbol/font/gothic.htm) 부분을 클릭하여 다운로드 받을 수 있음을 알려드립니다.
