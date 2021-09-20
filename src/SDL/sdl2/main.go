@@ -68,7 +68,7 @@ func SDLInit() bool {
 
 	C.SDL_SetHint(C.CString(C.SDL_HINT_RENDER_SCALE_QUALITY), C.CString("1"))
 
-	window = C.SDL_CreateWindow(C.CString("SDL2"), C.SDL_WINDOWPOS_UNDEFINED, C.SDL_WINDOWPOS_UNDEFINED, width, height, C.SDL_WINDOW_SHOWN)
+	window = C.SDL_CreateWindow(C.CString("SDL2 테스트"), C.SDL_WINDOWPOS_UNDEFINED, C.SDL_WINDOWPOS_UNDEFINED, width, height, C.SDL_WINDOW_SHOWN)
 
 	if window == nil {
 		fmt.Println("WindowError")
@@ -107,31 +107,31 @@ func LoadFromFile(path string) bool {
 }
 
 func LoadMedia() bool {
-	if !LoadFromFile("prompt.png") {
+	if !LoadFromFile("src\\SDL\\test\\prompt.png") {
 		return false
 	}
 
-	music = C.Mix_LoadMUS(C.CString("beat.wav"))
+	music = C.Mix_LoadMUS(C.CString("src\\SDL\\test\\beat.wav"))
 	if music == nil {
 		return false
 	}
 
-	scratch = C.MixLoadWAV(C.CString("scratch.wav"))
+	scratch = C.MixLoadWAV(C.CString("src\\SDL\\test\\scratch.wav"))
 	if scratch == nil {
 		return false
 	}
 
-	high = C.MixLoadWAV(C.CString("high.wav"))
+	high = C.MixLoadWAV(C.CString("src\\SDL\\test\\high.wav"))
 	if high == nil {
 		return false
 	}
 
-	medium = C.MixLoadWAV(C.CString("medium.wav"))
+	medium = C.MixLoadWAV(C.CString("src\\SDL\\test\\medium.wav"))
 	if medium == nil {
 		return false
 	}
 
-	low = C.MixLoadWAV(C.CString("low.wav"))
+	low = C.MixLoadWAV(C.CString("src\\SDL\\test\\low.wav"))
 	if low == nil {
 		return false
 	}
