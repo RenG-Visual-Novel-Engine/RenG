@@ -1,1 +1,9 @@
-print(true && false)
+label start {
+    print(1)
+}
+
+def sum(a, b) {
+    return a + b
+}
+
+print(sum(1, 2))

@@ -1,9 +1,0 @@
-def print(a) {
-    return a
-}
-
-a = "Hello"
-b = " "
-c = "World"
-
-print("[a][b][c] sans")

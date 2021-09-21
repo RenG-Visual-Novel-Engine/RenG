@@ -1,2 +1,13 @@
-a = -10.0
-print(a / 2.0)
+label start {
+    print("hello")
+}
+
+label hello {
+    print("sans")
+}
+
+def sum(a, b) {
+    return a + b
+}
+
+print(sum(1, 2))
