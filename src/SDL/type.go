@@ -10,6 +10,15 @@ package sdl
 */
 import "C"
 
+type SDL_Window C.SDL_Window
+type SDL_Renderer C.SDL_Renderer
+type SDL_Event C.SDL_Event
+
+type SDL_Texture C.SDL_Texture
+
+type Mix_Music C.Mix_Music
+type Mix_Chunk C.Mix_Chunk
+
 const (
 	SDL_INIT_TIMER = C.SDL_INIT_TIMER
 	SDL_INIT_AUDIO = C.SDL_INIT_AUDIO
@@ -41,11 +50,12 @@ const (
 	MIX_DEFAULT_FORMAT = C.MIX_DEFAULT_FORMAT
 )
 
-type SDL_Window C.SDL_Window
+const (
+	SDL_QUIT    = C.SDL_QUIT
+	SDL_KEYDOWN = C.SDL_KEYDOWN
+)
 
-type SDL_Renderer C.SDL_Renderer
-
-type SDL_Texture C.SDL_Texture
-
-type Mix_Music C.Mix_Music
-type Mix_Chunk C.Mix_Chunk
+const (
+	SDL_TRUE  = C.SDL_TRUE
+	SDL_FALSE = C.SDL_FALSE
+)

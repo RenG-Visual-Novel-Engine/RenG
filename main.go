@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -15,7 +16,11 @@ import (
 func main() {
 	cmd := exec.Command("cmd")
 	if runtime.GOOS == "windows" {
-		cmd = exec.Command("src\\SDL\\test\\sample.bat")
+		root, err := os.Getwd()
+		if err != nil {
+			panic(err)
+		}
+		cmd = exec.Command("src\\test", fmt.Sprintf("-r=%s\\reng", root))
 	}
 	cmd.Stdout = os.Stdout
 	err := cmd.Run()

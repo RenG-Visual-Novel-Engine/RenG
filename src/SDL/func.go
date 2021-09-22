@@ -22,14 +22,12 @@ func SDLInit(title string, width, height int) (bool, *SDL_Window, *SDL_Renderer)
 
 	setHint := C.CString("1")
 	C.SDL_SetHint(C.CString(SDL_HINT_RENDER_SCALE_QUALITY), setHint)
-	C.free(unsafe.Pointer(setHint))
 
 	cTitle := C.CString(title)
 	window := C.SDL_CreateWindow(cTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, C.int(width), C.int(height), SDL_WINDOW_SHOWN)
-	C.free(unsafe.Pointer(cTitle))
 
 	renderer := C.SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED|SDL_RENDERER_PRESENTVSYNC)
-	C.SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0x00)
+	C.SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF)
 
 	if (C.IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) == 0 {
 		fmt.Println("SDLImage Error")
@@ -41,5 +39,23 @@ func SDLInit(title string, width, height int) (bool, *SDL_Window, *SDL_Renderer)
 		return false, nil, nil
 	}
 
+	if C.TTF_Init() < 0 {
+		fmt.Println("SDLTTF Error")
+		return false, nil, nil
+	}
+
+	C.free(unsafe.Pointer(setHint))
+	C.free(unsafe.Pointer(cTitle))
+
 	return true, (*SDL_Window)(window), (*SDL_Renderer)(renderer)
+}
+
+func Close(window *SDL_Window, renderer *SDL_Renderer) {
+	C.SDL_DestroyWindow((*C.SDL_Window)(window))
+	C.SDL_DestroyRenderer((*C.SDL_Renderer)(renderer))
+
+	C.SDL_Quit()
+	C.IMG_Quit()
+	C.TTF_Quit()
+	C.Mix_Quit()
 }

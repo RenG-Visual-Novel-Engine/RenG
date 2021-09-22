@@ -22,3 +22,23 @@ func (le *LabelExpression) String() string {
 
 	return out.String()
 }
+
+type ImageExpression struct {
+	Token token.Token
+	Name  *Identifier
+	Root  string
+	Body  *BlockStatement
+}
+
+func (ie *ImageExpression) expressionNode()      {}
+func (ie *ImageExpression) TokenLiteral() string { return ie.Token.Literal }
+func (ie *ImageExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("image")
+	out.WriteString(ie.Name.String())
+	out.WriteString(ie.Root)
+	out.WriteString(ie.Body.String())
+
+	return out.String()
+}

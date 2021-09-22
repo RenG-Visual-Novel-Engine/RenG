@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"runtime"
 )
 
 var (
@@ -20,13 +21,19 @@ var (
 	code = ""
 )
 
+var (
+	event sdl.SDL_Event
+	quit  = false
+)
+
 func init() {
 	// root 플래그로 파일 주소를 받음
-	Root = flag.String("root", "", "root")
+	Root = flag.String("r", "", "root")
 	flag.Parse()
 	if flag.NFlag() == 0 {
 		flag.Usage()
 	}
+	runtime.LockOSThread()
 }
 
 func main() {
@@ -59,8 +66,6 @@ func main() {
 
 	if !run(env) {
 		fmt.Println("Fail")
-	} else {
-		fmt.Println("success")
 	}
 }
 
@@ -74,17 +79,48 @@ func interPretation(code string) (object.Object, *object.Environment) {
 	return evaluator.Eval(program, env), env
 }
 
+// SDL Run
 func run(env *object.Environment) bool {
+
 	title, ok1 := env.Get("title")
 	width, ok2 := env.Get("width")
 	height, ok3 := env.Get("height")
+
 	if !ok1 || !ok2 || !ok3 {
 		return false
 	}
 
-	ok, _, _ := sdl.SDLInit(title.(*object.String).Value, int(width.(*object.Integer).Value), int(height.(*object.Integer).Value))
+	ok, window, renderer := sdl.SDLInit(title.(*object.String).Value, int(width.(*object.Integer).Value), int(height.(*object.Integer).Value))
 	if !ok {
 		return false
 	}
+
+	LayerList := sdl.NewLayerList()
+	LayerList.Layers = append(LayerList.Layers, sdl.Layer{Name: "main"})
+	texture, _ := sdl.LoadFromFile(*Root+"\\gui\\loading.png", renderer)
+	LayerList.Layers[0].Images = append(LayerList.Layers[0].Images, texture)
+
+	for !quit {
+		for sdl.PollEvent(&event) != 0 {
+			if sdl.EventType(event) == sdl.SDL_QUIT {
+				quit = true
+			}
+		}
+		sdl.SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF)
+		sdl.RenderClear(renderer)
+
+		for i := 0; i < len(LayerList.Layers); i++ {
+			if LayerList.Layers[i].Images[0] == nil {
+				continue
+			}
+			for j := 0; j < len(LayerList.Layers[i].Images); j++ {
+				sdl.Render(renderer, LayerList.Layers[i].Images[j])
+			}
+		}
+
+		sdl.RenderPresent(renderer)
+	}
+
+	sdl.Close(window, renderer)
 	return true
 }

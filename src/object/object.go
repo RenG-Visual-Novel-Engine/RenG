@@ -23,6 +23,7 @@ const (
 	ERROR_OBJ        = "ERROR_OBJ"
 
 	LABEL_OBJ = "LABEL_OBJ"
+	IMAGE_OBJ = "IMAGE_OBJ"
 )
 
 type ObjectType string
@@ -140,3 +141,12 @@ type Label struct {
 
 func (l *Label) Type() ObjectType { return LABEL_OBJ }
 func (l *Label) Inspect() string  { return "{ " + l.Body.String() + " }" }
+
+type Image struct {
+	Name *ast.Identifier
+	Root String
+	Body *ast.BlockStatement
+}
+
+func (i *Image) Type() ObjectType { return IMAGE_OBJ }
+func (i *Image) Inspect() string  { return "{ " + i.Body.String() + " }" }
