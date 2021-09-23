@@ -15,10 +15,10 @@ Uint32 eventType(SDL_Event event)
 */
 import "C"
 
-func PollEvent(event *SDL_Event) int {
-	return int(C.SDL_PollEvent((*C.SDL_Event)(event)))
+func (e *SDL_Event) PollEvent() int {
+	return int(C.SDL_PollEvent((*C.SDL_Event)(e)))
 }
 
-func EventType(event SDL_Event) C.Uint32 {
-	return C.eventType((C.SDL_Event)(event))
+func (e *SDL_Event) EventType() C.Uint32 {
+	return C.eventType((C.SDL_Event)(*e))
 }

@@ -1,3 +1,10 @@
-title = "테스트 중입니다"
-width = 1280
-height = 720
+gui_title = "경님민경님민경님민경님민"
+
+gui_width = 1280
+gui_height = 720
+
+gui_loading_image = "\gui\loading.png"
+
+gui_font = "\font\JejuGothic.ttf"
+
+test_text = "경님민 귀여워요 헤엑헤엑헤엑헤엑"

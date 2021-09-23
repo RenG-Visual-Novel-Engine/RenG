@@ -13,6 +13,6 @@ func NewLayerList() LayerList {
 	return LayerList{}
 }
 
-func Render(renderer *SDL_Renderer, texture *SDL_Texture) {
-	RenderCopy(renderer, texture)
+func (l *Layer) AddNewTexture(texture *SDL_Texture) {
+	l.Images = append(l.Images, texture)
 }

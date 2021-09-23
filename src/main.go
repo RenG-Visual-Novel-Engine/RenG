@@ -82,11 +82,14 @@ func interPretation(code string) (object.Object, *object.Environment) {
 // SDL Run
 func run(env *object.Environment) bool {
 
-	title, ok1 := env.Get("title")
-	width, ok2 := env.Get("width")
-	height, ok3 := env.Get("height")
+	title, ok1 := env.Get("gui_title")
+	width, ok2 := env.Get("gui_width")
+	height, ok3 := env.Get("gui_height")
+	//loadingImagePath, ok4 := env.Get("gui_loading_image")
+	fontPath, ok5 := env.Get("gui_font")
+	testText, ok6 := env.Get("test_text")
 
-	if !ok1 || !ok2 || !ok3 {
+	if !ok1 || !ok2 || !ok3 || !ok5 || !ok6 {
 		return false
 	}
 
@@ -97,28 +100,29 @@ func run(env *object.Environment) bool {
 
 	LayerList := sdl.NewLayerList()
 	LayerList.Layers = append(LayerList.Layers, sdl.Layer{Name: "main"})
-	texture, _ := sdl.LoadFromFile(*Root+"\\gui\\loading.png", renderer)
-	LayerList.Layers[0].Images = append(LayerList.Layers[0].Images, texture)
+	//texture, _ := sdl.LoadFromFile(*Root+loadingImagePath.(*object.String).Value, renderer)
+	//LayerList.Layers[0].AddNewTexture(texture)
+
+	font := sdl.OpenFont(*Root + fontPath.(*object.String).Value)
+	textTexture := sdl.LoadFromRenderedText(testText.Inspect(), renderer, font, sdl.Color(0, 0, 0))
+	LayerList.Layers[0].AddNewTexture(textTexture)
 
 	for !quit {
-		for sdl.PollEvent(&event) != 0 {
-			if sdl.EventType(event) == sdl.SDL_QUIT {
+		for event.PollEvent() != 0 {
+			if event.EventType() == sdl.SDL_QUIT {
 				quit = true
 			}
 		}
-		sdl.SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF)
-		sdl.RenderClear(renderer)
+		renderer.SetRenderDrawColor(0xFF, 0xFF, 0xFF, 0xFF)
+		renderer.RenderClear()
 
 		for i := 0; i < len(LayerList.Layers); i++ {
-			if LayerList.Layers[i].Images[0] == nil {
-				continue
-			}
 			for j := 0; j < len(LayerList.Layers[i].Images); j++ {
-				sdl.Render(renderer, LayerList.Layers[i].Images[j])
+				LayerList.Layers[i].Images[j].Render(renderer, nil, (int(width.(*object.Integer).Value)-LayerList.Layers[i].Images[j].Width)/2, (int(height.(*object.Integer).Value)-LayerList.Layers[i].Images[j].Height)/2)
 			}
 		}
 
-		sdl.RenderPresent(renderer)
+		renderer.RenderPresent()
 	}
 
 	sdl.Close(window, renderer)

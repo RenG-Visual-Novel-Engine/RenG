@@ -14,10 +14,18 @@ type SDL_Window C.SDL_Window
 type SDL_Renderer C.SDL_Renderer
 type SDL_Event C.SDL_Event
 
-type SDL_Texture C.SDL_Texture
+type SDL_Texture struct {
+	Texture *C.SDL_Texture
+	Width   int
+	Height  int
+}
+type SDL_Rect C.SDL_Rect
+type SDL_Color C.SDL_Color
 
 type Mix_Music C.Mix_Music
 type Mix_Chunk C.Mix_Chunk
+
+type TTF_Font C.TTF_Font
 
 const (
 	SDL_INIT_TIMER = C.SDL_INIT_TIMER

@@ -26,7 +26,7 @@ func (le *LabelExpression) String() string {
 type ImageExpression struct {
 	Token token.Token
 	Name  *Identifier
-	Root  string
+	Path  string
 	Body  *BlockStatement
 }
 
@@ -37,7 +37,7 @@ func (ie *ImageExpression) String() string {
 
 	out.WriteString("image")
 	out.WriteString(ie.Name.String())
-	out.WriteString(ie.Root)
+	out.WriteString(ie.Path)
 	out.WriteString(ie.Body.String())
 
 	return out.String()
