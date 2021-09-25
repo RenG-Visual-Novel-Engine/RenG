@@ -50,7 +50,7 @@ func LoadFromRenderedText(text string, renderer *SDL_Renderer, f *TTF_Font, colo
 		fmt.Println("texture nil")
 	}
 
-	texture := &SDL_Texture{Texture: t, Width: int(textSurface.w), Height: int(textSurface.h)}
+	texture := &SDL_Texture{Texture: t, Xpos: 300, Ypos: 550, Width: int(textSurface.w), Height: int(textSurface.h)}
 
 	C.SDL_FreeSurface(textSurface)
 

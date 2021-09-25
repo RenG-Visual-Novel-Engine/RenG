@@ -85,11 +85,12 @@ func run(env *object.Environment) bool {
 	title, ok1 := env.Get("gui_title")
 	width, ok2 := env.Get("gui_width")
 	height, ok3 := env.Get("gui_height")
-	//loadingImagePath, ok4 := env.Get("gui_loading_image")
+	sayImagePath, ok4 := env.Get("screen_say_image")
 	fontPath, ok5 := env.Get("gui_font")
 	testText, ok6 := env.Get("test_text")
+	bgImagePath, ok7 := env.Get("gui_bg_image")
 
-	if !ok1 || !ok2 || !ok3 || !ok5 || !ok6 {
+	if !ok1 || !ok2 || !ok3 || !ok4 || !ok5 || !ok6 || !ok7 {
 		return false
 	}
 
@@ -100,12 +101,17 @@ func run(env *object.Environment) bool {
 
 	LayerList := sdl.NewLayerList()
 	LayerList.Layers = append(LayerList.Layers, sdl.Layer{Name: "main"})
-	//texture, _ := sdl.LoadFromFile(*Root+loadingImagePath.(*object.String).Value, renderer)
-	//LayerList.Layers[0].AddNewTexture(texture)
+	LayerList.Layers = append(LayerList.Layers, sdl.Layer{Name: "screen"})
+
+	bgTexture, _ := sdl.LoadFromFile(*Root+bgImagePath.Inspect(), renderer)
+	LayerList.Layers[0].AddNewTexture(bgTexture)
+
+	sayTexture, _ := sdl.LoadFromFile(*Root+sayImagePath.Inspect(), renderer)
+	LayerList.Layers[1].AddNewTexture(sayTexture)
 
 	font := sdl.OpenFont(*Root + fontPath.(*object.String).Value)
 	textTexture := sdl.LoadFromRenderedText(testText.Inspect(), renderer, font, sdl.Color(0, 0, 0))
-	LayerList.Layers[0].AddNewTexture(textTexture)
+	LayerList.Layers[1].AddNewTexture(textTexture)
 
 	for !quit {
 		for event.PollEvent() != 0 {
@@ -113,12 +119,12 @@ func run(env *object.Environment) bool {
 				quit = true
 			}
 		}
-		renderer.SetRenderDrawColor(0xFF, 0xFF, 0xFF, 0xFF)
+		renderer.SetRenderDrawColor(0x00, 0x00, 0x00, 0xFF)
 		renderer.RenderClear()
 
 		for i := 0; i < len(LayerList.Layers); i++ {
 			for j := 0; j < len(LayerList.Layers[i].Images); j++ {
-				LayerList.Layers[i].Images[j].Render(renderer, nil, (int(width.(*object.Integer).Value)-LayerList.Layers[i].Images[j].Width)/2, (int(height.(*object.Integer).Value)-LayerList.Layers[i].Images[j].Height)/2)
+				LayerList.Layers[i].Images[j].Render(renderer, nil, LayerList.Layers[i].Images[j].Xpos, LayerList.Layers[i].Images[j].Ypos)
 			}
 		}
 

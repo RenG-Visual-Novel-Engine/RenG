@@ -1,10 +1,13 @@
-gui_title = "경님민경님민경님민경님민"
+gui_title = "테스트"
 
 gui_width = 1280
 gui_height = 720
 
+gui_bg_image = "\gui\bg.png"
 gui_loading_image = "\gui\loading.png"
 
 gui_font = "\font\JejuGothic.ttf"
 
-test_text = "경님민 귀여워요 헤엑헤엑헤엑헤엑"
+screen_say_image = "\gui\say.png"
+
+test_text = "안녕?"

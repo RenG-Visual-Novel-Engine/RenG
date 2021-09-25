@@ -16,6 +16,8 @@ type SDL_Event C.SDL_Event
 
 type SDL_Texture struct {
 	Texture *C.SDL_Texture
+	Xpos    int
+	Ypos    int
 	Width   int
 	Height  int
 }
