@@ -89,6 +89,8 @@ const (
 
 	IMAGE     = "IMAGE"
 	CHARACTER = "CHARACTER"
+
+	SHOW = "SHOW"
 )
 
 var keywords = map[string]TokenType{
@@ -107,6 +109,8 @@ var keywords = map[string]TokenType{
 
 	"image":     IMAGE,
 	"character": CHARACTER,
+
+	"show": SHOW,
 }
 
 func LookupIdent(ident string) TokenType {

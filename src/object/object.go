@@ -144,9 +144,8 @@ func (l *Label) Inspect() string  { return "{ " + l.Body.String() + " }" }
 
 type Image struct {
 	Name *ast.Identifier
-	Root String
-	Body *ast.BlockStatement
+	Root *String
 }
 
 func (i *Image) Type() ObjectType { return IMAGE_OBJ }
-func (i *Image) Inspect() string  { return "{ " + i.Body.String() + " }" }
+func (i *Image) Inspect() string  { return i.Name.String() }

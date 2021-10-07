@@ -3,11 +3,12 @@ gui_title = "테스트"
 gui_width = 1280
 gui_height = 720
 
-gui_bg_image = "\gui\bg.png"
-gui_loading_image = "\gui\loading.png"
+image gui_bg_image = "\gui\bg.png"
+image say = "\gui\say.png"
 
 gui_font = "\font\JejuGothic.ttf"
 
-screen_say_image = "\gui\say.png"
-
-test_text = "안녕?"
+label start {
+    show gui_bg_image
+    show say
+}

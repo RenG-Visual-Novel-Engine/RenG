@@ -20,3 +20,31 @@ func (p *Parser) parseLabelExpression() ast.Expression {
 
 	return expression
 }
+
+func (p *Parser) parseImageExpression() ast.Expression {
+	exp := &ast.ImageExpression{Token: p.curToken}
+
+	p.nextToken()
+
+	exp.Name = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+
+	if !p.expectPeek(token.ASSIGN) {
+		return nil
+	}
+
+	p.nextToken()
+
+	exp.Path = p.parseStringLiteral()
+
+	return exp
+}
+
+func (p *Parser) parseShowExpression() ast.Expression {
+	exp := &ast.ShowExpression{Token: p.curToken}
+
+	p.nextToken()
+
+	exp.Name = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+
+	return exp
+}

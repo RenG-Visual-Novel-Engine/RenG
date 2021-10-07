@@ -47,7 +47,7 @@ func (t *SDL_Texture) Render(renderer *SDL_Renderer, clip *SDL_Rect, x, y int) {
 	C.SDL_RenderCopy((*C.SDL_Renderer)(renderer), t.Texture, (*C.SDL_Rect)(clip), &renderQuad)
 }
 
-func LoadFromFile(root string, renderer *SDL_Renderer) (*SDL_Texture, bool) {
+func (r *SDL_Renderer) LoadFromFile(root string) (*SDL_Texture, bool) {
 	cRoot := C.CString(root)
 	loadedSurface := C.IMG_Load(cRoot)
 
@@ -57,7 +57,7 @@ func LoadFromFile(root string, renderer *SDL_Renderer) (*SDL_Texture, bool) {
 
 	C.SDL_SetColorKey(loadedSurface, SDL_TRUE, C.SDL_MapRGB(C.surfaceFormat(loadedSurface), 0, 0xFF, 0xFF))
 
-	newTexure := &SDL_Texture{Texture: C.SDL_CreateTextureFromSurface((*C.SDL_Renderer)(renderer), loadedSurface), Xpos: 0, Ypos: 0, Width: int(loadedSurface.w), Height: int(loadedSurface.h)}
+	newTexure := &SDL_Texture{Texture: C.SDL_CreateTextureFromSurface((*C.SDL_Renderer)(r), loadedSurface), Xpos: 0, Ypos: 0, Width: int(loadedSurface.w), Height: int(loadedSurface.h)}
 
 	C.SDL_FreeSurface(loadedSurface)
 

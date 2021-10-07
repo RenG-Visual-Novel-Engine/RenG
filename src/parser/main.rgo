@@ -1,9 +1,12 @@
+gui_title = "테스트"
+
+gui_width = 1280
+gui_height = 720
+
+image gui_bg_image = "\gui\bg.png"
+
+gui_font = "\font\JejuGothic.ttf"
+
 label start {
-    print(1)
+    show gui_bg_image
 }
-
-def sum(a, b) {
-    return a + b
-}
-
-print(sum(1, 2))

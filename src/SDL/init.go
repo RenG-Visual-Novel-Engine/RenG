@@ -14,10 +14,10 @@ import (
 	"unsafe"
 )
 
-func SDLInit(title string, width, height int) (bool, *SDL_Window, *SDL_Renderer) {
+func SDLInit(title string, width, height int) (*SDL_Window, *SDL_Renderer) {
 	if int(C.SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO)) < 0 {
 		fmt.Println("SDL Error")
-		return false, nil, nil
+		return nil, nil
 	}
 
 	setHint := C.CString("1")
@@ -26,28 +26,31 @@ func SDLInit(title string, width, height int) (bool, *SDL_Window, *SDL_Renderer)
 	cTitle := C.CString(title)
 	window := C.SDL_CreateWindow(cTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, C.int(width), C.int(height), SDL_WINDOW_SHOWN)
 
-	renderer := C.SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED|SDL_RENDERER_PRESENTVSYNC)
-	C.SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF)
+	renderer := C.SDL_CreateRenderer((*C.SDL_Window)(window), -1, SDL_RENDERER_ACCELERATED|SDL_RENDERER_PRESENTVSYNC)
 
 	if (C.IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) == 0 {
 		fmt.Println("SDLImage Error")
-		return false, nil, nil
+		return nil, nil
 	}
 
 	if C.Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0 {
 		fmt.Println("SDLMixer Error")
-		return false, nil, nil
+		return nil, nil
 	}
 
 	if C.TTF_Init() < 0 {
 		fmt.Println("SDLTTF Error")
-		return false, nil, nil
+		return nil, nil
 	}
 
 	C.free(unsafe.Pointer(setHint))
 	C.free(unsafe.Pointer(cTitle))
 
-	return true, (*SDL_Window)(window), (*SDL_Renderer)(renderer)
+	return (*SDL_Window)(window), (*SDL_Renderer)(renderer)
+}
+
+func SDLInitRenderer(window *SDL_Window) *SDL_Renderer {
+	return (*SDL_Renderer)(C.SDL_CreateRenderer((*C.SDL_Window)(window), -1, SDL_RENDERER_ACCELERATED|SDL_RENDERER_PRESENTVSYNC))
 }
 
 func Close(window *SDL_Window, renderer *SDL_Renderer) {

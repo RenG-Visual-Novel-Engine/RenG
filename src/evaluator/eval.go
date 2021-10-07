@@ -103,6 +103,8 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	/*-------RenG Expression-------*/
 	case *ast.LabelExpression:
 		evalLabelExpression(node, env)
+	case *ast.ImageExpression:
+		return evalImageExpression(node, env)
 	}
 	return nil
 }

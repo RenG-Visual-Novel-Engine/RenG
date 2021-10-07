@@ -7,7 +7,6 @@ import (
 	"RenG/src/object"
 	"RenG/src/parser"
 	"flag"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"runtime"
@@ -18,16 +17,27 @@ var (
 )
 
 var (
-	code = ""
+	code   = ""
+	title  object.Object
+	width  object.Object
+	height object.Object
 )
 
 var (
-	event sdl.SDL_Event
-	quit  = false
+	window   *sdl.SDL_Window
+	renderer *sdl.SDL_Renderer
+	event    sdl.SDL_Event
+)
+
+var (
+	env      *object.Environment = object.NewEnvironment()
+	errValue *object.Error
+
+	quit = false
 )
 
 func init() {
-	// root 플래그로 파일 주소를 받음
+	// r 플래그로 파일 주소를 받음
 	Root = flag.String("r", "", "root")
 	flag.Parse()
 	if flag.NFlag() == 0 {
@@ -54,64 +64,46 @@ func main() {
 		}
 	}
 
-	obj, env := interPretation(code)
-	if errValue, ok := obj.(*object.Error); ok {
-		fmt.Println(errValue.Message)
-	}
+	go interPretation(code)
 
-	_, ok := env.Get("start")
-	if !ok {
-		fmt.Println("Code should have start label")
-	}
+	setUp(env)
 
-	if !run(env) {
-		fmt.Println("Fail")
-	}
+	mainLoop(errValue)
 }
 
 // 해석 단계입니다.
-func interPretation(code string) (object.Object, *object.Environment) {
+func interPretation(code string) {
 	l := lexer.New(code)
 	p := parser.New(l)
 	program := p.ParseProgram()
-	env := object.NewEnvironment()
 
-	return evaluator.Eval(program, env), env
+	obj := evaluator.Eval(program, env)
+	errValue, _ = obj.(*object.Error)
 }
 
-// SDL Run
-func run(env *object.Environment) bool {
-
-	title, ok1 := env.Get("gui_title")
-	width, ok2 := env.Get("gui_width")
-	height, ok3 := env.Get("gui_height")
-	sayImagePath, ok4 := env.Get("screen_say_image")
-	fontPath, ok5 := env.Get("gui_font")
-	testText, ok6 := env.Get("test_text")
-	bgImagePath, ok7 := env.Get("gui_bg_image")
-
-	if !ok1 || !ok2 || !ok3 || !ok4 || !ok5 || !ok6 || !ok7 {
-		return false
+func setUp(env *object.Environment) {
+R1:
+	if env == nil {
+		goto R1
 	}
 
-	ok, window, renderer := sdl.SDLInit(title.(*object.String).Value, int(width.(*object.Integer).Value), int(height.(*object.Integer).Value))
-	if !ok {
-		return false
+R2:
+	if !env.IsHere("gui_title") || !env.IsHere("gui_width") || !env.IsHere("gui_height") {
+		goto R2
 	}
 
+	title, _ = env.Get("gui_title")
+	width, _ = env.Get("gui_width")
+	height, _ = env.Get("gui_height")
+
+	window, renderer = sdl.SDLInit(title.(*object.String).Value, int(width.(*object.Integer).Value), int(height.(*object.Integer).Value))
+}
+
+func mainLoop(errObject *object.Error) {
 	LayerList := sdl.NewLayerList()
-	LayerList.Layers = append(LayerList.Layers, sdl.Layer{Name: "main"})
-	LayerList.Layers = append(LayerList.Layers, sdl.Layer{Name: "screen"})
+	TextureList := object.NewTextureList()
 
-	bgTexture, _ := sdl.LoadFromFile(*Root+bgImagePath.Inspect(), renderer)
-	LayerList.Layers[0].AddNewTexture(bgTexture)
-
-	sayTexture, _ := sdl.LoadFromFile(*Root+sayImagePath.Inspect(), renderer)
-	LayerList.Layers[1].AddNewTexture(sayTexture)
-
-	font := sdl.OpenFont(*Root + fontPath.(*object.String).Value)
-	textTexture := sdl.LoadFromRenderedText(testText.Inspect(), renderer, font, sdl.Color(0, 0, 0))
-	LayerList.Layers[1].AddNewTexture(textTexture)
+	go run(renderer, env, &LayerList, TextureList)
 
 	for !quit {
 		for event.PollEvent() != 0 {
@@ -119,12 +111,14 @@ func run(env *object.Environment) bool {
 				quit = true
 			}
 		}
-		renderer.SetRenderDrawColor(0x00, 0x00, 0x00, 0xFF)
+		renderer.SetRenderDrawColor(0xFF, 0xFF, 0xFF, 0xFF)
 		renderer.RenderClear()
 
 		for i := 0; i < len(LayerList.Layers); i++ {
 			for j := 0; j < len(LayerList.Layers[i].Images); j++ {
+				evaluator.LayerMutex.Lock()
 				LayerList.Layers[i].Images[j].Render(renderer, nil, LayerList.Layers[i].Images[j].Xpos, LayerList.Layers[i].Images[j].Ypos)
+				evaluator.LayerMutex.Unlock()
 			}
 		}
 
@@ -132,5 +126,28 @@ func run(env *object.Environment) bool {
 	}
 
 	sdl.Close(window, renderer)
-	return true
+}
+
+func run(renderer *sdl.SDL_Renderer, env *object.Environment, layerList *sdl.LayerList, textureList *object.TextureList) {
+
+	fontPath, _ := env.Get("gui_font")
+
+	layerList.Layers = append(layerList.Layers, sdl.Layer{Name: "main"})
+	layerList.Layers = append(layerList.Layers, sdl.Layer{Name: "screen"})
+
+	font := sdl.OpenFont(*Root + fontPath.(*object.String).Value)
+
+	start, ok := env.Get("start")
+
+	if !ok {
+		layerList.Layers[1].AddNewTexture(sdl.LoadFromRenderedText("Code should have start label", renderer, font, sdl.Color(0, 0, 0)))
+		return
+	}
+
+	if errValue != nil {
+		layerList.Layers[1].AddNewTexture(sdl.LoadFromRenderedText(errValue.Message, renderer, font, sdl.Color(0, 0, 0)))
+		return
+	}
+
+	evaluator.RengEval(start.(*object.Label).Body, *Root, env, renderer, layerList, textureList)
 }
