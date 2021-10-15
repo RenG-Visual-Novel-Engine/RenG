@@ -6,7 +6,9 @@ import (
 	"RenG/src/lexer"
 	"RenG/src/object"
 	"RenG/src/parser"
+	"RenG/src/rengeval"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"runtime"
@@ -18,9 +20,9 @@ var (
 
 var (
 	code   = ""
-	title  object.Object
-	width  object.Object
-	height object.Object
+	Title  object.Object
+	Width  object.Object
+	Height object.Object
 )
 
 var (
@@ -92,11 +94,11 @@ R2:
 		goto R2
 	}
 
-	title, _ = env.Get("gui_title")
-	width, _ = env.Get("gui_width")
-	height, _ = env.Get("gui_height")
+	Title, _ = env.Get("gui_title")
+	Width, _ = env.Get("gui_width")
+	Height, _ = env.Get("gui_height")
 
-	window, renderer = sdl.SDLInit(title.(*object.String).Value, int(width.(*object.Integer).Value), int(height.(*object.Integer).Value))
+	window, renderer = sdl.SDLInit(Title.(*object.String).Value, int(Width.(*object.Integer).Value), int(Height.(*object.Integer).Value))
 }
 
 func mainLoop(errObject *object.Error) {
@@ -107,8 +109,14 @@ func mainLoop(errObject *object.Error) {
 
 	for !quit {
 		for event.PollEvent() != 0 {
-			if event.EventType() == sdl.SDL_QUIT {
+			switch event.EventType() {
+			case sdl.SDL_QUIT:
 				quit = true
+			case sdl.SDL_WINDOWEVENT:
+				switch event.WindowEventType() {
+				case sdl.SDL_WINDOWEVENT_MAXIMIZED:
+					fmt.Println("hello")
+				}
 			}
 		}
 		renderer.SetRenderDrawColor(0xFF, 0xFF, 0xFF, 0xFF)
@@ -116,9 +124,9 @@ func mainLoop(errObject *object.Error) {
 
 		for i := 0; i < len(LayerList.Layers); i++ {
 			for j := 0; j < len(LayerList.Layers[i].Images); j++ {
-				evaluator.LayerMutex.Lock()
+				rengeval.LayerMutex.Lock()
 				LayerList.Layers[i].Images[j].Render(renderer, nil, LayerList.Layers[i].Images[j].Xpos, LayerList.Layers[i].Images[j].Ypos)
-				evaluator.LayerMutex.Unlock()
+				rengeval.LayerMutex.Unlock()
 			}
 		}
 
@@ -132,6 +140,7 @@ func run(renderer *sdl.SDL_Renderer, env *object.Environment, layerList *sdl.Lay
 
 	fontPath, _ := env.Get("gui_font")
 
+	layerList.Layers = append(layerList.Layers, sdl.Layer{Name: "error"})
 	layerList.Layers = append(layerList.Layers, sdl.Layer{Name: "main"})
 	layerList.Layers = append(layerList.Layers, sdl.Layer{Name: "screen"})
 
@@ -140,14 +149,14 @@ func run(renderer *sdl.SDL_Renderer, env *object.Environment, layerList *sdl.Lay
 	start, ok := env.Get("start")
 
 	if !ok {
-		layerList.Layers[1].AddNewTexture(sdl.LoadFromRenderedText("Code should have start label", renderer, font, sdl.Color(0, 0, 0)))
+		layerList.Layers[0].AddNewTexture(font.LoadFromRenderedText("Could not find the entry point for your code.", renderer, sdl.Color(0, 0, 0)))
 		return
 	}
 
 	if errValue != nil {
-		layerList.Layers[1].AddNewTexture(sdl.LoadFromRenderedText(errValue.Message, renderer, font, sdl.Color(0, 0, 0)))
+		layerList.Layers[0].AddNewTexture(font.LoadFromRenderedText(errValue.Message, renderer, sdl.Color(0, 0, 0)))
 		return
 	}
 
-	evaluator.RengEval(start.(*object.Label).Body, *Root, env, renderer, layerList, textureList)
+	rengeval.RengEval(start.(*object.Label).Body, *Root, env, renderer, layerList, textureList, Width.(*object.Integer).Value, Height.(*object.Integer).Value)
 }

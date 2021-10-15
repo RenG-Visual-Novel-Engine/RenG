@@ -102,9 +102,11 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return &object.Array{Elements: elements}
 	/*-------RenG Expression-------*/
 	case *ast.LabelExpression:
-		evalLabelExpression(node, env)
+		return evalLabelExpression(node, env)
 	case *ast.ImageExpression:
 		return evalImageExpression(node, env)
+	case *ast.TransformExpression:
+		return evalTransformExpression(node, env)
 	}
 	return nil
 }
@@ -273,7 +275,7 @@ func evalIdentifier(node *ast.Identifier, env *object.Environment) object.Object
 		return val
 	}
 
-	if builtin, ok := builtins[node.Value]; ok {
+	if builtin, ok := functionBuiltins[node.Value]; ok {
 		return builtin
 	}
 

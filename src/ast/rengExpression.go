@@ -41,11 +41,48 @@ func (ie *ImageExpression) String() string {
 	return out.String()
 }
 
-type ShowExpression struct {
+type TransformExpression struct {
 	Token token.Token
 	Name  *Identifier
+	Body  *BlockStatement
+}
+
+func (te *TransformExpression) expressionNode()      {}
+func (te *TransformExpression) TokenLiteral() string { return te.Token.Literal }
+func (te *TransformExpression) String() string {
+	return "transform " + te.Name.String() + "{" + te.Body.String() + "}"
+}
+
+type ShowExpression struct {
+	Token     token.Token
+	Name      *Identifier
+	Transform *Identifier
 }
 
 func (se *ShowExpression) expressionNode()      {}
 func (se *ShowExpression) TokenLiteral() string { return se.Token.Literal }
-func (se *ShowExpression) String() string       { return "show " + se.Name.String() }
+func (se *ShowExpression) String() string {
+	return "show " + se.Name.String() + "at" + se.Transform.String()
+}
+
+type XPosExpression struct {
+	Token token.Token
+	Value Expression
+}
+
+func (pe *XPosExpression) expressionNode()      {}
+func (pe *XPosExpression) TokenLiteral() string { return pe.Token.Literal }
+func (pe *XPosExpression) String() string {
+	return pe.Value.String()
+}
+
+type YPosExpression struct {
+	Token token.Token
+	Value Expression
+}
+
+func (pe *YPosExpression) expressionNode()      {}
+func (pe *YPosExpression) TokenLiteral() string { return pe.Token.Literal }
+func (pe *YPosExpression) String() string {
+	return pe.Value.String()
+}

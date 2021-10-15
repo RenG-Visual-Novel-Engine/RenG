@@ -89,28 +89,39 @@ const (
 
 	IMAGE     = "IMAGE"
 	CHARACTER = "CHARACTER"
+	TRANSFORM = "TRANSFORM"
+
+	SCENE = "SCENE"
 
 	SHOW = "SHOW"
+	AT   = "AT"
+)
+
+const (
+	XPOS = "XPOS"
+	YPOS = "YPOS"
 )
 
 var keywords = map[string]TokenType{
-	"def":    FUNCTION,
-	"true":   TRUE,
-	"false":  FALSE,
-	"if":     IF,
-	"elif":   ELIF,
-	"else":   ELSE,
-	"return": RETURN,
-	"for":    FOR,
-	"while":  WHILE,
-
-	"label":  LABEL,
-	"screen": SCREEN,
-
+	"def":       FUNCTION,
+	"true":      TRUE,
+	"false":     FALSE,
+	"if":        IF,
+	"elif":      ELIF,
+	"else":      ELSE,
+	"return":    RETURN,
+	"for":       FOR,
+	"while":     WHILE,
+	"label":     LABEL,
+	"screen":    SCREEN,
 	"image":     IMAGE,
 	"character": CHARACTER,
-
-	"show": SHOW,
+	"transform": TRANSFORM,
+	"scene":     SCENE,
+	"show":      SHOW,
+	"at":        AT,
+	"xpos":      XPOS,
+	"ypos":      YPOS,
 }
 
 func LookupIdent(ident string) TokenType {

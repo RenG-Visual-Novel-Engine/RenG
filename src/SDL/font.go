@@ -7,12 +7,6 @@ package sdl
 #include <include/SDL_image.h>
 #include <include/SDL_ttf.h>
 #include <include/SDL_mixer.h>
-
-SDL_Color colorSet(int r, int g, int b)
-{
-	SDL_Color textColor = { 0, 0, 0 };
-	return textColor;
-}
 */
 import "C"
 import (
@@ -32,11 +26,7 @@ func OpenFont(path string) *TTF_Font {
 	return (*TTF_Font)(f)
 }
 
-func Color(r, g, b int) SDL_Color {
-	return (SDL_Color)(C.colorSet(C.int(r), C.int(g), C.int(b)))
-}
-
-func LoadFromRenderedText(text string, renderer *SDL_Renderer, f *TTF_Font, color SDL_Color) *SDL_Texture {
+func (f *TTF_Font) LoadFromRenderedText(text string, renderer *SDL_Renderer, color SDL_Color) *SDL_Texture {
 	cText := C.CString(text)
 	defer C.free(unsafe.Pointer(cText))
 
@@ -50,7 +40,8 @@ func LoadFromRenderedText(text string, renderer *SDL_Renderer, f *TTF_Font, colo
 		fmt.Println("texture nil")
 	}
 
-	texture := &SDL_Texture{Texture: t, Xpos: 300, Ypos: 550, Width: int(textSurface.w), Height: int(textSurface.h)}
+	// TODO
+	texture := &SDL_Texture{Texture: t, Xpos: (1280 - int(textSurface.w)) / 2, Ypos: (720 - int(textSurface.h)) / 2, Width: int(textSurface.w), Height: int(textSurface.h)}
 
 	C.SDL_FreeSurface(textSurface)
 

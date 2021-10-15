@@ -24,7 +24,7 @@ func SDLInit(title string, width, height int) (*SDL_Window, *SDL_Renderer) {
 	C.SDL_SetHint(C.CString(SDL_HINT_RENDER_SCALE_QUALITY), setHint)
 
 	cTitle := C.CString(title)
-	window := C.SDL_CreateWindow(cTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, C.int(width), C.int(height), SDL_WINDOW_SHOWN)
+	window := C.SDL_CreateWindow(cTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, C.int(width), C.int(height), SDL_WINDOW_SHOWN|SDL_WINDOW_RESIZABLE)
 
 	renderer := C.SDL_CreateRenderer((*C.SDL_Window)(window), -1, SDL_RENDERER_ACCELERATED|SDL_RENDERER_PRESENTVSYNC)
 

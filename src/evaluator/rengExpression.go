@@ -20,3 +20,9 @@ func evalImageExpression(ie *ast.ImageExpression, env *object.Environment) objec
 
 	return nil
 }
+
+func evalTransformExpression(te *ast.TransformExpression, env *object.Environment) object.Object {
+	env.Set(te.Name.String(), &object.Transform{Name: te.Name, Body: te.Body})
+
+	return nil
+}

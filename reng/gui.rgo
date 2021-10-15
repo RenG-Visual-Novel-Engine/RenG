@@ -8,7 +8,19 @@ image say = "\gui\say.png"
 
 gui_font = "\font\JejuGothic.ttf"
 
+transform bgTransform {
+    xpos 0
+    ypos 0
+}
+
+transform sayTransform {
+    xpos 0
+    ypos 0
+}
+
 label start {
-    show gui_bg_image
-    show say
+    show gui_bg_image at bgTransform
+    pause(2)
+    show say at sayTransform
+    pause(2)
 }

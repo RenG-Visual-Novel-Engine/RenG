@@ -22,8 +22,9 @@ const (
 	RETURN_VALUE_OBJ = "RETURN_VALUE"
 	ERROR_OBJ        = "ERROR_OBJ"
 
-	LABEL_OBJ = "LABEL_OBJ"
-	IMAGE_OBJ = "IMAGE_OBJ"
+	LABEL_OBJ     = "LABEL_OBJ"
+	IMAGE_OBJ     = "IMAGE_OBJ"
+	TRANSFORM_OBJ = "TRANSFORM_OBJ"
 )
 
 type ObjectType string
@@ -149,3 +150,11 @@ type Image struct {
 
 func (i *Image) Type() ObjectType { return IMAGE_OBJ }
 func (i *Image) Inspect() string  { return i.Name.String() }
+
+type Transform struct {
+	Name *ast.Identifier
+	Body *ast.BlockStatement
+}
+
+func (t *Transform) Type() ObjectType { return TRANSFORM_OBJ }
+func (t *Transform) Inspect() string  { return t.Name.String() }

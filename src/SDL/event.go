@@ -12,6 +12,11 @@ Uint32 eventType(SDL_Event event)
 {
 	return event.type;
 }
+
+Uint32 windowEventType(SDL_Event event)
+{
+	return event.window.event;
+}
 */
 import "C"
 
@@ -21,4 +26,8 @@ func (e *SDL_Event) PollEvent() int {
 
 func (e *SDL_Event) EventType() C.Uint32 {
 	return C.eventType((C.SDL_Event)(*e))
+}
+
+func (e *SDL_Event) WindowEventType() C.Uint32 {
+	return C.windowEventType((C.SDL_Event)(*e))
 }
