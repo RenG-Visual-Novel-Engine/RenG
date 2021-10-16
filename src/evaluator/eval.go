@@ -36,7 +36,10 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	case *ast.InfixExpression:
 		if leftValue, ok := node.Left.(*ast.Identifier); ok && isAssign(node.Operator) {
 			right := Eval(node.Right, env)
-			evalAssignInfixExpression(node.Operator, leftValue, right, env)
+			if isError(right) {
+				return right
+			}
+			return evalAssignInfixExpression(node.Operator, leftValue, right, env)
 		} else {
 			left := Eval(node.Left, env)
 			if isError(left) {
@@ -67,8 +70,8 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		if isError(left) {
 			return left
 		}
-		index := Eval(node.Index, env)
 
+		index := Eval(node.Index, env)
 		if isError(index) {
 			return index
 		}
@@ -240,26 +243,60 @@ func evalArrayIndexExpression(array, index object.Object) object.Object {
 
 func evalWhileExpression(node *ast.WhileExpression, env *object.Environment) object.Object {
 	condition := Eval(node.Condition, env)
+	if isError(condition) {
+		return condition
+	}
+
 	for isTruthy(condition) {
 		result := Eval(node.Body, env)
+		if isError(result) {
+			return result
+		}
+
 		if _, ok := result.(*object.ReturnValue); ok {
 			return result
 		}
+
 		condition = Eval(node.Condition, env)
+		if isError(condition) {
+			return condition
+		}
 	}
 	return nil
 }
 
 func evalForExpression(node *ast.ForExpression, env *object.Environment) object.Object {
-	Eval(node.Define, env)
-	condition := Eval(node.Condition, env)
+	var define, condition, result, run object.Object
+
+	define = Eval(node.Define, env)
+	if isError(define) {
+		return define
+	}
+
+	condition = Eval(node.Condition, env)
+	if isError(condition) {
+		return condition
+	}
+
 	for isTruthy(condition) {
-		result := Eval(node.Body, env)
+		result = Eval(node.Body, env)
+		if isError(result) {
+			return result
+		}
+
 		if _, ok := result.(*object.ReturnValue); ok {
 			return result
 		}
-		Eval(node.Run, env)
+
+		run = Eval(node.Run, env)
+		if isError(run) {
+			return run
+		}
+
 		condition = Eval(node.Condition, env)
+		if isError(condition) {
+			return condition
+		}
 	}
 	return nil
 }
@@ -303,6 +340,7 @@ func evalStringLiteral(str *ast.StringLiteral, env *object.Environment) *object.
 				result.Value += value.Value
 			default:
 				result.Value = "ErrorType"
+				return result
 			}
 
 			expIndex++

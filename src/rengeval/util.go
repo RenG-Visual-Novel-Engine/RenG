@@ -56,8 +56,8 @@ func isCurrentExp(index int, str *ast.StringLiteral) bool {
 }
 
 func addShowTextureIndex(texture *sdl.SDL_Texture) {
-	config.ShowTextureIndex[config.Index] = texture
-	config.Index++
+	config.ShowTextureIndex[config.ShowIndex] = texture
+	config.ShowIndex++
 }
 
 func textureHasIndex(texture *sdl.SDL_Texture) int {

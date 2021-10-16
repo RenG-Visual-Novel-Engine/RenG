@@ -12,6 +12,7 @@ import (
 	"io/ioutil"
 	"log"
 	"runtime"
+	"runtime/debug"
 )
 
 var (
@@ -121,6 +122,7 @@ func mainLoop(errObject *object.Error) {
 		config.Renderer.RenderPresent()
 	}
 
+	debug.FreeOSMemory()
 	config.TextureList.DestroyAll()
 	sdl.Close(config.Window, config.Renderer)
 }
@@ -146,6 +148,8 @@ func run(env *object.Environment) {
 		return
 	}
 
+	debug.FreeOSMemory()
+
 	var (
 		result    object.Object
 		jumpLabel *object.JumpLabel
@@ -155,10 +159,12 @@ func run(env *object.Environment) {
 	result = rengeval.RengEval(start.(*object.Label).Body, *Root, env)
 
 	if result == nil {
+		debug.FreeOSMemory()
 		return
 	}
 
 	if jumpLabel, ok = result.(*object.JumpLabel); !ok {
+		debug.FreeOSMemory()
 		return
 	}
 
@@ -167,10 +173,12 @@ R:
 		result = rengeval.RengEval(label.(*object.Label).Body, *Root, env)
 
 		if result == nil {
+			debug.FreeOSMemory()
 			return
 		}
 
 		if jumpLabel, ok = result.(*object.JumpLabel); !ok {
+			debug.FreeOSMemory()
 			return
 		}
 

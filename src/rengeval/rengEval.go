@@ -198,7 +198,7 @@ func evalHideExpression(he *ast.HideExpression, root string, env *object.Environ
 		config.LayerList.Layers[1].DeleteTexture(index)
 		LayerMutex.Unlock()
 		updateShowTextureIndex(index)
-		config.Index--
+		config.ShowIndex--
 	}
 	return nil
 }
@@ -344,12 +344,24 @@ func evalForExpression(node *ast.ForExpression, root string, env *object.Environ
 
 func evalWhileExpression(node *ast.WhileExpression, root string, env *object.Environment) object.Object {
 	condition := RengEval(node.Condition, root, env)
+	if isError(condition) {
+		return condition
+	}
+
 	for isTruthy(condition) {
 		result := RengEval(node.Body, root, env)
+		if isError(result) {
+			return result
+		}
+
 		if _, ok := result.(*object.ReturnValue); ok {
 			return result
 		}
+
 		condition = RengEval(node.Condition, root, env)
+		if isError(condition) {
+			return condition
+		}
 	}
 	return nil
 }
