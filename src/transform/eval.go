@@ -3,6 +3,7 @@ package transform
 import (
 	sdl "RenG/src/SDL"
 	"RenG/src/ast"
+	"RenG/src/config"
 	"RenG/src/evaluator"
 	"RenG/src/object"
 	"RenG/src/token"
@@ -10,14 +11,14 @@ import (
 )
 
 // TODO : 연산자 표현식 평가하기
-func TransformEval(node ast.Node, texture *sdl.SDL_Texture, env *object.Environment, Width, Height int64) object.Object {
+func TransformEval(node ast.Node, texture *sdl.SDL_Texture, env *object.Environment) object.Object {
 	switch node := node.(type) {
 	case *ast.BlockStatement:
-		return evalRengBlockStatements(node, texture, env, Width, Height)
+		return evalRengBlockStatements(node, texture, env)
 	case *ast.ExpressionStatement:
-		return TransformEval(node.Expression, texture, env, Width, Height)
+		return TransformEval(node.Expression, texture, env)
 	case *ast.TransformExpression:
-		return evalTransformExpression(node, texture, env, Width, Height)
+		return evalTransformExpression(node, texture, env)
 	case *ast.XPosExpression:
 		result := evaluator.Eval(node.Value, env)
 		xpos := result.(*object.Integer).Value
@@ -30,11 +31,11 @@ func TransformEval(node ast.Node, texture *sdl.SDL_Texture, env *object.Environm
 	return nil
 }
 
-func evalRengBlockStatements(block *ast.BlockStatement, texture *sdl.SDL_Texture, env *object.Environment, Width, Height int64) object.Object {
+func evalRengBlockStatements(block *ast.BlockStatement, texture *sdl.SDL_Texture, env *object.Environment) object.Object {
 	var result object.Object
 
 	for _, statement := range block.Statements {
-		result = TransformEval(statement, texture, env, Width, Height)
+		result = TransformEval(statement, texture, env)
 		if result != nil {
 			rt := result.Type()
 			if rt == object.RETURN_VALUE_OBJ || rt == object.ERROR_OBJ {
@@ -46,7 +47,7 @@ func evalRengBlockStatements(block *ast.BlockStatement, texture *sdl.SDL_Texture
 	return result
 }
 
-func evalTransformExpression(transform *ast.TransformExpression, texture *sdl.SDL_Texture, env *object.Environment, Width, Height int64) object.Object {
+func evalTransformExpression(transform *ast.TransformExpression, texture *sdl.SDL_Texture, env *object.Environment) object.Object {
 	switch transform.Name.Value {
 	case "default":
 		transform.Body.Statements = append(transform.Body.Statements, &ast.ExpressionStatement{
@@ -72,9 +73,9 @@ func evalTransformExpression(transform *ast.TransformExpression, texture *sdl.SD
 						Left: &ast.IntegerLiteral{
 							Token: token.Token{
 								Type:    token.INT,
-								Literal: strconv.Itoa(int(Width)),
+								Literal: strconv.Itoa(config.Width),
 							},
-							Value: Width,
+							Value: int64(config.Width),
 						},
 						Operator: "-",
 						Right: &ast.IntegerLiteral{
@@ -119,9 +120,9 @@ func evalTransformExpression(transform *ast.TransformExpression, texture *sdl.SD
 						Left: &ast.IntegerLiteral{
 							Token: token.Token{
 								Type:    token.INT,
-								Literal: strconv.Itoa(int(Height)),
+								Literal: strconv.Itoa(config.Height),
 							},
-							Value: Height,
+							Value: int64(config.Height),
 						},
 						Operator: "-",
 						Right: &ast.IntegerLiteral{
@@ -144,7 +145,7 @@ func evalTransformExpression(transform *ast.TransformExpression, texture *sdl.SD
 			},
 		})
 	}
-	TransformEval(transform.Body, texture, env, Width, Height)
+	TransformEval(transform.Body, texture, env)
 
 	return nil
 }

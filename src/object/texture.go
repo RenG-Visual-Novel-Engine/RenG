@@ -36,3 +36,10 @@ func (t *TextureList) Set(name string, texture *sdl.SDL_Texture) *sdl.SDL_Textur
 	TexMutex.Unlock()
 	return texture
 }
+
+func (t *TextureList) DestroyAll() {
+	TexMutex.Lock()
+	for _, texture := range t.store {
+		sdl.DestroyTexture(texture)
+	}
+}

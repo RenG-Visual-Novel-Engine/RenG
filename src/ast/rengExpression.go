@@ -23,6 +23,24 @@ func (le *LabelExpression) String() string {
 	return out.String()
 }
 
+type CallLabelExpression struct {
+	Token token.Token
+	Label *Identifier
+}
+
+func (cle *CallLabelExpression) expressionNode()      {}
+func (cle *CallLabelExpression) TokenLiteral() string { return cle.Token.Literal }
+func (cle *CallLabelExpression) String() string       { return "call " + cle.Label.String() }
+
+type JumpLabelExpression struct {
+	Token token.Token
+	Label *Identifier
+}
+
+func (jle *JumpLabelExpression) expressionNode()      {}
+func (jle *JumpLabelExpression) TokenLiteral() string { return jle.Token.Literal }
+func (jle *JumpLabelExpression) String() string       { return "jump " + jle.Label.String() }
+
 type ImageExpression struct {
 	Token token.Token
 	Name  *Identifier
@@ -63,6 +81,17 @@ func (se *ShowExpression) expressionNode()      {}
 func (se *ShowExpression) TokenLiteral() string { return se.Token.Literal }
 func (se *ShowExpression) String() string {
 	return "show " + se.Name.String() + "at" + se.Transform.String()
+}
+
+type HideExpression struct {
+	Token token.Token
+	Name  *Identifier
+}
+
+func (he *HideExpression) expressionNode()      {}
+func (he *HideExpression) TokenLiteral() string { return he.Token.Literal }
+func (he *HideExpression) String() string {
+	return "hide " + he.Name.String()
 }
 
 type XPosExpression struct {

@@ -6,19 +6,39 @@ import (
 )
 
 func (p *Parser) parseLabelExpression() ast.Expression {
-	expression := &ast.LabelExpression{Token: p.curToken}
+	exp := &ast.LabelExpression{Token: p.curToken}
 
 	p.nextToken()
 
-	expression.Name = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+	exp.Name = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
 
 	if !p.expectPeek(token.LBRACE) {
 		return nil
 	}
 
-	expression.Body = p.parseBlockStatement()
+	exp.Body = p.parseBlockStatement()
 
-	return expression
+	return exp
+}
+
+func (p *Parser) parseCallLabelExpression() ast.Expression {
+	exp := &ast.CallLabelExpression{Token: p.curToken}
+
+	p.nextToken()
+
+	exp.Label = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+
+	return exp
+}
+
+func (p *Parser) parseJumpLabelExpression() ast.Expression {
+	exp := &ast.JumpLabelExpression{Token: p.curToken}
+
+	p.nextToken()
+
+	exp.Label = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+
+	return exp
 }
 
 func (p *Parser) parseImageExpression() ast.Expression {
@@ -59,6 +79,16 @@ func (p *Parser) parseShowExpression() ast.Expression {
 			Value: "default",
 		}
 	}
+
+	return exp
+}
+
+func (p *Parser) parseHideExpression() ast.Expression {
+	exp := &ast.HideExpression{Token: p.curToken}
+
+	p.nextToken()
+
+	exp.Name = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
 
 	return exp
 }

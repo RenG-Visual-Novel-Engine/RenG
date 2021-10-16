@@ -19,6 +19,10 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 
 	p.nextToken()
 
+	if p.curToken.Type == token.ENDSENTENCE {
+		return stmt
+	}
+
 	stmt.ReturnValue = p.parseExpression(LOWEST)
 
 	for !p.curTokenIs(token.ENDSENTENCE) {

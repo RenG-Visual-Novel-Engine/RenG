@@ -22,9 +22,10 @@ const (
 	RETURN_VALUE_OBJ = "RETURN_VALUE"
 	ERROR_OBJ        = "ERROR_OBJ"
 
-	LABEL_OBJ     = "LABEL_OBJ"
-	IMAGE_OBJ     = "IMAGE_OBJ"
-	TRANSFORM_OBJ = "TRANSFORM_OBJ"
+	LABEL_OBJ      = "LABEL_OBJ"
+	JUMP_LABEL_OBJ = "JUMP_LABEL"
+	IMAGE_OBJ      = "IMAGE_OBJ"
+	TRANSFORM_OBJ  = "TRANSFORM_OBJ"
 )
 
 type ObjectType string
@@ -142,6 +143,13 @@ type Label struct {
 
 func (l *Label) Type() ObjectType { return LABEL_OBJ }
 func (l *Label) Inspect() string  { return "{ " + l.Body.String() + " }" }
+
+type JumpLabel struct {
+	Label *ast.Identifier
+}
+
+func (jl *JumpLabel) Type() ObjectType { return JUMP_LABEL_OBJ }
+func (jl *JumpLabel) Inspect() string  { return jl.Label.Value }
 
 type Image struct {
 	Name *ast.Identifier

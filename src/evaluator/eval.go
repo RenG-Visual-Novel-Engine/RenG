@@ -7,12 +7,6 @@ import (
 	"strconv"
 )
 
-var (
-	NULL  = &object.Null{}
-	TRUE  = &object.Boolean{Value: true}
-	FALSE = &object.Boolean{Value: false}
-)
-
 func Eval(node ast.Node, env *object.Environment) object.Object {
 	switch node := node.(type) {
 	case *ast.Program:
@@ -58,7 +52,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return evalIfExpression(node, env)
 	case *ast.FunctionExpression:
 		evalFuntionExpression(node, env)
-	case *ast.CallExpression:
+	case *ast.CallFunctionExpression:
 		function := Eval(node.Function, env)
 		if isError(function) {
 			return function
@@ -190,9 +184,9 @@ func evalIfExpression(ie *ast.IfExpression, env *object.Environment) object.Obje
 	}
 }
 
-func evalFuntionExpression(ie *ast.FunctionExpression, env *object.Environment) {
-	obj := &object.Function{Parameters: ie.Parameters, Env: env, Body: ie.Body, Name: ie.Name}
-	env.Set(ie.Name.String(), obj)
+func evalFuntionExpression(fe *ast.FunctionExpression, env *object.Environment) {
+	obj := &object.Function{Parameters: fe.Parameters, Env: env, Body: fe.Body, Name: fe.Name}
+	env.Set(fe.Name.String(), obj)
 }
 
 func applyFunction(fn object.Object, args []object.Object) object.Object {
@@ -275,7 +269,7 @@ func evalIdentifier(node *ast.Identifier, env *object.Environment) object.Object
 		return val
 	}
 
-	if builtin, ok := functionBuiltins[node.Value]; ok {
+	if builtin, ok := FunctionBuiltins[node.Value]; ok {
 		return builtin
 	}
 

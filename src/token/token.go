@@ -87,6 +87,9 @@ const (
 	LABEL  = "LABEL"
 	SCREEN = "SCREEN"
 
+	CALL = "CALL"
+	JUMP = "JUMP"
+
 	IMAGE     = "IMAGE"
 	CHARACTER = "CHARACTER"
 	TRANSFORM = "TRANSFORM"
@@ -94,6 +97,7 @@ const (
 	SCENE = "SCENE"
 
 	SHOW = "SHOW"
+	HIDE = "HIDE"
 	AT   = "AT"
 )
 
@@ -114,11 +118,14 @@ var keywords = map[string]TokenType{
 	"while":     WHILE,
 	"label":     LABEL,
 	"screen":    SCREEN,
+	"call":      CALL,
+	"jump":      JUMP,
 	"image":     IMAGE,
 	"character": CHARACTER,
 	"transform": TRANSFORM,
 	"scene":     SCENE,
 	"show":      SHOW,
+	"hide":      HIDE,
 	"at":        AT,
 	"xpos":      XPOS,
 	"ypos":      YPOS,

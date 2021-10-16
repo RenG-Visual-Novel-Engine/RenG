@@ -9,13 +9,13 @@ image say = "\gui\say.png"
 gui_font = "\font\JejuGothic.ttf"
 
 transform bgTransform {
-    xpos 0
-    ypos 0
+    xpos 100
+    ypos 100
 }
 
 transform sayTransform {
     xpos 0
-    ypos 0
+    ypos 10
 }
 
 label start {
@@ -23,4 +23,27 @@ label start {
     pause(2)
     show say at sayTransform
     pause(2)
+    hide say
+    pause(2)
+
+    call test1
+
+    jump test2
+
+    hide gui_bg_image
+    pause(2)
+    show gui_bg_image
+    pause(2)
+    hide gui_bg_image
+}
+
+label test1 {
+    show say at sayTransform
+    pause(2)
+}
+
+label test2 {
+    hide say
+    pause(2)
+    hide gui_bg_image
 }

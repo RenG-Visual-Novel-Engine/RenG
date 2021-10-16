@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-var functionBuiltins = map[string]*object.Builtin{
+var FunctionBuiltins = map[string]*object.Builtin{
 	"len": {
 		Fn: func(args ...object.Object) object.Object {
 			if len(args) != 1 {

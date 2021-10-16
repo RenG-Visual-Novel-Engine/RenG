@@ -62,3 +62,7 @@ func Close(window *SDL_Window, renderer *SDL_Renderer) {
 	C.TTF_Quit()
 	C.Mix_Quit()
 }
+
+func DestroyTexture(texture *SDL_Texture) {
+	C.SDL_DestroyTexture(texture.Texture)
+}

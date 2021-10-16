@@ -221,8 +221,8 @@ func (p *Parser) parseFunctionParameters() []*ast.Identifier {
 //     call(args ...)
 //         ^--- 해당 소괄호가 키워드입니다.
 // 중위 연산자로 취급됩니다.
-func (p *Parser) parseCallExpression(function ast.Expression) ast.Expression {
-	exp := &ast.CallExpression{Token: p.curToken, Function: function}
+func (p *Parser) parseCallFunctionExpression(function ast.Expression) ast.Expression {
+	exp := &ast.CallFunctionExpression{Token: p.curToken, Function: function}
 	exp.Arguments = p.parseCallArguments()
 	return exp
 }

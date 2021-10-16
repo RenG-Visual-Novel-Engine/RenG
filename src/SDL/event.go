@@ -20,6 +20,11 @@ Uint32 windowEventType(SDL_Event event)
 */
 import "C"
 
+type Event struct {
+	Event SDL_Event
+	Type  uint32
+}
+
 func (e *SDL_Event) PollEvent() int {
 	return int(C.SDL_PollEvent((*C.SDL_Event)(e)))
 }

@@ -5,6 +5,12 @@ import (
 	"fmt"
 )
 
+var (
+	NULL  = &object.Null{}
+	TRUE  = &object.Boolean{Value: true}
+	FALSE = &object.Boolean{Value: false}
+)
+
 func isTruthy(obj object.Object) bool {
 	switch obj {
 	case NULL:
