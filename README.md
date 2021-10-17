@@ -13,26 +13,167 @@
 
 <br><br>
 
+# 라이선스
+
+## SDL2
+Simple DirectMedia Layer
+Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+
+This software is provided 'as-is', without any express or implied
+warranty.  In no event will the authors be held liable for any damages
+arising from the use of this software.
+
+Permission is granted to anyone to use this software for any purpose,
+including commercial applications, and to alter it and redistribute it
+freely, subject to the following restrictions:
+
+1. The origin of this software must not be misrepresented; you must not
+   claim that you wrote the original software. If you use this software
+   in a product, an acknowledgment in the product documentation would be
+   appreciated but is not required.
+2. Altered source versions must be plainly marked as such, and must not be
+   misrepresented as being the original software.
+3. This notice may not be removed or altered from any source distribution.
+
+<br>
+
+## FFmpeg
+Most files in FFmpeg are under the GNU Lesser General Public License version 2.1
+or later (LGPL v2.1+). Read the file `COPYING.LGPLv2.1` for details. Some other
+files have MIT/X11/BSD-style licenses. In combination the LGPL v2.1+ applies to
+FFmpeg.
+
+Some optional parts of FFmpeg are licensed under the GNU General Public License
+version 2 or later (GPL v2+). See the file `COPYING.GPLv2` for details. None of
+these parts are used by default, you have to explicitly pass `--enable-gpl` to
+configure to activate them. In this case, FFmpeg's license changes to GPL v2+.
+
+Specifically, the GPL parts of FFmpeg are:
+
+- libpostproc
+- optional x86 optimization in the files
+    - `libavcodec/x86/flac_dsp_gpl.asm`
+    - `libavcodec/x86/idct_mmx.c`
+    - `libavfilter/x86/vf_removegrain.asm`
+- the following building and testing tools
+    - `compat/solaris/make_sunver.pl`
+    - `doc/t2h.pm`
+    - `doc/texi2pod.pl`
+    - `libswresample/tests/swresample.c`
+    - `tests/checkasm/*`
+    - `tests/tiny_ssim.c`
+- the following filters in libavfilter:
+    - `signature_lookup.c`
+    - `vf_blackframe.c`
+    - `vf_boxblur.c`
+    - `vf_colormatrix.c`
+    - `vf_cover_rect.c`
+    - `vf_cropdetect.c`
+    - `vf_delogo.c`
+    - `vf_eq.c`
+    - `vf_find_rect.c`
+    - `vf_fspp.c`
+    - `vf_histeq.c`
+    - `vf_hqdn3d.c`
+    - `vf_kerndeint.c`
+    - `vf_lensfun.c` (GPL version 3 or later)
+    - `vf_mcdeint.c`
+    - `vf_mpdecimate.c`
+    - `vf_nnedi.c`
+    - `vf_owdenoise.c`
+    - `vf_perspective.c`
+    - `vf_phase.c`
+    - `vf_pp.c`
+    - `vf_pp7.c`
+    - `vf_pullup.c`
+    - `vf_repeatfields.c`
+    - `vf_sab.c`
+    - `vf_signature.c`
+    - `vf_smartblur.c`
+    - `vf_spp.c`
+    - `vf_stereo3d.c`
+    - `vf_super2xsai.c`
+    - `vf_tinterlace.c`
+    - `vf_uspp.c`
+    - `vf_vaguedenoiser.c`
+    - `vsrc_mptestsrc.c`
+
+Should you, for whatever reason, prefer to use version 3 of the (L)GPL, then
+the configure parameter `--enable-version3` will activate this licensing option
+for you. Read the file `COPYING.LGPLv3` or, if you have enabled GPL parts,
+`COPYING.GPLv3` to learn the exact legal terms that apply in this case.
+
+There are a handful of files under other licensing terms, namely:
+
+* The files `libavcodec/jfdctfst.c`, `libavcodec/jfdctint_template.c` and
+  `libavcodec/jrevdct.c` are taken from libjpeg, see the top of the files for
+  licensing details. Specifically note that you must credit the IJG in the
+  documentation accompanying your program if you only distribute executables.
+  You must also indicate any changes including additions and deletions to
+  those three files in the documentation.
+* `tests/reference.pnm` is under the expat license.
+
+
+## External libraries
+
+FFmpeg can be combined with a number of external libraries, which sometimes
+affect the licensing of binaries resulting from the combination.
+
+### Compatible libraries
+
+The following libraries are under GPL version 2:
+- avisynth
+- frei0r
+- libcdio
+- libdavs2
+- librubberband
+- libvidstab
+- libx264
+- libx265
+- libxavs
+- libxavs2
+- libxvid
+
+When combining them with FFmpeg, FFmpeg needs to be licensed as GPL as well by
+passing `--enable-gpl` to configure.
+
+The following libraries are under LGPL version 3:
+- gmp
+- libaribb24
+- liblensfun
+
+When combining them with FFmpeg, use the configure option `--enable-version3` to
+upgrade FFmpeg to the LGPL v3.
+
+The VMAF, mbedTLS, RK MPI, OpenCORE and VisualOn libraries are under the Apache License
+2.0. That license is incompatible with the LGPL v2.1 and the GPL v2, but not with
+version 3 of those licenses. So to combine these libraries with FFmpeg, the
+license version needs to be upgraded by passing `--enable-version3` to configure.
+
+The smbclient library is under the GPL v3, to combine it with FFmpeg,
+the options `--enable-gpl` and `--enable-version3` have to be passed to
+configure to upgrade FFmpeg to the GPL v3.
+
+### Incompatible libraries
+
+There are certain libraries you can combine with FFmpeg whose licenses are not
+compatible with the GPL and/or the LGPL. If you wish to enable these
+libraries, even in circumstances that their license may be incompatible, pass
+`--enable-nonfree` to configure. This will cause the resulting binary to be
+unredistributable.
+
+The Fraunhofer FDK AAC and OpenSSL libraries are under licenses which are
+incompatible with the GPLv2 and v3. To the best of our knowledge, they are
+compatible with the LGPL.
+
+<br>
+
+## Font
+- 본 저작물에서 사용한 제주고딕체는 공공누리 제1유형에 의거하여 [해당](https://www.jeju.go.kr/jeju/symbol/font/gothic.htm) 부분을 클릭하여 다운로드 받을 수 있음을 알려드립니다.
+
+<br><br>
+
 # 문법
-
-- ## Example
-
-```
-def add(a, b) {
-    return a + b
-}
-
-define ch_example1 = Character("ex1", color="#c8ffc8")
-define ch_example2 = Character("ex2", color="#ffffff")
-
-label start {
-    ch_example1 "안녕? 혹시 1 + 1이 뭐야?"
-
-    result = add(1, 1)
-
-    ch_example2 "답은 [result]야!"
-}
-```
 
 ## 자료형
 ---
@@ -96,47 +237,7 @@ label start {
 |--|오른쪽 변수를 1 감소시킴|int|
 |-|오른쪽 양수를 음수로 전환|int, float|
 
-<br>
-
-## 지원되는 구문
----
-> if 문
-```
-if (<Condition>) {
-    ...
-} elif (<Condition>) {
-    ...
-} else {
-    ...
-}
-```
-> for 문
-```
-for (<Expression>; <Condition>; <Expression>) {
-    ...
-}
-```
-> while 문
-```
-while (<Condition>) {
-    ...
-}
-```
-> function, return 문
-```
-def <Idenifier>(<Arg>, <Arg>, <Arg>, ... ) {
-    ...
-    return <Value>
-}
-```
-> label 문
-```
-label <Identifier> {
-    ...
-}
-```
-
-<br>
+<br><br>
 
 # 디스코드
 <a href="https://discord.gg/JkkvP6U9qk" terget="_blank">
@@ -174,8 +275,3 @@ git clone "https://github.com/RenG-Visual-Novel-Engine/RenG"
 ```
 git commit -m "<본인의 계정 이름> : <수정 내용>"
 ```
-
-# 라이선스
-
-- 본 저작물은 MIT LICENSE를 따르고 있습니다.
-- 본 저작물에서 사용한 제주고딕체는 공공누리 제1유형에 의거하여 [해당](https://www.jeju.go.kr/jeju/symbol/font/gothic.htm) 부분을 클릭하여 다운로드 받을 수 있음을 알려드립니다.
