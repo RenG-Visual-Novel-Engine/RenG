@@ -75,6 +75,42 @@ func updateShowTextureIndex(index int) {
 	config.ShowTextureIndex = append(config.ShowTextureIndex[:index], config.ShowTextureIndex[index+1:]...)
 }
 
+func playMusic(musicRoot string, loop bool) {
+	if !sdl.PlayingMusic() {
+		loadMusic(musicRoot).PlayMusic(loop)
+	} else {
+		sdl.StopMusic(-1)
+		loadMusic(musicRoot).PlayMusic(loop)
+	}
+}
+
+func loadMusic(root string) *sdl.Mix_Music {
+	if music, ok := config.MusicList.Get(root); ok {
+		return music
+	} else {
+		music = config.MusicList.Set(root, sdl.LoadMUS(root))
+		return music
+	}
+}
+
+func play(soundRoot string, channel int) {
+	if !sdl.PlayingMusicChannel(channel) {
+		loadChunk(soundRoot).PlaySound(channel)
+	} else {
+		sdl.StopMusic(channel)
+		loadChunk(soundRoot).PlaySound(channel)
+	}
+}
+
+func loadChunk(root string) *sdl.Mix_Chunk {
+	if chunk, ok := config.ChunkList.Get(root); ok {
+		return chunk
+	} else {
+		chunk = config.ChunkList.Set(root, sdl.LoadWAV(root))
+		return chunk
+	}
+}
+
 func isTruthy(obj object.Object) bool {
 	switch obj {
 	case NULL:

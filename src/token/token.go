@@ -99,8 +99,12 @@ const (
 	SHOW = "SHOW"
 	HIDE = "HIDE"
 	AT   = "AT"
+
+	PLAY = "PLAY"
+	STOP = "STOP"
 )
 
+// only transform
 const (
 	XPOS = "XPOS"
 	YPOS = "YPOS"
@@ -129,6 +133,8 @@ var keywords = map[string]TokenType{
 	"at":        AT,
 	"xpos":      XPOS,
 	"ypos":      YPOS,
+	"play":      PLAY,
+	"stop":      STOP,
 }
 
 func LookupIdent(ident string) TokenType {

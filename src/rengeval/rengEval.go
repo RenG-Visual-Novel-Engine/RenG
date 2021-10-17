@@ -107,6 +107,10 @@ func RengEval(node ast.Node, root string, env *object.Environment) object.Object
 		return evalShowExpression(node, root, env)
 	case *ast.HideExpression:
 		return evalHideExpression(node, root, env)
+	case *ast.PlayExpression:
+		return evalPlayExpression(node, root, env)
+	case *ast.StopExpression:
+		return evalStopExpression(node)
 	}
 	return nil
 }
@@ -376,4 +380,43 @@ func evalIdentifier(node *ast.Identifier, env *object.Environment) object.Object
 	}
 
 	return newError("identifier not found: " + node.Value)
+}
+
+func evalPlayExpression(pe *ast.PlayExpression, root string, env *object.Environment) object.Object {
+	musicRootObject := RengEval(pe.Music, root, env)
+
+	if musicRoot, ok := musicRootObject.(*object.String); ok {
+		switch pe.Channel.Value {
+		case "music":
+			switch pe.Loop.Value {
+			case "loop":
+				go playMusic(root+musicRoot.Value, true)
+			case "noloop":
+				go playMusic(root+musicRoot.Value, false)
+			default:
+				return newError("It is not Loop or NoLoop. got=%s", pe.Loop.Value)
+			}
+		case "sound":
+			go play(root+musicRoot.Value, 0)
+		case "voice":
+			go play(root+musicRoot.Value, 1)
+		default:
+			_, ok := config.ChannelList.GetChannel(pe.Channel.Value)
+			if !ok {
+				return newError("%s is not audio channel", pe.Channel.Value)
+			}
+		}
+	} else {
+		return newError("MusicRoot is not String")
+	}
+
+	return nil
+}
+
+func evalStopExpression(se *ast.StopExpression) object.Object {
+	switch se.Channel.Value {
+	case "music":
+		sdl.StopMusic(-1)
+	}
+	return nil
 }

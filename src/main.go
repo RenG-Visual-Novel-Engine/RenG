@@ -122,8 +122,9 @@ func mainLoop(errObject *object.Error) {
 		config.Renderer.RenderPresent()
 	}
 
-	debug.FreeOSMemory()
 	config.TextureList.DestroyAll()
+	config.MusicList.FreaAll()
+	config.ChunkList.FreeAll()
 	sdl.Close(config.Window, config.Renderer)
 }
 
@@ -135,6 +136,10 @@ func run(env *object.Environment) {
 	config.LayerList.Layers = append(config.LayerList.Layers, sdl.Layer{Name: "error"})
 	config.LayerList.Layers = append(config.LayerList.Layers, sdl.Layer{Name: "main"})
 	config.LayerList.Layers = append(config.LayerList.Layers, sdl.Layer{Name: "screen"})
+
+	config.ChannelList.NewChannel("music", -1)
+	config.ChannelList.NewChannel("sound", 0)
+	config.ChannelList.NewChannel("voice", 1)
 
 	start, ok := env.Get("start")
 

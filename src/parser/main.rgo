@@ -1,19 +1,2 @@
-gui_title = "테스트"
-
-gui_width = 1280
-gui_height = 720
-
-image gui_bg_image = "\gui\bg.png"
-image say = "\gui\say.png"
-
-gui_font = "\font\JejuGothic.ttf"
-
-transform bgImage {
-    xpos 500
-    ypos 300
-}
-
-label start {
-    show gui_bg_image at bgImage
-    show say at bgImage
-}
+play music "안녕 빡빡이 친구들"
+play music ["안녕 빡빡이", "친구들"]

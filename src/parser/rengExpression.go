@@ -54,7 +54,7 @@ func (p *Parser) parseImageExpression() ast.Expression {
 
 	p.nextToken()
 
-	exp.Path = p.parseStringLiteral()
+	exp.Path = p.parseExpression(LOWEST)
 
 	return exp
 }
@@ -125,6 +125,54 @@ func (p *Parser) parseYposExpression() ast.Expression {
 	p.nextToken()
 
 	exp.Value = p.parseExpression(PREFIX)
+
+	return exp
+}
+
+func (p *Parser) parsePlayExpression() ast.Expression {
+	exp := &ast.PlayExpression{Token: p.curToken}
+
+	p.nextToken()
+
+	exp.Channel = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+
+	if p.expectPeek(token.IDENT) {
+		exp.Loop = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+	} else {
+
+		switch exp.Channel.Value {
+		case "music":
+			exp.Loop = &ast.Identifier{
+				Token: token.Token{
+					Type:    token.IDENT,
+					Literal: "IDENT",
+				},
+				Value: "loop",
+			}
+		default:
+			exp.Loop = &ast.Identifier{
+				Token: token.Token{
+					Type:    token.IDENT,
+					Literal: "IDENT",
+				},
+				Value: "noloop",
+			}
+		}
+	}
+
+	p.nextToken()
+
+	exp.Music = p.parseExpression(LOWEST)
+
+	return exp
+}
+
+func (p *Parser) parseStopExpression() ast.Expression {
+	exp := &ast.StopExpression{Token: p.curToken}
+
+	p.nextToken()
+
+	exp.Channel = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
 
 	return exp
 }

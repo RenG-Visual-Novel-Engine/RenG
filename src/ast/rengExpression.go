@@ -99,10 +99,10 @@ type XPosExpression struct {
 	Value Expression
 }
 
-func (pe *XPosExpression) expressionNode()      {}
-func (pe *XPosExpression) TokenLiteral() string { return pe.Token.Literal }
-func (pe *XPosExpression) String() string {
-	return pe.Value.String()
+func (xpe *XPosExpression) expressionNode()      {}
+func (xpe *XPosExpression) TokenLiteral() string { return xpe.Token.Literal }
+func (xpe *XPosExpression) String() string {
+	return xpe.Value.String()
 }
 
 type YPosExpression struct {
@@ -110,8 +110,32 @@ type YPosExpression struct {
 	Value Expression
 }
 
-func (pe *YPosExpression) expressionNode()      {}
-func (pe *YPosExpression) TokenLiteral() string { return pe.Token.Literal }
-func (pe *YPosExpression) String() string {
-	return pe.Value.String()
+func (ype *YPosExpression) expressionNode()      {}
+func (ype *YPosExpression) TokenLiteral() string { return ype.Token.Literal }
+func (ype *YPosExpression) String() string {
+	return ype.Value.String()
+}
+
+type PlayExpression struct {
+	Token   token.Token
+	Channel *Identifier
+	Music   Expression
+	Loop    *Identifier
+}
+
+func (pe *PlayExpression) expressionNode()      {}
+func (pe *PlayExpression) TokenLiteral() string { return pe.Token.Literal }
+func (pe *PlayExpression) String() string {
+	return "play " + pe.Channel.Value + " " + pe.Music.String()
+}
+
+type StopExpression struct {
+	Token   token.Token
+	Channel *Identifier
+}
+
+func (se *StopExpression) expressionNode()      {}
+func (se *StopExpression) TokenLiteral() string { return se.Token.Literal }
+func (se *StopExpression) String() string {
+	return "stop " + se.Channel.String()
 }

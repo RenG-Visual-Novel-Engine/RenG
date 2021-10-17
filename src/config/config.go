@@ -35,6 +35,9 @@ var (
 
 var (
 	LayerList   = sdl.NewLayerList()
+	ChannelList = sdl.NewChannelList()
+	MusicList   = object.NewMusicList()
+	ChunkList   = object.NewChunkList()
 	TextureList = object.NewTextureList()
 )
 

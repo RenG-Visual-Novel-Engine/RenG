@@ -1,12 +1,11 @@
 package sdl
 
 /*
-#cgo LDFLAGS: -L./lib -lSDL2 -lSDL2main -lSDL2_image -lSDL2_ttf -lSDL2_mixer
+#cgo LDFLAGS: -L./lib -lSDL2 -lSDL2main -lSDL2_image -lSDL2_ttf
 
 #include <include/SDL.h>
 #include <include/SDL_image.h>
 #include <include/SDL_ttf.h>
-#include <include/SDL_mixer.h>
 
 SDL_PixelFormat* surfaceFormat(SDL_Surface* surface)
 {

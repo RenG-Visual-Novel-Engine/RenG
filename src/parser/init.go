@@ -111,6 +111,8 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.TRANSFORM, p.parseTranformExpression)
 	p.registerPrefix(token.XPOS, p.parseXposExpression)
 	p.registerPrefix(token.YPOS, p.parseYposExpression)
+	p.registerPrefix(token.PLAY, p.parsePlayExpression)
+	p.registerPrefix(token.STOP, p.parseStopExpression)
 
 	p.infixParseFns = make(map[token.TokenType]infixParseFn)
 	p.registerInfix(token.PLUS, p.parseInfixExpression)
@@ -147,9 +149,7 @@ func (p *Parser) ParseProgram() *ast.Program {
 
 	for p.curToken.Type != token.EOF {
 		stmt := p.parseStatement()
-		if stmt != nil {
-			program.Statements = append(program.Statements, stmt)
-		}
+		program.Statements = append(program.Statements, stmt)
 		p.nextToken()
 	}
 	return program

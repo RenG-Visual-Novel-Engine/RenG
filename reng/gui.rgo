@@ -4,46 +4,16 @@ gui_width = 1280
 gui_height = 720
 
 image gui_bg_image = "\gui\bg.png"
-image say = "\gui\say.png"
 
 gui_font = "\font\JejuGothic.ttf"
 
-transform bgTransform {
-    xpos 100
-    ypos 100
-}
-
-transform sayTransform {
-    xpos 0
-    ypos 10
-}
-
 label start {
-    show gui_bg_image at bgTransform
-    pause(2)
-    show say at sayTransform
-    pause(2)
-    hide say
-    pause(2)
-
-    call test1
-
-    jump test2
-
-    hide gui_bg_image
-    pause(2)
     show gui_bg_image
-    pause(2)
-    hide gui_bg_image
-}
-
-label test1 {
-    show say at sayTransform
-    pause(2)
-}
-
-label test2 {
-    hide say
-    pause(2)
-    hide gui_bg_image
+    play music noloop "\audio\bgm1.ogg"
+    pause(5)
+    play music noloop "\audio\alone.mp3"
+    pause(3)
+    play sound "\audio\low.wav"
+    pause(1)
+    play sound "\audio\medium.wav"
 }

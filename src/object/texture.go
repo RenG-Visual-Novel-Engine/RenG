@@ -42,4 +42,5 @@ func (t *TextureList) DestroyAll() {
 	for _, texture := range t.store {
 		sdl.DestroyTexture(texture)
 	}
+	TexMutex.Unlock()
 }
