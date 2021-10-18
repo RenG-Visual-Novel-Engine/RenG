@@ -26,4 +26,6 @@ label start {
     hide gui_bg_image
     pause(1)
     stop music
+    pause(1)
+    play music "\audio\bgm1.ogg"
 }
