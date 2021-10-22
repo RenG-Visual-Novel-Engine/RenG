@@ -6,6 +6,7 @@ import (
 )
 
 var (
+	Path string
 	Code string
 )
 
@@ -38,6 +39,7 @@ var (
 	ChannelList = sdl.NewChannelList()
 	MusicList   = object.NewMusicList()
 	ChunkList   = object.NewChunkList()
+	VideoList   = object.NewVideoList()
 	TextureList = object.NewTextureList()
 )
 

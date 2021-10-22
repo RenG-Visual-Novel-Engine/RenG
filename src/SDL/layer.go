@@ -26,3 +26,11 @@ func (l *Layer) DeleteAllTexture() {
 		l.Images = append(l.Images[:0], l.Images[1:]...)
 	}
 }
+
+func (l *Layer) ChangeTexture(texture *SDL_Texture, index int) {
+	if l.Images[index] == nil {
+		l.Images = append(l.Images, texture)
+	} else {
+		l.Images[index] = texture
+	}
+}

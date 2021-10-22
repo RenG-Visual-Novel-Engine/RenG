@@ -1,2 +1,1 @@
-play music "안녕 빡빡이 친구들"
-play music ["안녕 빡빡이", "친구들"]
+video hello(path="wow", x=10, y=50)

@@ -4,8 +4,10 @@ import (
 	sdl "RenG/src/SDL"
 	"RenG/src/ast"
 	"RenG/src/config"
+	"RenG/src/ffmpeg"
 	"RenG/src/object"
 	"fmt"
+	"time"
 )
 
 var (
@@ -14,11 +16,11 @@ var (
 	FALSE = &object.Boolean{Value: false}
 )
 
-func applyFunction(fn object.Object, root string, args []object.Object) object.Object {
+func applyFunction(fn object.Object, args []object.Object) object.Object {
 	switch fn := fn.(type) {
 	case *object.Function:
 		extendedEnv := extendFunctionEnv(fn, args)
-		evaluated := RengEval(fn.Body, root, extendedEnv)
+		evaluated := RengEval(fn.Body, extendedEnv)
 		return unwrapReturnValue(evaluated)
 	case *object.Builtin:
 		return fn.Fn(args...)
@@ -108,6 +110,36 @@ func loadChunk(root string) *sdl.Mix_Chunk {
 	} else {
 		chunk = config.ChunkList.Set(root, sdl.LoadWAV(root))
 		return chunk
+	}
+}
+
+func playVideo(video *object.VideoObject) {
+	frameFinished := ffmpeg.CInt(0)
+	index := config.ShowIndex
+
+	for ffmpeg.AVReadFrame(video.Video.FormatCtx, video.Video.Packet) >= 0 {
+
+		if ffmpeg.StreamIndex(video.Video.Packet) == video.Video.VideoStream {
+			ffmpeg.AVCodecDecodeVideo(video.Video, &frameFinished)
+
+			if int(frameFinished) == 1 {
+				ffmpeg.SwsScale(video.Video)
+
+				video.Texture.UpdateYUVTexture(video.Video)
+
+				LayerMutex.Lock()
+				config.LayerList.Layers[1].AddNewTexture(video.Texture)
+				LayerMutex.Unlock()
+			}
+
+			time.Sleep(time.Duration(100))
+
+			LayerMutex.Lock()
+			config.LayerList.Layers[1].DeleteTexture(index)
+			LayerMutex.Unlock()
+		}
+
+		ffmpeg.AVFreePacket(video.Video.Packet)
 	}
 }
 

@@ -1,10 +1,9 @@
 package sdl
 
 /*
-#cgo LDFLAGS: -L./lib -lSDL2 -lSDL2main -lSDL2_image -lSDL2_ttf
+#cgo LDFLAGS: -L./lib -lSDL2 -lSDL2main -lSDL2_ttf
 
 #include <include/SDL.h>
-#include <include/SDL_image.h>
 #include <include/SDL_ttf.h>
 */
 import "C"

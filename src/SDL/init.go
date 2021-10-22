@@ -15,7 +15,7 @@ import (
 )
 
 func SDLInit(title string, width, height int) (*SDL_Window, *SDL_Renderer) {
-	if int(C.SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO)) < 0 {
+	if int(C.SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO|SDL_INIT_TIMER)) < 0 {
 		fmt.Println("SDL Error")
 		return nil, nil
 	}
@@ -26,7 +26,7 @@ func SDLInit(title string, width, height int) (*SDL_Window, *SDL_Renderer) {
 	cTitle := C.CString(title)
 	window := C.SDL_CreateWindow(cTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, C.int(width), C.int(height), SDL_WINDOW_SHOWN|SDL_WINDOW_RESIZABLE)
 
-	renderer := C.SDL_CreateRenderer((*C.SDL_Window)(window), -1, SDL_RENDERER_ACCELERATED|SDL_RENDERER_PRESENTVSYNC)
+	renderer := C.SDL_CreateRenderer((*C.SDL_Window)(window), -1, SDL_RENDERER_ACCELERATED|SDL_RENDERER_PRESENTVSYNC|SDL_RENDERER_TARGETTEXTURE)
 
 	if (C.IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) == 0 {
 		fmt.Println("SDLImage Error")

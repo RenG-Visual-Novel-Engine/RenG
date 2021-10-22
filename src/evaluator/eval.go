@@ -102,6 +102,8 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return evalLabelExpression(node, env)
 	case *ast.ImageExpression:
 		return evalImageExpression(node, env)
+	case *ast.VideoExpression:
+		return evalVideoExpression(node, env)
 	case *ast.TransformExpression:
 		return evalTransformExpression(node, env)
 	}

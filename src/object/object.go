@@ -151,14 +151,6 @@ type JumpLabel struct {
 func (jl *JumpLabel) Type() ObjectType { return JUMP_LABEL_OBJ }
 func (jl *JumpLabel) Inspect() string  { return jl.Label.Value }
 
-type Image struct {
-	Name *ast.Identifier
-	Root *String
-}
-
-func (i *Image) Type() ObjectType { return IMAGE_OBJ }
-func (i *Image) Inspect() string  { return i.Name.String() }
-
 type Transform struct {
 	Name *ast.Identifier
 	Body *ast.BlockStatement

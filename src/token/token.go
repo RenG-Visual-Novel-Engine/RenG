@@ -91,6 +91,7 @@ const (
 	JUMP = "JUMP"
 
 	IMAGE     = "IMAGE"
+	VIDEO     = "VIDEO"
 	CHARACTER = "CHARACTER"
 	TRANSFORM = "TRANSFORM"
 
@@ -125,6 +126,7 @@ var keywords = map[string]TokenType{
 	"call":      CALL,
 	"jump":      JUMP,
 	"image":     IMAGE,
+	"video":     VIDEO,
 	"character": CHARACTER,
 	"transform": TRANSFORM,
 	"scene":     SCENE,

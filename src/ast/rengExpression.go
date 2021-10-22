@@ -59,6 +59,27 @@ func (ie *ImageExpression) String() string {
 	return out.String()
 }
 
+type VideoExpression struct {
+	Token token.Token
+	Name  *Identifier
+	Info  map[string]Expression
+}
+
+func (ve *VideoExpression) expressionNode()      {}
+func (ve *VideoExpression) TokenLiteral() string { return ve.Token.Literal }
+func (ve *VideoExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("video ")
+	out.WriteString(ve.Name.String())
+
+	for key, value := range ve.Info {
+		out.WriteString(key + " " + value.String())
+	}
+
+	return out.String()
+}
+
 type TransformExpression struct {
 	Token token.Token
 	Name  *Identifier

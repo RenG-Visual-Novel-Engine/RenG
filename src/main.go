@@ -12,11 +12,10 @@ import (
 	"io/ioutil"
 	"log"
 	"runtime"
-	"runtime/debug"
 )
 
 var (
-	Root *string
+	PATH *string
 )
 
 var (
@@ -26,7 +25,7 @@ var (
 
 func init() {
 	// r 플래그로 파일 주소를 받음
-	Root = flag.String("r", "", "root")
+	PATH = flag.String("r", "", "root")
 	flag.Parse()
 	if flag.NFlag() == 0 {
 		flag.Usage()
@@ -35,31 +34,36 @@ func init() {
 }
 
 func main() {
-	// 해당 경로에 있는 파일들을 가져옴
-	dir, err := ioutil.ReadDir(*Root)
+	config.Path = *PATH
+
+	dir, err := ioutil.ReadDir(config.Path)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// 파일 이름 뒤에 확장자가 rgo인 파일들을 읽어들이고 code에 집어넣음
 	for _, file := range dir {
-		if file.Name()[len(file.Name())-3:] == "rgo" {
-			tem, err := ioutil.ReadFile(*Root + "\\" + file.Name())
+		if file.Name() == "config.rgo" {
+			f, err := ioutil.ReadFile(config.Path + "\\config.rgo")
 			if err != nil {
 				panic(err)
 			}
-			config.Code += string(tem) + "\n"
+			interPretation(string(f))
+		} else if file.Name()[len(file.Name())-3:] == "rgo" && file.Name() != "config.rgo" {
+			f, err := ioutil.ReadFile(config.Path + "\\" + file.Name())
+			if err != nil {
+				panic(err)
+			}
+			config.Code += string(f) + "\n"
 		}
 	}
 
-	go interPretation(config.Code)
+	setUp()
 
-	setUp(env)
+	interPretation(config.Code)
 
 	mainLoop(errValue)
 }
 
-// 해석 단계입니다.
 func interPretation(code string) {
 	l := lexer.New(code)
 	p := parser.New(l)
@@ -69,17 +73,7 @@ func interPretation(code string) {
 	errValue, _ = obj.(*object.Error)
 }
 
-func setUp(env *object.Environment) {
-R1:
-	if env == nil {
-		goto R1
-	}
-
-R2:
-	if !env.IsHere("gui_title") || !env.IsHere("gui_width") || !env.IsHere("gui_height") {
-		goto R2
-	}
-
+func setUp() {
 	title, _ := env.Get("gui_title")
 	config.Title = title.(*object.String).Value
 
@@ -101,9 +95,8 @@ func mainLoop(errObject *object.Error) {
 			switch config.Event.EventType() {
 			case sdl.SDL_QUIT:
 				config.Quit = true
-			case sdl.SDL_WINDOWEVENT:
 			case sdl.SDL_KEYDOWN:
-				// default:
+				//  default:
 				//	EventChan <- sdl.Event{Event: event, Type: uint32(event.EventType())}
 			}
 		}
@@ -114,7 +107,7 @@ func mainLoop(errObject *object.Error) {
 		for i := 0; i < len(config.LayerList.Layers); i++ {
 			for j := 0; j < len(config.LayerList.Layers[i].Images); j++ {
 				rengeval.LayerMutex.Lock()
-				config.LayerList.Layers[i].Images[j].Render(config.Renderer, nil, config.LayerList.Layers[i].Images[j].Xpos, config.LayerList.Layers[i].Images[j].Ypos)
+				config.LayerList.Layers[i].Images[j].Render(config.Renderer, nil)
 				rengeval.LayerMutex.Unlock()
 			}
 		}
@@ -131,7 +124,7 @@ func mainLoop(errObject *object.Error) {
 func run(env *object.Environment) {
 
 	fontPath, _ := env.Get("gui_font")
-	config.MainFont = sdl.OpenFont(*Root + fontPath.(*object.String).Value)
+	config.MainFont = sdl.OpenFont(config.Path + fontPath.(*object.String).Value)
 
 	config.LayerList.Layers = append(config.LayerList.Layers, sdl.Layer{Name: "error"})
 	config.LayerList.Layers = append(config.LayerList.Layers, sdl.Layer{Name: "main"})
@@ -144,16 +137,14 @@ func run(env *object.Environment) {
 	start, ok := env.Get("start")
 
 	if !ok {
-		config.LayerList.Layers[0].AddNewTexture(config.MainFont.LoadFromRenderedText("Could not find the entry point for your code.", config.Renderer, sdl.Color(0, 0, 0)))
+		config.LayerList.Layers[0].AddNewTexture(config.MainFont.LoadFromRenderedText("Could not find the entry point for your code.", config.Renderer, sdl.CreateColor(0, 0, 0)))
 		return
 	}
 
 	if errValue != nil {
-		config.LayerList.Layers[0].AddNewTexture(config.MainFont.LoadFromRenderedText(errValue.Message, config.Renderer, sdl.Color(0, 0, 0)))
+		config.LayerList.Layers[0].AddNewTexture(config.MainFont.LoadFromRenderedText(errValue.Message, config.Renderer, sdl.CreateColor(0, 0, 0)))
 		return
 	}
-
-	debug.FreeOSMemory()
 
 	var (
 		result    object.Object
@@ -161,29 +152,25 @@ func run(env *object.Environment) {
 		label     object.Object
 	)
 
-	result = rengeval.RengEval(start.(*object.Label).Body, *Root, env)
+	result = rengeval.RengEval(start.(*object.Label).Body, env)
 
 	if result == nil {
-		debug.FreeOSMemory()
 		return
 	}
 
 	if jumpLabel, ok = result.(*object.JumpLabel); !ok {
-		debug.FreeOSMemory()
 		return
 	}
 
 R:
 	if label, ok = env.Get(jumpLabel.Label.Value); ok {
-		result = rengeval.RengEval(label.(*object.Label).Body, *Root, env)
+		result = rengeval.RengEval(label.(*object.Label).Body, env)
 
 		if result == nil {
-			debug.FreeOSMemory()
 			return
 		}
 
 		if jumpLabel, ok = result.(*object.JumpLabel); !ok {
-			debug.FreeOSMemory()
 			return
 		}
 

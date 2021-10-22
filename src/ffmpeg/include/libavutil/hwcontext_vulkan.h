@@ -41,58 +41,18 @@ typedef struct AVVulkanDeviceContext {
      * Custom memory allocator, else NULL
      */
     const VkAllocationCallbacks *alloc;
-
-    /**
-     * Pointer to the instance-provided vkGetInstanceProcAddr loading function.
-     * If NULL, will pick either libvulkan or libvolk, depending on libavutil's
-     * compilation settings, and set this field.
-     */
-    PFN_vkGetInstanceProcAddr get_proc_addr;
-
     /**
      * Vulkan instance. Must be at least version 1.1.
      */
     VkInstance inst;
-
     /**
      * Physical device
      */
     VkPhysicalDevice phys_dev;
-
     /**
      * Active device
      */
     VkDevice act_dev;
-
-    /**
-     * This structure should be set to the set of features that present and enabled
-     * during device creation. When a device is created by FFmpeg, it will default to
-     * enabling all that are present of the shaderImageGatherExtended,
-     * fragmentStoresAndAtomics, shaderInt64 and vertexPipelineStoresAndAtomics features.
-     */
-    VkPhysicalDeviceFeatures2 device_features;
-
-    /**
-     * Enabled instance extensions.
-     * If supplying your own device context, set this to an array of strings, with
-     * each entry containing the specified Vulkan extension string to enable.
-     * Duplicates are possible and accepted.
-     * If no extensions are enabled, set these fields to NULL, and 0 respectively.
-     */
-    const char * const *enabled_inst_extensions;
-    int nb_enabled_inst_extensions;
-
-    /**
-     * Enabled device extensions. By default, VK_KHR_external_memory_fd,
-     * VK_EXT_external_memory_dma_buf, VK_EXT_image_drm_format_modifier,
-     * VK_KHR_external_semaphore_fd and VK_EXT_external_memory_host are enabled if found.
-     * If supplying your own device context, these fields takes the same format as
-     * the above fields, with the same conditions that duplicates are possible
-     * and accepted, and that NULL and 0 respectively means no extensions are enabled.
-     */
-    const char * const *enabled_dev_extensions;
-    int nb_enabled_dev_extensions;
-
     /**
      * Queue family index for graphics
      * @note av_hwdevice_create() will set all 3 queue indices if unset
@@ -103,7 +63,6 @@ typedef struct AVVulkanDeviceContext {
      */
     int queue_family_index;
     int nb_graphics_queues;
-
     /**
      * Queue family index to use for transfer operations, and the amount of queues
      * enabled. In case there is no dedicated transfer queue, nb_tx_queues
@@ -112,7 +71,6 @@ typedef struct AVVulkanDeviceContext {
      */
     int queue_family_tx_index;
     int nb_tx_queues;
-
     /**
      * Queue family index for compute ops, and the amount of queues enabled.
      * In case there are no dedicated compute queues, nb_comp_queues must be
@@ -120,6 +78,32 @@ typedef struct AVVulkanDeviceContext {
      */
     int queue_family_comp_index;
     int nb_comp_queues;
+    /**
+     * Enabled instance extensions.
+     * If supplying your own device context, set this to an array of strings, with
+     * each entry containing the specified Vulkan extension string to enable.
+     * Duplicates are possible and accepted.
+     * If no extensions are enabled, set these fields to NULL, and 0 respectively.
+     */
+    const char * const *enabled_inst_extensions;
+    int nb_enabled_inst_extensions;
+    /**
+     * Enabled device extensions. By default, VK_KHR_external_memory_fd,
+     * VK_EXT_external_memory_dma_buf, VK_EXT_image_drm_format_modifier,
+     * VK_KHR_external_semaphore_fd and VK_EXT_external_memory_host are enabled if found.
+     * If supplying your own device context, these fields takes the same format as
+     * the above fields, with the same conditions that duplicates are possible
+     * and accepted, and that NULL and 0 respectively means no extensions are enabled.
+     */
+    const char * const *enabled_dev_extensions;
+    int nb_enabled_dev_extensions;
+    /**
+     * This structure should be set to the set of features that present and enabled
+     * during device creation. When a device is created by FFmpeg, it will default to
+     * enabling all that are present of the shaderImageGatherExtended,
+     * fragmentStoresAndAtomics, shaderInt64 and vertexPipelineStoresAndAtomics features.
+     */
+    VkPhysicalDeviceFeatures2 device_features;
 } AVVulkanDeviceContext;
 
 /**
@@ -130,18 +114,15 @@ typedef struct AVVulkanFramesContext {
      * Controls the tiling of allocated frames.
      */
     VkImageTiling tiling;
-
     /**
      * Defines extra usage of output frames. If left as 0, the following bits
      * are set: TRANSFER_SRC, TRANSFER_DST. SAMPLED and STORAGE.
      */
     VkImageUsageFlagBits usage;
-
     /**
      * Extension data for image creation.
      */
     void *create_pnext;
-
     /**
      * Extension data for memory allocation. Must have as many entries as
      * the number of planes of the sw_format.

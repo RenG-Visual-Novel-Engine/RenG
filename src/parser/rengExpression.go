@@ -59,6 +59,52 @@ func (p *Parser) parseImageExpression() ast.Expression {
 	return exp
 }
 
+func (p *Parser) parseVideoExpression() ast.Expression {
+	exp := &ast.VideoExpression{Token: p.curToken}
+	info := make(map[string]ast.Expression)
+
+	p.nextToken()
+
+	exp.Name = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+
+	if !p.expectPeek(token.LPAREN) {
+		return nil
+	}
+
+	var arg string
+
+	p.nextToken()
+
+	arg = p.curToken.Literal
+
+	if !p.expectPeek(token.ASSIGN) {
+		return nil
+	}
+
+	p.nextToken()
+
+	info[arg] = p.parseExpression(LOWEST)
+
+	for p.peekTokenIs(token.COMMA) {
+		p.nextToken()
+		p.nextToken()
+
+		arg = p.curToken.Literal
+
+		if !p.expectPeek(token.ASSIGN) {
+			return nil
+		}
+
+		p.nextToken()
+
+		info[arg] = p.parseExpression(LOWEST)
+	}
+
+	exp.Info = info
+
+	return exp
+}
+
 func (p *Parser) parseShowExpression() ast.Expression {
 	exp := &ast.ShowExpression{Token: p.curToken}
 

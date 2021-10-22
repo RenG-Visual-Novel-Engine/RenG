@@ -14,19 +14,20 @@ import (
 
 var (
 	LayerMutex = &sync.RWMutex{}
+	MainMutex  = &sync.Mutex{}
 )
 
-func RengEval(node ast.Node, root string, env *object.Environment) object.Object {
+func RengEval(node ast.Node, env *object.Environment) object.Object {
 	switch node := node.(type) {
 	case *ast.BlockStatement:
-		return evalRengBlockStatements(node, root, env)
+		return evalRengBlockStatements(node, env)
 	case *ast.ExpressionStatement:
-		return RengEval(node.Expression, root, env)
+		return RengEval(node.Expression, env)
 	case *ast.PrefixExpression:
 		if rightValue, ok := node.Right.(*ast.Identifier); ok {
 			return evalAssignPrefixExpression(node.Operator, rightValue, env)
 		} else {
-			right := RengEval(node.Right, root, env)
+			right := RengEval(node.Right, env)
 			if isError(right) {
 				return right
 			}
@@ -34,19 +35,19 @@ func RengEval(node ast.Node, root string, env *object.Environment) object.Object
 		}
 	case *ast.InfixExpression:
 		if leftValue, ok := node.Left.(*ast.Identifier); ok && isAssign(node.Operator) {
-			right := RengEval(node.Right, root, env)
+			right := RengEval(node.Right, env)
 			if isError(right) {
 				return right
 			}
 
 			return evalAssignInfixExpression(node.Operator, leftValue, right, env)
 		} else {
-			left := RengEval(node.Left, root, env)
+			left := RengEval(node.Left, env)
 			if isError(left) {
 				return left
 			}
 
-			right := RengEval(node.Right, root, env)
+			right := RengEval(node.Right, env)
 			if isError(right) {
 				return right
 			}
@@ -54,30 +55,30 @@ func RengEval(node ast.Node, root string, env *object.Environment) object.Object
 			return evalInfixExpression(node.Operator, left, right)
 		}
 	case *ast.IfExpression:
-		return evalIfExpression(node, root, env)
+		return evalIfExpression(node, env)
 	case *ast.ForExpression:
-		return evalForExpression(node, root, env)
+		return evalForExpression(node, env)
 	case *ast.WhileExpression:
-		return evalWhileExpression(node, root, env)
+		return evalWhileExpression(node, env)
 	case *ast.CallFunctionExpression:
-		function := RengEval(node.Function, root, env)
+		function := RengEval(node.Function, env)
 		if isError(function) {
 			return function
 		}
 
-		args := evalExpressions(node.Arguments, root, env)
+		args := evalExpressions(node.Arguments, env)
 		if len(args) == 1 && isError(args[0]) {
 			return args[0]
 		}
 
-		return applyFunction(function, root, args)
+		return applyFunction(function, args)
 	case *ast.IndexExpression:
-		left := RengEval(node.Left, root, env)
+		left := RengEval(node.Left, env)
 		if isError(left) {
 			return left
 		}
 
-		index := RengEval(node.Index, root, env)
+		index := RengEval(node.Index, env)
 		if isError(index) {
 			return index
 		}
@@ -92,41 +93,41 @@ func RengEval(node ast.Node, root string, env *object.Environment) object.Object
 	case *ast.FloatLiteral:
 		return &object.Float{Value: node.Value}
 	case *ast.StringLiteral:
-		return evalStringLiteral(node, root, env)
+		return evalStringLiteral(node, env)
 	case *ast.ArrayLiteral:
-		elements := evalExpressions(node.Elements, root, env)
+		elements := evalExpressions(node.Elements, env)
 		if len(elements) == 1 && isError(elements[0]) {
 			return elements[0]
 		}
 		return &object.Array{Elements: elements}
 	case *ast.CallLabelExpression:
-		return evalCallLabelExpression(node, root, env)
+		return evalCallLabelExpression(node, env)
 	case *ast.JumpLabelExpression:
 		return evalJumpLabelExpression(node)
 	case *ast.ShowExpression:
-		return evalShowExpression(node, root, env)
+		return evalShowExpression(node, env)
 	case *ast.HideExpression:
-		return evalHideExpression(node, root, env)
+		return evalHideExpression(node, env)
 	case *ast.PlayExpression:
-		return evalPlayExpression(node, root, env)
+		return evalPlayExpression(node, env)
 	case *ast.StopExpression:
 		return evalStopExpression(node)
 	}
 	return nil
 }
 
-func evalRengBlockStatements(block *ast.BlockStatement, root string, env *object.Environment) object.Object {
+func evalRengBlockStatements(block *ast.BlockStatement, env *object.Environment) object.Object {
 	var result object.Object
 
 	for _, statement := range block.Statements {
-		result = RengEval(statement, root, env)
+		result = RengEval(statement, env)
 		if result != nil {
 			switch result.Type() {
 			case object.ERROR_OBJ:
 				LayerMutex.Lock()
 				config.LayerList.Layers[1].DeleteAllTexture()
 				config.LayerList.Layers[2].DeleteAllTexture()
-				config.LayerList.Layers[0].AddNewTexture(config.MainFont.LoadFromRenderedText(result.(*object.Error).Message, config.Renderer, sdl.Color(0xFF, 0xFF, 0xFF)))
+				config.LayerList.Layers[0].AddNewTexture(config.MainFont.LoadFromRenderedText(result.(*object.Error).Message, config.Renderer, sdl.CreateColor(0xFF, 0xFF, 0xFF)))
 				LayerMutex.Unlock()
 				return result
 			case object.JUMP_LABEL_OBJ:
@@ -138,10 +139,10 @@ func evalRengBlockStatements(block *ast.BlockStatement, root string, env *object
 	return result
 }
 
-func evalCallLabelExpression(cle *ast.CallLabelExpression, root string, env *object.Environment) object.Object {
+func evalCallLabelExpression(cle *ast.CallLabelExpression, env *object.Environment) object.Object {
 	if label, ok := env.Get(cle.Label.Value); ok {
 		labelBody := label.(*object.Label).Body
-		return RengEval(labelBody, root, env)
+		return RengEval(labelBody, env)
 	} else {
 		return newError("defined label %s", cle.Label.Value)
 	}
@@ -151,7 +152,7 @@ func evalJumpLabelExpression(jle *ast.JumpLabelExpression) object.Object {
 	return &object.JumpLabel{Label: jle.Label}
 }
 
-func evalShowExpression(se *ast.ShowExpression, apsolutedRoot string, env *object.Environment) object.Object {
+func evalShowExpression(se *ast.ShowExpression, env *object.Environment) object.Object {
 	if texture, ok := config.TextureList.Get(se.Name.Value); ok {
 		if trans, ok := env.Get(se.Transform.Value); ok {
 			go transform.TransformEval(trans.(*object.Transform).Body, texture, env)
@@ -166,36 +167,23 @@ func evalShowExpression(se *ast.ShowExpression, apsolutedRoot string, env *objec
 		LayerMutex.Unlock()
 
 		return nil
-	}
-
-	if root, ok := env.Get(se.Name.Value); ok {
-		texture, suc := config.Renderer.LoadFromFile(apsolutedRoot + root.(*object.Image).Root.Inspect())
-		if !suc {
-			return nil
-		}
-
+	} else if video, ok := config.VideoList.Get(se.Name.Value); ok {
 		if trans, ok := env.Get(se.Transform.Value); ok {
-			go transform.TransformEval(trans.(*object.Transform).Body, texture, env)
+			go transform.TransformEval(trans.(*object.Transform).Body, video.Texture, env)
 		} else {
-			switch se.Transform.Value {
-			case "default":
-				go transform.TransformEval(screenBuiltins["default"], texture, env)
-			}
+			go transform.TransformEval(screenBuiltins["default"], video.Texture, env)
 		}
 
-		addShowTextureIndex(texture)
+		addShowTextureIndex(video.Texture)
 
-		LayerMutex.Lock()
-		config.LayerList.Layers[1].AddNewTexture(texture)
-		LayerMutex.Unlock()
-
-		config.TextureList.Set(se.Name.String(), texture)
+		// TODO
+		go playVideo(video)
 	}
 
 	return nil
 }
 
-func evalHideExpression(he *ast.HideExpression, root string, env *object.Environment) object.Object {
+func evalHideExpression(he *ast.HideExpression, env *object.Environment) object.Object {
 	if texture, ok := config.TextureList.Get(he.Name.Value); ok {
 		index := textureHasIndex(texture)
 		LayerMutex.Lock()
@@ -207,11 +195,11 @@ func evalHideExpression(he *ast.HideExpression, root string, env *object.Environ
 	return nil
 }
 
-func evalExpressions(exps []ast.Expression, root string, env *object.Environment) []object.Object {
+func evalExpressions(exps []ast.Expression, env *object.Environment) []object.Object {
 	var result []object.Object
 
 	for _, e := range exps {
-		evaluated := RengEval(e, root, env)
+		evaluated := RengEval(e, env)
 		if isError(evaluated) {
 			return []object.Object{evaluated}
 		}
@@ -221,7 +209,7 @@ func evalExpressions(exps []ast.Expression, root string, env *object.Environment
 	return result
 }
 
-func evalStringLiteral(str *ast.StringLiteral, root string, env *object.Environment) *object.String {
+func evalStringLiteral(str *ast.StringLiteral, env *object.Environment) *object.String {
 	result := &object.String{Value: str.Value}
 
 	// TODO : 최적화하기
@@ -235,7 +223,7 @@ func evalStringLiteral(str *ast.StringLiteral, root string, env *object.Environm
 
 		for isCurrentExp(index, str) {
 
-			val := RengEval(str.Exp[expIndex].Exp, root, env)
+			val := RengEval(str.Exp[expIndex].Exp, env)
 
 			switch value := val.(type) {
 			case *object.Integer:
@@ -281,50 +269,50 @@ func evalArrayIndexExpression(array, index object.Object) object.Object {
 	return arrayObject.Elements[idx]
 }
 
-func evalIfExpression(ie *ast.IfExpression, root string, env *object.Environment) object.Object {
-	condition := RengEval(ie.Condition, root, env)
+func evalIfExpression(ie *ast.IfExpression, env *object.Environment) object.Object {
+	condition := RengEval(ie.Condition, env)
 	if isError(condition) {
 		return condition
 	}
 
 	if isTruthy(condition) {
-		return RengEval(ie.Consequence, root, env)
+		return RengEval(ie.Consequence, env)
 	}
 
 	for _, ee := range ie.Elif {
 		if ee != nil {
-			elifCondition := RengEval(ee.Condition, root, env)
+			elifCondition := RengEval(ee.Condition, env)
 			if isError(elifCondition) {
 				return elifCondition
 			}
 			if isTruthy(elifCondition) {
-				return RengEval(ee.Consequence, root, env)
+				return RengEval(ee.Consequence, env)
 			}
 		}
 	}
 
 	if ie.Alternative != nil {
-		return RengEval(ie.Alternative, root, env)
+		return RengEval(ie.Alternative, env)
 	} else {
 		return NULL
 	}
 }
 
-func evalForExpression(node *ast.ForExpression, root string, env *object.Environment) object.Object {
+func evalForExpression(node *ast.ForExpression, env *object.Environment) object.Object {
 	var define, condition, result, run object.Object
 
-	define = RengEval(node.Define, root, env)
+	define = RengEval(node.Define, env)
 	if isError(define) {
 		return define
 	}
 
-	condition = RengEval(node.Condition, root, env)
+	condition = RengEval(node.Condition, env)
 	if isError(condition) {
 		return condition
 	}
 
 	for isTruthy(condition) {
-		result = RengEval(node.Body, root, env)
+		result = RengEval(node.Body, env)
 		if isError(result) {
 			return result
 		}
@@ -333,12 +321,12 @@ func evalForExpression(node *ast.ForExpression, root string, env *object.Environ
 			return result
 		}
 
-		run = RengEval(node.Run, root, env)
+		run = RengEval(node.Run, env)
 		if isError(run) {
 			return run
 		}
 
-		condition = RengEval(node.Condition, root, env)
+		condition = RengEval(node.Condition, env)
 		if isError(condition) {
 			return condition
 		}
@@ -346,14 +334,14 @@ func evalForExpression(node *ast.ForExpression, root string, env *object.Environ
 	return nil
 }
 
-func evalWhileExpression(node *ast.WhileExpression, root string, env *object.Environment) object.Object {
-	condition := RengEval(node.Condition, root, env)
+func evalWhileExpression(node *ast.WhileExpression, env *object.Environment) object.Object {
+	condition := RengEval(node.Condition, env)
 	if isError(condition) {
 		return condition
 	}
 
 	for isTruthy(condition) {
-		result := RengEval(node.Body, root, env)
+		result := RengEval(node.Body, env)
 		if isError(result) {
 			return result
 		}
@@ -362,7 +350,7 @@ func evalWhileExpression(node *ast.WhileExpression, root string, env *object.Env
 			return result
 		}
 
-		condition = RengEval(node.Condition, root, env)
+		condition = RengEval(node.Condition, env)
 		if isError(condition) {
 			return condition
 		}
@@ -382,24 +370,24 @@ func evalIdentifier(node *ast.Identifier, env *object.Environment) object.Object
 	return newError("identifier not found: " + node.Value)
 }
 
-func evalPlayExpression(pe *ast.PlayExpression, root string, env *object.Environment) object.Object {
-	musicRootObject := RengEval(pe.Music, root, env)
+func evalPlayExpression(pe *ast.PlayExpression, env *object.Environment) object.Object {
+	musicRootObject := RengEval(pe.Music, env)
 
 	if musicRoot, ok := musicRootObject.(*object.String); ok {
 		switch pe.Channel.Value {
 		case "music":
 			switch pe.Loop.Value {
 			case "loop":
-				go playMusic(root+musicRoot.Value, true)
+				go playMusic(config.Path+musicRoot.Value, true)
 			case "noloop":
-				go playMusic(root+musicRoot.Value, false)
+				go playMusic(config.Path+musicRoot.Value, false)
 			default:
 				return newError("It is not Loop or NoLoop. got=%s", pe.Loop.Value)
 			}
 		case "sound":
-			go play(root+musicRoot.Value, 0)
+			go play(config.Path+musicRoot.Value, 0)
 		case "voice":
-			go play(root+musicRoot.Value, 1)
+			go play(config.Path+musicRoot.Value, 1)
 		default:
 			_, ok := config.ChannelList.GetChannel(pe.Channel.Value)
 			if !ok {
