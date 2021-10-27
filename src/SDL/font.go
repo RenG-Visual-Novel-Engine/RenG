@@ -39,7 +39,15 @@ func (f *TTF_Font) LoadFromRenderedText(text string, renderer *SDL_Renderer, col
 	}
 
 	// TODO
-	texture := &SDL_Texture{Texture: t, Xpos: (1280 - int(textSurface.w)) / 2, Ypos: (720 - int(textSurface.h)) / 2, Width: int(textSurface.w), Height: int(textSurface.h)}
+	texture := &SDL_Texture{
+		Texture: t,
+		Xpos:    (1280 - int(textSurface.w)) / 2,
+		Ypos:    550,
+		Width:   int(textSurface.w),
+		Height:  int(textSurface.h),
+		Alpha:   255,
+		Degree:  0,
+	}
 
 	C.SDL_FreeSurface(textSurface)
 

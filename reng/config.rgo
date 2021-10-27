@@ -1,0 +1,6 @@
+gui_title = "테스트"
+
+gui_width = 1280
+gui_height = 720
+
+gui_font = "\font\JejuGothic.ttf"

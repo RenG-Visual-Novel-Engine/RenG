@@ -1,31 +1,21 @@
-gui_title = "테스트"
-
-gui_width = 1280
-gui_height = 720
-
 image gui_bg_image = "\gui\bg.png"
 image say = "\gui\say.png"
-
-gui_font = "\font\JejuGothic.ttf"
+# video ball(path = "\video\test.mp4", size = [1280, 720])
 
 label start {
     show gui_bg_image
-    play music noloop "\audio\alone.mp3"
-    pause(5)
-    play music noloop "\audio\bgm1.ogg"
-    pause(3)
-    play sound "\audio\low.wav"
+    play music loop "\audio\bgm1.ogg"
+    "안녕?"
+    "반가워"
+    "지금"
+    "테스트"
+    "중이야."
+    "테스트"
+    "엄청"
+    "잘되네"
     pause(1)
-    play sound "\audio\medium.wav"
-    show say
-
-    pause(10)
-
-    hide say
-    pause(1)
-    hide gui_bg_image
-    pause(1)
-    stop music
-    pause(1)
-    play music "\audio\bgm1.ogg"
+    "1초 지나고 출력!"
+    pause(2)
+    "2초 지나고 출력!"
+    "끝"
 }

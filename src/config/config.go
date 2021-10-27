@@ -44,6 +44,6 @@ var (
 )
 
 var (
-	ShowTextureIndex = make([]*sdl.SDL_Texture, 20)
+	ShowTextureIndex = make([]*sdl.SDL_Texture, 0)
 	ShowIndex        = 0
 )

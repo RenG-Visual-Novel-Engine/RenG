@@ -127,11 +127,45 @@ func evalRengBlockStatements(block *ast.BlockStatement, env *object.Environment)
 				LayerMutex.Lock()
 				config.LayerList.Layers[1].DeleteAllTexture()
 				config.LayerList.Layers[2].DeleteAllTexture()
-				config.LayerList.Layers[0].AddNewTexture(config.MainFont.LoadFromRenderedText(result.(*object.Error).Message, config.Renderer, sdl.CreateColor(0xFF, 0xFF, 0xFF)))
+				config.LayerList.Layers[0].AddNewTexture(config.MainFont.LoadFromRenderedText(result.(*object.Error).Message, config.Renderer, sdl.CreateColor(0, 0, 0)))
 				LayerMutex.Unlock()
 				return result
 			case object.JUMP_LABEL_OBJ:
 				return result
+			case object.STRING_OBJ:
+				say, err := config.TextureList.Get("say")
+				if !err {
+					return newError("textruelist error")
+				}
+				text := config.MainFont.LoadFromRenderedText(result.(*object.String).Value, config.Renderer, sdl.CreateColor(0, 0, 0))
+
+				LayerMutex.Lock()
+
+				config.LayerList.Layers[1].AddNewTexture(say)
+				addShowTextureIndex(say)
+				fmt.Println(config.ShowTextureIndex)
+
+				config.LayerList.Layers[1].AddNewTexture(text)
+				addShowTextureIndex(text)
+				fmt.Println(config.ShowTextureIndex)
+
+				LayerMutex.Unlock()
+
+				<-config.EventChan
+
+				LayerMutex.Lock()
+
+				config.LayerList.Layers[1].DeleteTexture(textureHasIndex(say))
+				deleteShowTextureIndex(textureHasIndex(say))
+				config.ShowIndex--
+				fmt.Println(config.ShowTextureIndex)
+
+				config.LayerList.Layers[1].DeleteTexture(textureHasIndex(text))
+				deleteShowTextureIndex(textureHasIndex(text))
+				config.ShowIndex--
+				fmt.Println(config.ShowTextureIndex)
+
+				LayerMutex.Unlock()
 			}
 		}
 	}
@@ -189,7 +223,7 @@ func evalHideExpression(he *ast.HideExpression, env *object.Environment) object.
 		LayerMutex.Lock()
 		config.LayerList.Layers[1].DeleteTexture(index)
 		LayerMutex.Unlock()
-		updateShowTextureIndex(index)
+		deleteShowTextureIndex(index)
 		config.ShowIndex--
 	}
 	return nil

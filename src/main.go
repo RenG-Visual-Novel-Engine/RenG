@@ -9,6 +9,7 @@ import (
 	"RenG/src/parser"
 	"RenG/src/rengeval"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"runtime"
@@ -95,9 +96,14 @@ func mainLoop(errObject *object.Error) {
 			switch config.Event.EventType() {
 			case sdl.SDL_QUIT:
 				config.Quit = true
-			case sdl.SDL_KEYDOWN:
-				//  default:
-				//	EventChan <- sdl.Event{Event: event, Type: uint32(event.EventType())}
+			case sdl.SDL_MOUSEBUTTONDOWN:
+				sdl.HandleEvent(sdl.SDL_MOUSEBUTTONDOWN, config.Event, config.EventChan)
+			case sdl.SDL_MOUSEWHEEL:
+				y := config.Event.GetY()
+				fmt.Println(y)
+				rengeval.LayerMutex.Lock()
+				config.LayerList.Layers[1].Images[0].Ypos += y * 20
+				rengeval.LayerMutex.Unlock()
 			}
 		}
 
