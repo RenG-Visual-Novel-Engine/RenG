@@ -30,9 +30,6 @@ Sint32 GetWheelY(SDL_Event e)
 }
 */
 import "C"
-import (
-	"fmt"
-)
 
 type Event struct {
 	Type  uint32
@@ -44,9 +41,15 @@ type key struct {
 }
 
 type mouse struct {
-	Down  buttonDown
-	Up    buttonUp
-	Wheel buttonWheel
+	Motion buttonMotion
+	Down   buttonDown
+	Up     buttonUp
+	Wheel  buttonWheel
+}
+
+type buttonMotion struct {
+	X int
+	Y int
 }
 
 type buttonDown struct {
@@ -70,6 +73,26 @@ func (event *SDL_Event) HandleEvent(eventType int, eventChan chan Event) {
 	case SDL_KEYDOWN:
 	case SDL_KEYUP:
 	case SDL_MOUSEMOTION:
+		go func() {
+			var x, y C.int
+			C.SDL_GetMouseState(&x, &y)
+			for {
+				eventChan <- Event{
+					Type: SDL_MOUSEMOTION,
+					Mouse: mouse{
+						Motion: buttonMotion{
+							X: int(x),
+							Y: int(y),
+						},
+					},
+				}
+
+				if len(eventChan) > 0 {
+					<-eventChan
+					break
+				}
+			}
+		}()
 	case SDL_MOUSEBUTTONDOWN:
 		go func() {
 			var x, y C.int
@@ -91,7 +114,7 @@ func (event *SDL_Event) HandleEvent(eventType int, eventChan chan Event) {
 					break
 				}
 			}
-			fmt.Printf("ButtonDown x : %d  y : %d\n", x, y)
+			// fmt.Printf("ButtonDown x : %d  y : %d\n", x, y)
 		}()
 	case SDL_MOUSEBUTTONUP:
 		go func() {
@@ -114,7 +137,7 @@ func (event *SDL_Event) HandleEvent(eventType int, eventChan chan Event) {
 					break
 				}
 			}
-			fmt.Printf("ButtonUp   x : %d  y : %d\n", x, y)
+			// fmt.Printf("ButtonUp   x : %d  y : %d\n", x, y)
 		}()
 	case SDL_MOUSEWHEEL:
 		go func() {
@@ -139,7 +162,6 @@ func (event *SDL_Event) HandleEvent(eventType int, eventChan chan Event) {
 					break
 				}
 			}
-			fmt.Printf("Wheel %d\n", y)
 		}()
 	}
 }

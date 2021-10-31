@@ -87,6 +87,9 @@ const (
 	LABEL  = "LABEL"
 	SCREEN = "SCREEN"
 
+	IMAGEBUTTON = "IMAGEBUTTON"
+	ACTION      = "ACTION"
+
 	CALL = "CALL"
 	JUMP = "JUMP"
 
@@ -112,31 +115,33 @@ const (
 )
 
 var keywords = map[string]TokenType{
-	"def":       FUNCTION,
-	"true":      TRUE,
-	"false":     FALSE,
-	"if":        IF,
-	"elif":      ELIF,
-	"else":      ELSE,
-	"return":    RETURN,
-	"for":       FOR,
-	"while":     WHILE,
-	"label":     LABEL,
-	"screen":    SCREEN,
-	"call":      CALL,
-	"jump":      JUMP,
-	"image":     IMAGE,
-	"video":     VIDEO,
-	"character": CHARACTER,
-	"transform": TRANSFORM,
-	"scene":     SCENE,
-	"show":      SHOW,
-	"hide":      HIDE,
-	"at":        AT,
-	"xpos":      XPOS,
-	"ypos":      YPOS,
-	"play":      PLAY,
-	"stop":      STOP,
+	"def":         FUNCTION,
+	"true":        TRUE,
+	"false":       FALSE,
+	"if":          IF,
+	"elif":        ELIF,
+	"else":        ELSE,
+	"return":      RETURN,
+	"for":         FOR,
+	"while":       WHILE,
+	"label":       LABEL,
+	"call":        CALL,
+	"jump":        JUMP,
+	"screen":      SCREEN,
+	"imagebutton": IMAGEBUTTON,
+	"action":      ACTION,
+	"image":       IMAGE,
+	"video":       VIDEO,
+	"character":   CHARACTER,
+	"transform":   TRANSFORM,
+	"scene":       SCENE,
+	"show":        SHOW,
+	"hide":        HIDE,
+	"at":          AT,
+	"xpos":        XPOS,
+	"ypos":        YPOS,
+	"play":        PLAY,
+	"stop":        STOP,
 }
 
 func LookupIdent(ident string) TokenType {

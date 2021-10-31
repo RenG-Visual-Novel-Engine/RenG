@@ -95,6 +95,8 @@ func mainLoop(errObject *object.Error) {
 			switch config.Event.EventType() {
 			case core.SDL_QUIT:
 				config.Quit = true
+			case core.SDL_MOUSEMOTION:
+				config.Event.HandleEvent(core.SDL_MOUSEMOTION, config.MouseMotionEventChan)
 			case core.SDL_MOUSEBUTTONDOWN:
 				config.Event.HandleEvent(core.SDL_MOUSEBUTTONDOWN, config.MouseDownEventChan)
 			case core.SDL_MOUSEBUTTONUP:
@@ -127,6 +129,9 @@ func run(env *object.Environment) {
 
 	main_menu, _ := env.Get("main_menu")
 	config.Main_Menu = main_menu.(*object.Screen)
+
+	start, _ := env.Get("start")
+	config.Start = start.(*object.Label)
 
 	fontPath, _ := env.Get("gui_font")
 	config.MainFont = core.OpenFont(config.Path + fontPath.(*object.String).Value)

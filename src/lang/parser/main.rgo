@@ -1,1 +1,17 @@
-video hello(path="wow", x=10, y=50)
+image gui_bg_image = "\gui\bg.png"
+image say = "\gui\say.png"
+# video ball(path = "\video\test.mp4", size = [1280, 720])
+
+transform ch1 {
+    xpos 0
+    ypos 0
+}
+
+screen main_menu {
+    show gui_bg_image
+    imagebutton say at ch1 action start()
+}
+
+label start {
+    play music loop "\audio\bgm1.ogg"
+}

@@ -96,6 +96,8 @@ func ScreenEval(node ast.Node, env *object.Environment) object.Object {
 		return &object.Array{Elements: elements}
 	case *ast.ShowExpression:
 		return evalShowExpression(node, env)
+	case *ast.ImagebuttonExpression:
+		return evalImagebuttonExpression(node, env)
 	}
 	return nil
 }
@@ -128,6 +130,34 @@ func evalShowExpression(se *ast.ShowExpression, env *object.Environment) object.
 		go core.PlayVideo(video.Video, video.Texture, config.LayerMutex, config.LayerList, config.Renderer)
 	}
 
+	return nil
+}
+
+func evalImagebuttonExpression(ie *ast.ImagebuttonExpression, env *object.Environment) object.Object {
+	if texture, ok := config.TextureList.Get(ie.MainImage.Value); ok {
+		if trans, ok := env.Get(ie.Transform.Value); ok {
+			go transform.TransformEval(trans.(*object.Transform).Body, texture, env)
+		} else {
+			go transform.TransformEval(transform.TransformBuiltins["default"], texture, env)
+		}
+
+		addShowTextureIndex(texture)
+
+		config.LayerMutex.Lock()
+		config.LayerList.Layers[1].AddNewTexture(texture)
+		config.LayerMutex.Unlock()
+
+		// TODO
+		go func() {
+			for {
+				event := <-config.MouseDownEventChan
+
+				if IsInTexture(texture, event.Mouse.Down.X, event.Mouse.Down.Y) {
+					ScreenEval(ie.Action, env)
+				}
+			}
+		}()
+	}
 	return nil
 }
 

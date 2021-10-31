@@ -14,6 +14,10 @@ var (
 	FALSE = &object.Boolean{Value: false}
 )
 
+func IsInTexture(texture *core.SDL_Texture, x, y int) bool {
+	return x >= texture.Xpos && x <= texture.Width+texture.Xpos && y >= texture.Ypos && y <= texture.Height+texture.Ypos
+}
+
 func addShowTextureIndex(texture *core.SDL_Texture) {
 	config.ShowTextureIndex = append(config.ShowTextureIndex, texture)
 	config.ShowIndex++

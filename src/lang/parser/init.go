@@ -103,6 +103,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.WHILE, p.parseWhileExpression)
 	p.registerPrefix(token.FOR, p.parseForExpression)
 	p.registerPrefix(token.SCREEN, p.parseScreenExpression)
+	p.registerPrefix(token.IMAGEBUTTON, p.parseImagebuttonExpression)
 	p.registerPrefix(token.LABEL, p.parseLabelExpression)
 	p.registerPrefix(token.CALL, p.parseCallLabelExpression)
 	p.registerPrefix(token.JUMP, p.parseJumpLabelExpression)

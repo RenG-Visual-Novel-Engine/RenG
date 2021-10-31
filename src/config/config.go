@@ -27,16 +27,25 @@ var (
 )
 
 var (
-	Event               core.SDL_Event
-	MouseDownEventChan  = make(chan core.Event, 1)
-	MouseUpEventChan    = make(chan core.Event, 1)
-	MouseWheelEventChan = make(chan core.Event, 1)
+	Event                core.SDL_Event
+	MouseMotionEventChan = make(chan core.Event, 5)
+	MouseDownEventChan   = make(chan core.Event, 5)
+	MouseUpEventChan     = make(chan core.Event, 5)
+	MouseWheelEventChan  = make(chan core.Event, 5)
 )
 
 var (
 	Main_Menu *object.Screen
 	Say       *object.Screen
 	Choice    *object.Screen
+)
+
+var (
+	Start *object.Label
+)
+
+var (
+	Env = object.NewEnvironment()
 )
 
 var (

@@ -6,6 +6,7 @@ import (
 	"RenG/src/lang/ast"
 	"RenG/src/lang/evaluator"
 	"RenG/src/lang/object"
+	"RenG/src/reng/screen"
 	"RenG/src/reng/transform"
 	"fmt"
 	"strconv"
@@ -205,6 +206,10 @@ func evalShowExpression(se *ast.ShowExpression, env *object.Environment) object.
 
 		// TODO
 		go core.PlayVideo(video.Video, video.Texture, config.LayerMutex, config.LayerList, config.Renderer)
+	} else if screenObj, ok := env.Get(se.Name.Value); ok {
+		if screenTar, ok := screenObj.(*object.Screen); ok {
+			go screen.ScreenEval(screenTar.Body, env)
+		}
 	}
 
 	return nil

@@ -34,6 +34,12 @@ func deleteShowTextureIndex(index int) {
 	config.ShowTextureIndex = append(config.ShowTextureIndex[:index], config.ShowTextureIndex[index+1:]...)
 }
 
+func DeleteAllShowTextureIndex() {
+	for i := 0; i < len(config.ShowTextureIndex); i++ {
+		config.ShowTextureIndex = append(config.ShowTextureIndex[:0], config.ShowTextureIndex[1:]...)
+	}
+}
+
 func playMusic(musicRoot string, loop bool) {
 	if !core.PlayingMusic() {
 		loadMusic(musicRoot).PlayMusic(loop)

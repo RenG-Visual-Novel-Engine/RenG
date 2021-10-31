@@ -23,6 +23,26 @@ func (se *ScreenExpression) String() string {
 	return out.String()
 }
 
+type ImagebuttonExpression struct {
+	Token     token.Token
+	MainImage *Identifier
+	Transform *Identifier
+	Action    Expression
+}
+
+func (ie *ImagebuttonExpression) expressionNode()      {}
+func (ie *ImagebuttonExpression) TokenLiteral() string { return ie.Token.Literal }
+func (ie *ImagebuttonExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("imagebutton ")
+	out.WriteString(ie.MainImage.String())
+	out.WriteString(ie.Transform.String())
+	out.WriteString(ie.Action.String())
+
+	return out.String()
+}
+
 type LabelExpression struct {
 	Token token.Token
 	Name  *Identifier
