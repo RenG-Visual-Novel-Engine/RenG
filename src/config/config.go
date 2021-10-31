@@ -3,6 +3,7 @@ package config
 import (
 	"RenG/src/core"
 	"RenG/src/lang/object"
+	"sync"
 )
 
 var (
@@ -33,6 +34,12 @@ var (
 )
 
 var (
+	Main_Menu *object.Screen
+	Say       *object.Screen
+	Choice    *object.Screen
+)
+
+var (
 	MainFont *core.TTF_Font
 )
 
@@ -48,4 +55,8 @@ var (
 var (
 	ShowTextureIndex = make([]*core.SDL_Texture, 0)
 	ShowIndex        = 0
+)
+
+var (
+	LayerMutex = &sync.RWMutex{}
 )

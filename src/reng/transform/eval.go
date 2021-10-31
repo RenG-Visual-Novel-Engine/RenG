@@ -11,11 +11,10 @@ import (
 	"strconv"
 )
 
-// TODO : 외부 eval에 의존하지 않고 평가 코드 제작
 func TransformEval(node ast.Node, texture *core.SDL_Texture, env *object.Environment) object.Object {
 	switch node := node.(type) {
 	case *ast.BlockStatement:
-		return evalRengBlockStatements(node, texture, env)
+		return evalBlockStatements(node, texture, env)
 	case *ast.ExpressionStatement:
 		return TransformEval(node.Expression, texture, env)
 	case *ast.PrefixExpression:
@@ -109,14 +108,14 @@ func TransformEval(node ast.Node, texture *core.SDL_Texture, env *object.Environ
 	return nil
 }
 
-func evalRengBlockStatements(block *ast.BlockStatement, texture *core.SDL_Texture, env *object.Environment) object.Object {
+func evalBlockStatements(block *ast.BlockStatement, texture *core.SDL_Texture, env *object.Environment) object.Object {
 	var result object.Object
 
 	for _, statement := range block.Statements {
 		result = TransformEval(statement, texture, env)
 		if result != nil {
 			rt := result.Type()
-			if rt == object.RETURN_VALUE_OBJ || rt == object.ERROR_OBJ {
+			if rt == object.ERROR_OBJ {
 				return result
 			}
 		}

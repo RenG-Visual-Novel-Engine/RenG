@@ -45,7 +45,7 @@ var FunctionBuiltins = map[string]*object.Builtin{
 	"pause": {
 		Fn: func(args ...object.Object) object.Object {
 			if len(args) != 1 {
-				return newError("wrong number of arguments. got=%d, want=2", len(args))
+				return newError("wrong number of arguments. got=%d, want=1", len(args))
 			}
 			// TODO 실수형도 지원해야함
 			if args[0].Type() != object.INTEGER_OBJ {

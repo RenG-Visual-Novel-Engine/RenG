@@ -9,12 +9,6 @@ import (
 	"RenG/src/reng/transform"
 	"fmt"
 	"strconv"
-	"sync"
-)
-
-var (
-	LayerMutex = &sync.RWMutex{}
-	MainMutex  = &sync.Mutex{}
 )
 
 func RengEval(node ast.Node, env *object.Environment) object.Object {
@@ -124,11 +118,10 @@ func evalRengBlockStatements(block *ast.BlockStatement, env *object.Environment)
 		if result != nil {
 			switch result.Type() {
 			case object.ERROR_OBJ:
-				LayerMutex.Lock()
+				config.LayerMutex.Lock()
 				config.LayerList.Layers[1].DeleteAllTexture()
-				config.LayerList.Layers[2].DeleteAllTexture()
 				config.LayerList.Layers[0].AddNewTexture(config.MainFont.LoadFromRenderedText(result.(*object.Error).Message, config.Renderer, core.CreateColor(0, 0, 0)))
-				LayerMutex.Unlock()
+				config.LayerMutex.Unlock()
 				return result
 			case object.JUMP_LABEL_OBJ:
 				return result
@@ -139,7 +132,7 @@ func evalRengBlockStatements(block *ast.BlockStatement, env *object.Environment)
 				}
 				text := config.MainFont.LoadFromRenderedText(result.(*object.String).Value, config.Renderer, core.CreateColor(0, 0, 0))
 
-				LayerMutex.Lock()
+				config.LayerMutex.Lock()
 
 				config.LayerList.Layers[1].AddNewTexture(say)
 				addShowTextureIndex(say)
@@ -149,11 +142,11 @@ func evalRengBlockStatements(block *ast.BlockStatement, env *object.Environment)
 				addShowTextureIndex(text)
 				fmt.Println(config.ShowTextureIndex)
 
-				LayerMutex.Unlock()
+				config.LayerMutex.Unlock()
 
 				<-config.MouseDownEventChan
 
-				LayerMutex.Lock()
+				config.LayerMutex.Lock()
 
 				config.LayerList.Layers[1].DeleteTexture(textureHasIndex(say))
 				deleteShowTextureIndex(textureHasIndex(say))
@@ -165,7 +158,7 @@ func evalRengBlockStatements(block *ast.BlockStatement, env *object.Environment)
 				config.ShowIndex--
 				fmt.Println(config.ShowTextureIndex)
 
-				LayerMutex.Unlock()
+				config.LayerMutex.Unlock()
 			}
 		}
 	}
@@ -196,9 +189,9 @@ func evalShowExpression(se *ast.ShowExpression, env *object.Environment) object.
 
 		addShowTextureIndex(texture)
 
-		LayerMutex.Lock()
+		config.LayerMutex.Lock()
 		config.LayerList.Layers[1].AddNewTexture(texture)
-		LayerMutex.Unlock()
+		config.LayerMutex.Unlock()
 
 		return nil
 	} else if video, ok := config.VideoList.Get(se.Name.Value); ok {
@@ -211,7 +204,7 @@ func evalShowExpression(se *ast.ShowExpression, env *object.Environment) object.
 		addShowTextureIndex(video.Texture)
 
 		// TODO
-		go core.PlayVideo(video.Video, video.Texture, LayerMutex, config.LayerList, config.Renderer)
+		go core.PlayVideo(video.Video, video.Texture, config.LayerMutex, config.LayerList, config.Renderer)
 	}
 
 	return nil
@@ -220,9 +213,9 @@ func evalShowExpression(se *ast.ShowExpression, env *object.Environment) object.
 func evalHideExpression(he *ast.HideExpression, env *object.Environment) object.Object {
 	if texture, ok := config.TextureList.Get(he.Name.Value); ok {
 		index := textureHasIndex(texture)
-		LayerMutex.Lock()
+		config.LayerMutex.Lock()
 		config.LayerList.Layers[1].DeleteTexture(index)
-		LayerMutex.Unlock()
+		config.LayerMutex.Unlock()
 		deleteShowTextureIndex(index)
 		config.ShowIndex--
 	}
