@@ -1,21 +1,8 @@
 image gui_bg_image = "\gui\bg.png"
 image say = "\gui\say.png"
-# video ball(path = "\video\test.mp4", size = [1280, 720])
+video ball(path = "\video\test.mp4", size = [1280, 720])
 
 label start {
     show gui_bg_image
     play music loop "\audio\bgm1.ogg"
-    "안녕?"
-    "반가워"
-    "지금"
-    "테스트"
-    "중이야."
-    "테스트"
-    "엄청"
-    "잘되네"
-    pause(1)
-    "1초 지나고 출력!"
-    pause(2)
-    "2초 지나고 출력!"
-    "끝"
 }

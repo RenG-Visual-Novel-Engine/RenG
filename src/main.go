@@ -1,15 +1,14 @@
 package main
 
 import (
-	sdl "RenG/src/SDL"
 	"RenG/src/config"
-	"RenG/src/evaluator"
-	"RenG/src/lexer"
-	"RenG/src/object"
-	"RenG/src/parser"
-	"RenG/src/rengeval"
+	"RenG/src/core"
+	"RenG/src/lang/evaluator"
+	"RenG/src/lang/lexer"
+	"RenG/src/lang/object"
+	"RenG/src/lang/parser"
+	"RenG/src/reng"
 	"flag"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"runtime"
@@ -84,7 +83,7 @@ func setUp() {
 	height, _ := env.Get("gui_height")
 	config.Height = int(height.(*object.Integer).Value)
 
-	config.Window, config.Renderer = sdl.SDLInit(config.Title, config.Width, config.Height)
+	config.Window, config.Renderer = core.SDLInit(config.Title, config.Width, config.Height)
 }
 
 func mainLoop(errObject *object.Error) {
@@ -94,27 +93,24 @@ func mainLoop(errObject *object.Error) {
 	for !config.Quit {
 		for config.Event.PollEvent() != 0 {
 			switch config.Event.EventType() {
-			case sdl.SDL_QUIT:
+			case core.SDL_QUIT:
 				config.Quit = true
-			case sdl.SDL_MOUSEBUTTONDOWN:
-				sdl.HandleEvent(sdl.SDL_MOUSEBUTTONDOWN, config.Event, config.EventChan)
-			case sdl.SDL_MOUSEWHEEL:
-				y := config.Event.GetY()
-				fmt.Println(y)
-				rengeval.LayerMutex.Lock()
-				config.LayerList.Layers[1].Images[0].Ypos += y * 20
-				rengeval.LayerMutex.Unlock()
+			case core.SDL_MOUSEBUTTONDOWN:
+				config.Event.HandleEvent(core.SDL_MOUSEBUTTONDOWN, config.MouseDownEventChan)
+			case core.SDL_MOUSEBUTTONUP:
+				config.Event.HandleEvent(core.SDL_MOUSEBUTTONUP, config.MouseUpEventChan)
+			case core.SDL_MOUSEWHEEL:
+				config.Event.HandleEvent(core.SDL_MOUSEWHEEL, config.MouseWheelEventChan)
 			}
 		}
 
-		config.Renderer.SetRenderDrawColor(0xFF, 0xFF, 0xFF, 0xFF)
 		config.Renderer.RenderClear()
 
 		for i := 0; i < len(config.LayerList.Layers); i++ {
 			for j := 0; j < len(config.LayerList.Layers[i].Images); j++ {
-				rengeval.LayerMutex.Lock()
+				reng.LayerMutex.Lock()
 				config.LayerList.Layers[i].Images[j].Render(config.Renderer, nil)
-				rengeval.LayerMutex.Unlock()
+				reng.LayerMutex.Unlock()
 			}
 		}
 
@@ -124,17 +120,17 @@ func mainLoop(errObject *object.Error) {
 	config.TextureList.DestroyAll()
 	config.MusicList.FreaAll()
 	config.ChunkList.FreeAll()
-	sdl.Close(config.Window, config.Renderer)
+	core.Close(config.Window, config.Renderer)
 }
 
 func run(env *object.Environment) {
 
 	fontPath, _ := env.Get("gui_font")
-	config.MainFont = sdl.OpenFont(config.Path + fontPath.(*object.String).Value)
+	config.MainFont = core.OpenFont(config.Path + fontPath.(*object.String).Value)
 
-	config.LayerList.Layers = append(config.LayerList.Layers, sdl.Layer{Name: "error"})
-	config.LayerList.Layers = append(config.LayerList.Layers, sdl.Layer{Name: "main"})
-	config.LayerList.Layers = append(config.LayerList.Layers, sdl.Layer{Name: "screen"})
+	config.LayerList.Layers = append(config.LayerList.Layers, core.Layer{Name: "error"})
+	config.LayerList.Layers = append(config.LayerList.Layers, core.Layer{Name: "main"})
+	config.LayerList.Layers = append(config.LayerList.Layers, core.Layer{Name: "screen"})
 
 	config.ChannelList.NewChannel("music", -1)
 	config.ChannelList.NewChannel("sound", 0)
@@ -143,12 +139,12 @@ func run(env *object.Environment) {
 	start, ok := env.Get("start")
 
 	if !ok {
-		config.LayerList.Layers[0].AddNewTexture(config.MainFont.LoadFromRenderedText("Could not find the entry point for your code.", config.Renderer, sdl.CreateColor(0, 0, 0)))
+		config.LayerList.Layers[0].AddNewTexture(config.MainFont.LoadFromRenderedText("Could not find the entry point for your code.", config.Renderer, core.CreateColor(0, 0, 0)))
 		return
 	}
 
 	if errValue != nil {
-		config.LayerList.Layers[0].AddNewTexture(config.MainFont.LoadFromRenderedText(errValue.Message, config.Renderer, sdl.CreateColor(0, 0, 0)))
+		config.LayerList.Layers[0].AddNewTexture(config.MainFont.LoadFromRenderedText(errValue.Message, config.Renderer, core.CreateColor(0, 0, 0)))
 		return
 	}
 
@@ -158,7 +154,7 @@ func run(env *object.Environment) {
 		label     object.Object
 	)
 
-	result = rengeval.RengEval(start.(*object.Label).Body, env)
+	result = reng.RengEval(start.(*object.Label).Body, env)
 
 	if result == nil {
 		return
@@ -170,7 +166,7 @@ func run(env *object.Environment) {
 
 R:
 	if label, ok = env.Get(jumpLabel.Label.Value); ok {
-		result = rengeval.RengEval(label.(*object.Label).Body, env)
+		result = reng.RengEval(label.(*object.Label).Body, env)
 
 		if result == nil {
 			return

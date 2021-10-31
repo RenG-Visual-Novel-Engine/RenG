@@ -1,8 +1,8 @@
 package config
 
 import (
-	sdl "RenG/src/SDL"
-	"RenG/src/object"
+	"RenG/src/core"
+	"RenG/src/lang/object"
 )
 
 var (
@@ -21,22 +21,24 @@ var (
 )
 
 var (
-	Window   *sdl.SDL_Window
-	Renderer *sdl.SDL_Renderer
+	Window   *core.SDL_Window
+	Renderer *core.SDL_Renderer
 )
 
 var (
-	Event     sdl.SDL_Event
-	EventChan = make(chan sdl.Event)
+	Event               core.SDL_Event
+	MouseDownEventChan  = make(chan core.Event, 1)
+	MouseUpEventChan    = make(chan core.Event, 1)
+	MouseWheelEventChan = make(chan core.Event, 1)
 )
 
 var (
-	MainFont *sdl.TTF_Font
+	MainFont *core.TTF_Font
 )
 
 var (
-	LayerList   = sdl.NewLayerList()
-	ChannelList = sdl.NewChannelList()
+	LayerList   = core.NewLayerList()
+	ChannelList = core.NewChannelList()
 	MusicList   = object.NewMusicList()
 	ChunkList   = object.NewChunkList()
 	VideoList   = object.NewVideoList()
@@ -44,6 +46,6 @@ var (
 )
 
 var (
-	ShowTextureIndex = make([]*sdl.SDL_Texture, 0)
+	ShowTextureIndex = make([]*core.SDL_Texture, 0)
 	ShowIndex        = 0
 )
