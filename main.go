@@ -20,7 +20,7 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		cmd = exec.Command("src\\test", fmt.Sprintf("-r=%s\\reng", root))
+		cmd = exec.Command("core\\RenG", fmt.Sprintf("-r=%s\\RenGLauncher", root))
 	}
 	cmd.Stdout = os.Stdout
 	err := cmd.Run()
