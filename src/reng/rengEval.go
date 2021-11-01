@@ -136,28 +136,27 @@ func evalRengBlockStatements(block *ast.BlockStatement, env *object.Environment)
 				config.LayerMutex.Lock()
 
 				config.LayerList.Layers[1].AddNewTexture(say)
-				addShowTextureIndex(say)
-				fmt.Println(config.ShowTextureIndex)
+				config.AddShowTextureIndex(say)
 
 				config.LayerList.Layers[1].AddNewTexture(text)
-				addShowTextureIndex(text)
-				fmt.Println(config.ShowTextureIndex)
+				config.AddShowTextureIndex(text)
 
 				config.LayerMutex.Unlock()
+
+				// fmt.Println(config.LayerList.Layers[1])
+				// fmt.Println(config.LayerList.Layers[2])
 
 				<-config.MouseDownEventChan
 
 				config.LayerMutex.Lock()
 
-				config.LayerList.Layers[1].DeleteTexture(textureHasIndex(say))
-				deleteShowTextureIndex(textureHasIndex(say))
+				config.LayerList.Layers[1].DeleteTexture(config.ShowTextureHasIndex(say))
+				config.DeleteShowTextureIndex(config.ShowTextureHasIndex(say))
 				config.ShowIndex--
-				fmt.Println(config.ShowTextureIndex)
 
-				config.LayerList.Layers[1].DeleteTexture(textureHasIndex(text))
-				deleteShowTextureIndex(textureHasIndex(text))
+				config.LayerList.Layers[1].DeleteTexture(config.ShowTextureHasIndex(text))
+				config.DeleteShowTextureIndex(config.ShowTextureHasIndex(text))
 				config.ShowIndex--
-				fmt.Println(config.ShowTextureIndex)
 
 				config.LayerMutex.Unlock()
 			}
@@ -188,7 +187,7 @@ func evalShowExpression(se *ast.ShowExpression, env *object.Environment) object.
 			go transform.TransformEval(transform.TransformBuiltins["default"], texture, env)
 		}
 
-		addShowTextureIndex(texture)
+		config.AddShowTextureIndex(texture)
 
 		config.LayerMutex.Lock()
 		config.LayerList.Layers[1].AddNewTexture(texture)
@@ -202,13 +201,14 @@ func evalShowExpression(se *ast.ShowExpression, env *object.Environment) object.
 			go transform.TransformEval(transform.TransformBuiltins["default"], video.Texture, env)
 		}
 
-		addShowTextureIndex(video.Texture)
+		config.AddShowTextureIndex(video.Texture)
 
 		// TODO
 		go core.PlayVideo(video.Video, video.Texture, config.LayerMutex, config.LayerList, config.Renderer)
 	} else if screenObj, ok := env.Get(se.Name.Value); ok {
 		if screenTar, ok := screenObj.(*object.Screen); ok {
-			go screen.ScreenEval(screenTar.Body, env)
+			config.ScreenHasIndex[screenTar.Name.Value] = make([]int, 0)
+			return screen.ScreenEval(screenTar.Body, env, screenTar.Name.Value)
 		}
 	}
 
@@ -217,11 +217,11 @@ func evalShowExpression(se *ast.ShowExpression, env *object.Environment) object.
 
 func evalHideExpression(he *ast.HideExpression, env *object.Environment) object.Object {
 	if texture, ok := config.TextureList.Get(he.Name.Value); ok {
-		index := textureHasIndex(texture)
+		index := config.ShowTextureHasIndex(texture)
 		config.LayerMutex.Lock()
 		config.LayerList.Layers[1].DeleteTexture(index)
 		config.LayerMutex.Unlock()
-		deleteShowTextureIndex(index)
+		config.DeleteShowTextureIndex(index)
 		config.ShowIndex--
 	}
 	return nil

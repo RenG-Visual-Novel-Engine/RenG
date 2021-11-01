@@ -1,17 +1,24 @@
 image gui_bg_image = "\gui\bg.png"
 image say = "\gui\say.png"
+image button = "\image\button.png"
 # video ball(path = "\video\test.mp4", size = [1280, 720])
-
-transform ch1 {
-    xpos 0
-    ypos 0
-}
 
 screen main_menu {
     show gui_bg_image
-    imagebutton say at ch1 action start()
+    imagebutton button action start()
 }
 
 label start {
-    play music loop "\audio\bgm1.ogg"
+    show gui_bg_image
+    play music loop "\audio\alone.mp3"
+    "시진이"
+    "과학점수"
+    "64점"
+    "8의 제곱 놀랍다"
+    "와우 대박"
+    pause(1)
+    "메롱"
+    "이게 끝임"
+    "ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ"
+    "ㅅㄱ"
 }

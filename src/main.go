@@ -3,10 +3,12 @@ package main
 import (
 	"RenG/src/config"
 	"RenG/src/core"
+	"RenG/src/lang/ast"
 	"RenG/src/lang/evaluator"
 	"RenG/src/lang/lexer"
 	"RenG/src/lang/object"
 	"RenG/src/lang/parser"
+	"RenG/src/lang/token"
 	"RenG/src/reng"
 	"flag"
 	"io/ioutil"
@@ -108,13 +110,13 @@ func mainLoop(errObject *object.Error) {
 
 		config.Renderer.RenderClear()
 
+		config.LayerMutex.Lock()
 		for i := 0; i < len(config.LayerList.Layers); i++ {
 			for j := 0; j < len(config.LayerList.Layers[i].Images); j++ {
-				config.LayerMutex.Lock()
 				config.LayerList.Layers[i].Images[j].Render(config.Renderer, nil)
-				config.LayerMutex.Unlock()
 			}
 		}
+		config.LayerMutex.Unlock()
 
 		config.Renderer.RenderPresent()
 	}
@@ -126,18 +128,25 @@ func mainLoop(errObject *object.Error) {
 }
 
 func run(env *object.Environment) {
-	/*
-		main_menu, _ := env.Get("main_menu")
-		config.Main_Menu = main_menu.(*object.Screen)
-	*/
+	main_menu, _ := env.Get("main_menu")
+	config.Main_Menu = main_menu.(*object.Screen)
+
 	start, _ := env.Get("start")
 	config.Start = start.(*object.Label)
 
 	fontPath, _ := env.Get("gui_font")
 	config.MainFont = core.OpenFont(config.Path + fontPath.(*object.String).Value)
 
+	start, ok := env.Get("start")
+
+	if !ok {
+		config.LayerList.Layers[0].AddNewTexture(config.MainFont.LoadFromRenderedText("Could not find the entry point for your code.", config.Renderer, core.CreateColor(0, 0, 0)))
+		return
+	}
+
 	config.LayerList.Layers = append(config.LayerList.Layers, core.Layer{Name: "error"})
 	config.LayerList.Layers = append(config.LayerList.Layers, core.Layer{Name: "main"})
+	config.LayerList.Layers = append(config.LayerList.Layers, core.Layer{Name: "screen"})
 
 	config.ChannelList.NewChannel("music", -1)
 	config.ChannelList.NewChannel("sound", 0)
@@ -147,16 +156,16 @@ func run(env *object.Environment) {
 		config.LayerList.Layers[0].AddNewTexture(config.MainFont.LoadFromRenderedText(errValue.Message, config.Renderer, core.CreateColor(0, 0, 0)))
 		return
 	}
-	/*
-		screen.ScreenEval(config.Main_Menu.Body, env)
-	*/
 
-	start, ok := env.Get("start")
+	reng.RengEval(&ast.ShowExpression{
+		Token: token.Token{
+			Type:    token.SHOW,
+			Literal: "SHOW",
+		},
+		Name: config.Main_Menu.Name,
+	}, env)
 
-	if !ok {
-		config.LayerList.Layers[0].AddNewTexture(config.MainFont.LoadFromRenderedText("Could not find the entry point for your code.", config.Renderer, core.CreateColor(0, 0, 0)))
-		return
-	}
+	<-config.StartChannel
 
 	var (
 		result    object.Object
@@ -188,4 +197,5 @@ R:
 
 		goto R
 	}
+
 }

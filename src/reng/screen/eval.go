@@ -11,17 +11,17 @@ import (
 	"strconv"
 )
 
-func ScreenEval(node ast.Node, env *object.Environment) object.Object {
+func ScreenEval(node ast.Node, env *object.Environment, name string) object.Object {
 	switch node := node.(type) {
 	case *ast.BlockStatement:
-		return evalBlockStatements(node, env)
+		return evalBlockStatements(node, env, name)
 	case *ast.ExpressionStatement:
-		return ScreenEval(node.Expression, env)
+		return ScreenEval(node.Expression, env, name)
 	case *ast.PrefixExpression:
 		if rightValue, ok := node.Right.(*ast.Identifier); ok {
 			return evalAssignPrefixExpression(node.Operator, rightValue, env)
 		} else {
-			right := ScreenEval(node.Right, env)
+			right := ScreenEval(node.Right, env, name)
 			if isError(right) {
 				return right
 			}
@@ -29,19 +29,19 @@ func ScreenEval(node ast.Node, env *object.Environment) object.Object {
 		}
 	case *ast.InfixExpression:
 		if leftValue, ok := node.Left.(*ast.Identifier); ok && isAssign(node.Operator) {
-			right := ScreenEval(node.Right, env)
+			right := ScreenEval(node.Right, env, name)
 			if isError(right) {
 				return right
 			}
 
 			return evalAssignInfixExpression(node.Operator, leftValue, right, env)
 		} else {
-			left := ScreenEval(node.Left, env)
+			left := ScreenEval(node.Left, env, name)
 			if isError(left) {
 				return left
 			}
 
-			right := ScreenEval(node.Right, env)
+			right := ScreenEval(node.Right, env, name)
 			if isError(right) {
 				return right
 			}
@@ -49,30 +49,30 @@ func ScreenEval(node ast.Node, env *object.Environment) object.Object {
 			return evalInfixExpression(node.Operator, left, right)
 		}
 	case *ast.IfExpression:
-		return evalIfExpression(node, env)
+		return evalIfExpression(node, env, name)
 	case *ast.ForExpression:
-		return evalForExpression(node, env)
+		return evalForExpression(node, env, name)
 	case *ast.WhileExpression:
-		return evalWhileExpression(node, env)
+		return evalWhileExpression(node, env, name)
 	case *ast.CallFunctionExpression:
-		function := ScreenEval(node.Function, env)
+		function := ScreenEval(node.Function, env, name)
 		if isError(function) {
 			return function
 		}
 
-		args := evalExpressions(node.Arguments, env)
+		args := evalExpressions(node.Arguments, env, name)
 		if len(args) == 1 && isError(args[0]) {
 			return args[0]
 		}
 
-		return applyFunction(function, args)
+		return applyFunction(function, args, name)
 	case *ast.IndexExpression:
-		left := ScreenEval(node.Left, env)
+		left := ScreenEval(node.Left, env, name)
 		if isError(left) {
 			return left
 		}
 
-		index := ScreenEval(node.Index, env)
+		index := ScreenEval(node.Index, env, name)
 		if isError(index) {
 			return index
 		}
@@ -87,22 +87,22 @@ func ScreenEval(node ast.Node, env *object.Environment) object.Object {
 	case *ast.FloatLiteral:
 		return &object.Float{Value: node.Value}
 	case *ast.StringLiteral:
-		return evalStringLiteral(node, env)
+		return evalStringLiteral(node, env, name)
 	case *ast.ArrayLiteral:
-		elements := evalExpressions(node.Elements, env)
+		elements := evalExpressions(node.Elements, env, name)
 		if len(elements) == 1 && isError(elements[0]) {
 			return elements[0]
 		}
 		return &object.Array{Elements: elements}
 	case *ast.ShowExpression:
-		return evalShowExpression(node, env)
+		return evalShowExpression(node, env, name)
 	case *ast.ImagebuttonExpression:
-		return evalImagebuttonExpression(node, env)
+		return evalImagebuttonExpression(node, env, name)
 	}
 	return nil
 }
 
-func evalShowExpression(se *ast.ShowExpression, env *object.Environment) object.Object {
+func evalShowExpression(se *ast.ShowExpression, env *object.Environment, name string) object.Object {
 	if texture, ok := config.TextureList.Get(se.Name.Value); ok {
 		if trans, ok := env.Get(se.Transform.Value); ok {
 			go transform.TransformEval(trans.(*object.Transform).Body, texture, env)
@@ -110,10 +110,11 @@ func evalShowExpression(se *ast.ShowExpression, env *object.Environment) object.
 			go transform.TransformEval(transform.TransformBuiltins["default"], texture, env)
 		}
 
-		addShowTextureIndex(texture)
+		Set(name, config.ScreenIndex)
+		config.AddScreenTextureIndex(texture)
 
 		config.LayerMutex.Lock()
-		config.LayerList.Layers[1].AddNewTexture(texture)
+		config.LayerList.Layers[2].AddNewTexture(texture)
 		config.LayerMutex.Unlock()
 
 		return nil
@@ -124,7 +125,8 @@ func evalShowExpression(se *ast.ShowExpression, env *object.Environment) object.
 			go transform.TransformEval(transform.TransformBuiltins["default"], video.Texture, env)
 		}
 
-		addShowTextureIndex(video.Texture)
+		Set(name, config.ScreenIndex)
+		config.AddScreenTextureIndex(video.Texture)
 
 		// TODO
 		go core.PlayVideo(video.Video, video.Texture, config.LayerMutex, config.LayerList, config.Renderer)
@@ -133,7 +135,7 @@ func evalShowExpression(se *ast.ShowExpression, env *object.Environment) object.
 	return nil
 }
 
-func evalImagebuttonExpression(ie *ast.ImagebuttonExpression, env *object.Environment) object.Object {
+func evalImagebuttonExpression(ie *ast.ImagebuttonExpression, env *object.Environment, name string) object.Object {
 	if texture, ok := config.TextureList.Get(ie.MainImage.Value); ok {
 		if trans, ok := env.Get(ie.Transform.Value); ok {
 			go transform.TransformEval(trans.(*object.Transform).Body, texture, env)
@@ -141,19 +143,25 @@ func evalImagebuttonExpression(ie *ast.ImagebuttonExpression, env *object.Enviro
 			go transform.TransformEval(transform.TransformBuiltins["default"], texture, env)
 		}
 
-		addShowTextureIndex(texture)
+		Set(name, config.ScreenIndex)
+		config.AddScreenTextureIndex(texture)
 
 		config.LayerMutex.Lock()
-		config.LayerList.Layers[1].AddNewTexture(texture)
+		config.LayerList.Layers[2].AddNewTexture(texture)
 		config.LayerMutex.Unlock()
 
 		// TODO
 		go func() {
 			for {
 				event := <-config.MouseDownEventChan
-
+				if IsScreenEnd(name) {
+					return
+				}
 				if IsInTexture(texture, event.Mouse.Down.X, event.Mouse.Down.Y) {
-					ScreenEval(ie.Action, env)
+					ScreenEval(ie.Action, env, name)
+				}
+				if IsScreenEnd(name) {
+					return
 				}
 			}
 		}()
@@ -161,11 +169,11 @@ func evalImagebuttonExpression(ie *ast.ImagebuttonExpression, env *object.Enviro
 	return nil
 }
 
-func evalBlockStatements(block *ast.BlockStatement, env *object.Environment) object.Object {
+func evalBlockStatements(block *ast.BlockStatement, env *object.Environment, name string) object.Object {
 	var result object.Object
 
 	for _, statement := range block.Statements {
-		result = ScreenEval(statement, env)
+		result = ScreenEval(statement, env, name)
 		if result != nil {
 			rt := result.Type()
 			if rt == object.ERROR_OBJ {
@@ -177,11 +185,11 @@ func evalBlockStatements(block *ast.BlockStatement, env *object.Environment) obj
 	return result
 }
 
-func evalExpressions(exps []ast.Expression, env *object.Environment) []object.Object {
+func evalExpressions(exps []ast.Expression, env *object.Environment, name string) []object.Object {
 	var result []object.Object
 
 	for _, e := range exps {
-		evaluated := ScreenEval(e, env)
+		evaluated := ScreenEval(e, env, name)
 		if isError(evaluated) {
 			return []object.Object{evaluated}
 		}
@@ -191,7 +199,7 @@ func evalExpressions(exps []ast.Expression, env *object.Environment) []object.Ob
 	return result
 }
 
-func evalStringLiteral(str *ast.StringLiteral, env *object.Environment) *object.String {
+func evalStringLiteral(str *ast.StringLiteral, env *object.Environment, name string) *object.String {
 	result := &object.String{Value: str.Value}
 
 	// TODO : 최적화하기
@@ -205,7 +213,7 @@ func evalStringLiteral(str *ast.StringLiteral, env *object.Environment) *object.
 
 		for isCurrentExp(index, str) {
 
-			val := ScreenEval(str.Exp[expIndex].Exp, env)
+			val := ScreenEval(str.Exp[expIndex].Exp, env, name)
 
 			switch value := val.(type) {
 			case *object.Integer:
@@ -251,60 +259,60 @@ func evalArrayIndexExpression(array, index object.Object) object.Object {
 	return arrayObject.Elements[idx]
 }
 
-func evalIfExpression(ie *ast.IfExpression, env *object.Environment) object.Object {
-	condition := ScreenEval(ie.Condition, env)
+func evalIfExpression(ie *ast.IfExpression, env *object.Environment, name string) object.Object {
+	condition := ScreenEval(ie.Condition, env, name)
 	if isError(condition) {
 		return condition
 	}
 
 	if isTruthy(condition) {
-		return ScreenEval(ie.Consequence, env)
+		return ScreenEval(ie.Consequence, env, name)
 	}
 
 	for _, ee := range ie.Elif {
 		if ee != nil {
-			elifCondition := ScreenEval(ee.Condition, env)
+			elifCondition := ScreenEval(ee.Condition, env, name)
 			if isError(elifCondition) {
 				return elifCondition
 			}
 			if isTruthy(elifCondition) {
-				return ScreenEval(ee.Consequence, env)
+				return ScreenEval(ee.Consequence, env, name)
 			}
 		}
 	}
 
 	if ie.Alternative != nil {
-		return ScreenEval(ie.Alternative, env)
+		return ScreenEval(ie.Alternative, env, name)
 	} else {
 		return NULL
 	}
 }
 
-func evalForExpression(node *ast.ForExpression, env *object.Environment) object.Object {
+func evalForExpression(node *ast.ForExpression, env *object.Environment, name string) object.Object {
 	var define, condition, result, run object.Object
 
-	define = ScreenEval(node.Define, env)
+	define = ScreenEval(node.Define, env, name)
 	if isError(define) {
 		return define
 	}
 
-	condition = ScreenEval(node.Condition, env)
+	condition = ScreenEval(node.Condition, env, name)
 	if isError(condition) {
 		return condition
 	}
 
 	for isTruthy(condition) {
-		result = ScreenEval(node.Body, env)
+		result = ScreenEval(node.Body, env, name)
 		if isError(result) {
 			return result
 		}
 
-		run = ScreenEval(node.Run, env)
+		run = ScreenEval(node.Run, env, name)
 		if isError(run) {
 			return run
 		}
 
-		condition = ScreenEval(node.Condition, env)
+		condition = ScreenEval(node.Condition, env, name)
 		if isError(condition) {
 			return condition
 		}
@@ -312,19 +320,19 @@ func evalForExpression(node *ast.ForExpression, env *object.Environment) object.
 	return nil
 }
 
-func evalWhileExpression(node *ast.WhileExpression, env *object.Environment) object.Object {
-	condition := ScreenEval(node.Condition, env)
+func evalWhileExpression(node *ast.WhileExpression, env *object.Environment, name string) object.Object {
+	condition := ScreenEval(node.Condition, env, name)
 	if isError(condition) {
 		return condition
 	}
 
 	for isTruthy(condition) {
-		result := ScreenEval(node.Body, env)
+		result := ScreenEval(node.Body, env, name)
 		if isError(result) {
 			return result
 		}
 
-		condition = ScreenEval(node.Condition, env)
+		condition = ScreenEval(node.Condition, env, name)
 		if isError(condition) {
 			return condition
 		}

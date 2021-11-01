@@ -1,6 +1,7 @@
 package evaluator
 
 import (
+	"RenG/src/config"
 	"RenG/src/lang/object"
 	"fmt"
 	"time"
@@ -53,6 +54,38 @@ var FunctionBuiltins = map[string]*object.Builtin{
 			}
 
 			time.Sleep(time.Second * time.Duration(args[0].(*object.Integer).Value))
+
+			return nil
+		},
+	},
+	"Start": {
+		Fn: func(args ...object.Object) object.Object {
+
+			config.DeleteScreen("main_menu")
+
+			config.LayerMutex.Lock()
+			config.LayerList.Layers[0].DeleteAllTexture()
+			config.LayerList.Layers[1].DeleteAllTexture()
+			config.LayerList.Layers[2].DeleteAllTexture()
+			config.LayerMutex.Unlock()
+
+			config.ScreenIndex = 0
+			config.ShowIndex = 0
+
+			config.DeleteScreen("main_menu")
+
+			/*
+				fmt.Println(config.LayerList.Layers[0].Images)
+				fmt.Println(config.LayerList.Layers[1].Images)
+				fmt.Println(config.LayerList.Layers[2].Images)
+				fmt.Println(config.ShowIndex)
+				fmt.Println(config.ScreenIndex)
+				fmt.Println(config.ShowTextureIndex)
+				fmt.Println(config.ScreenTextureIndex)
+				fmt.Println(config.ScreenHasIndex)
+			*/
+
+			config.StartChannel <- true
 
 			return nil
 		},

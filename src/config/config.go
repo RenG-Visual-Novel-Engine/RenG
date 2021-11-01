@@ -27,6 +27,7 @@ var (
 )
 
 var (
+	StartChannel         = make(chan bool)
 	Event                core.SDL_Event
 	MouseMotionEventChan = make(chan core.Event, 5)
 	MouseDownEventChan   = make(chan core.Event, 5)
@@ -64,6 +65,10 @@ var (
 var (
 	ShowTextureIndex = make([]*core.SDL_Texture, 0)
 	ShowIndex        = 0
+
+	ScreenHasIndex     = make(map[string][]int)
+	ScreenTextureIndex = make([]*core.SDL_Texture, 0)
+	ScreenIndex        = 0
 )
 
 var (

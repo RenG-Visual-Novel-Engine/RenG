@@ -14,32 +14,6 @@ var (
 	FALSE = &object.Boolean{Value: false}
 )
 
-func addShowTextureIndex(texture *core.SDL_Texture) {
-	config.ShowTextureIndex = append(config.ShowTextureIndex, texture)
-	config.ShowIndex++
-}
-
-func textureHasIndex(texture *core.SDL_Texture) int {
-	result := 0
-	for _, t := range config.ShowTextureIndex {
-		if t == texture {
-			break
-		}
-		result++
-	}
-	return result
-}
-
-func deleteShowTextureIndex(index int) {
-	config.ShowTextureIndex = append(config.ShowTextureIndex[:index], config.ShowTextureIndex[index+1:]...)
-}
-
-func DeleteAllShowTextureIndex() {
-	for i := 0; i < len(config.ShowTextureIndex); i++ {
-		config.ShowTextureIndex = append(config.ShowTextureIndex[:0], config.ShowTextureIndex[1:]...)
-	}
-}
-
 func playMusic(musicRoot string, loop bool) {
 	if !core.PlayingMusic() {
 		loadMusic(musicRoot).PlayMusic(loop)

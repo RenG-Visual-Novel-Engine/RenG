@@ -1,5 +1,3 @@
-*.exe
 *.cmake
 *.zip
 /RenG
-/Go

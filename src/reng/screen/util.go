@@ -18,16 +18,16 @@ func IsInTexture(texture *core.SDL_Texture, x, y int) bool {
 	return x >= texture.Xpos && x <= texture.Width+texture.Xpos && y >= texture.Ypos && y <= texture.Height+texture.Ypos
 }
 
-func addShowTextureIndex(texture *core.SDL_Texture) {
-	config.ShowTextureIndex = append(config.ShowTextureIndex, texture)
-	config.ShowIndex++
+func IsScreenEnd(name string) bool {
+	_, ok := config.ScreenHasIndex[name]
+	return !ok
 }
 
-func applyFunction(fn object.Object, args []object.Object) object.Object {
+func applyFunction(fn object.Object, args []object.Object, name string) object.Object {
 	switch fn := fn.(type) {
 	case *object.Function:
 		extendedEnv := extendFunctionEnv(fn, args)
-		evaluated := ScreenEval(fn.Body, extendedEnv)
+		evaluated := ScreenEval(fn.Body, extendedEnv, name)
 		return unwrapReturnValue(evaluated)
 	case *object.Builtin:
 		return fn.Fn(args...)

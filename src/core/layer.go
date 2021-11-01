@@ -22,11 +22,19 @@ func (l *Layer) DeleteTexture(index int) {
 }
 
 func (l *Layer) DeleteAllTexture() {
-	for i := 0; i < len(l.Images); i++ {
-		l.Images = append(l.Images[:0], l.Images[1:]...)
+	if len(l.Images) == 0 {
+		return
+	}
+
+	length := len(l.Images)
+
+	for i := 0; i < length; i++ {
+		l.Images[0] = l.Images[len(l.Images)-1]
+		l.Images = l.Images[:len(l.Images)-1]
 	}
 }
 
+// TODO
 func (l *Layer) ChangeTexture(texture *SDL_Texture, index int) {
 	if l.Images[index] == nil {
 		l.Images = append(l.Images, texture)
