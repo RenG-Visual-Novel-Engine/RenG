@@ -40,11 +40,17 @@ SOFTWARE.
 
 <br>
 
+## Compiler
+
+|Language|Version|License|
+|--------|-------|-------|
+|Go|1.17|Creative Commons 3.0 Attributions license|
+
 ## Libraries
 
-|Name|역할|라이선스|
-|----|----|----|
-|SDL2|메인 그래픽 출력|zlib License,|
+|Name|Part|License|
+|----|----|-------|
+|SDL2|메인 그래픽 출력|zlib License|
 |FFmpeg|동영상 인코딩, 디코딩|GNU Lesser General Public License|
 
 ## Font
