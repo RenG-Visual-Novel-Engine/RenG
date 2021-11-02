@@ -8,6 +8,16 @@ package core
 #include <SDL_image.h>
 */
 import "C"
+import "unsafe"
+
+func IMGLoad(path string) *SDL_Surface {
+	cPath := C.CString(path)
+	defer C.free(unsafe.Pointer(cPath))
+
+	surface := C.IMG_Load(cPath)
+
+	return (*SDL_Surface)(surface)
+}
 
 func (t *SDL_Texture) SetBlendMode() {
 	C.SDL_SetTextureBlendMode((*C.SDL_Texture)(t.Texture), SDL_BLENDMODE_BLEND)

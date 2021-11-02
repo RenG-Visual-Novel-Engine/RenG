@@ -15,7 +15,7 @@ import (
 	"unsafe"
 )
 
-func SDLInit(title string, width, height int) (*SDL_Window, *SDL_Renderer) {
+func SDLInit(title string, width, height int, icon *SDL_Surface) (*SDL_Window, *SDL_Renderer) {
 	if int(C.SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO|SDL_INIT_TIMER)) < 0 {
 		fmt.Println("SDL Error")
 		return nil, nil
@@ -26,6 +26,9 @@ func SDLInit(title string, width, height int) (*SDL_Window, *SDL_Renderer) {
 
 	cTitle := C.CString(title)
 	window := C.SDL_CreateWindow(cTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, C.int(width), C.int(height), SDL_WINDOW_SHOWN|SDL_WINDOW_RESIZABLE)
+	if icon != nil {
+		C.SDL_SetWindowIcon((*C.SDL_Window)(window), (*C.SDL_Surface)(icon))
+	}
 	renderer := C.SDL_CreateRenderer((*C.SDL_Window)(window), -1, SDL_RENDERER_ACCELERATED|SDL_RENDERER_PRESENTVSYNC|SDL_RENDERER_TARGETTEXTURE)
 
 	if (C.IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) == 0 {

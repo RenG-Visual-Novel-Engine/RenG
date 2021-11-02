@@ -177,6 +177,10 @@ func evalBlockStatements(block *ast.BlockStatement, env *object.Environment, nam
 		if result != nil {
 			rt := result.Type()
 			if rt == object.ERROR_OBJ {
+				config.LayerMutex.Lock()
+				config.LayerList.Layers[1].DeleteAllTexture()
+				config.LayerList.Layers[0].AddNewTexture(config.MainFont.LoadFromRenderedText(result.(*object.Error).Message, config.Renderer, core.CreateColor(0, 0, 0)))
+				config.LayerMutex.Unlock()
 				return result
 			}
 		}

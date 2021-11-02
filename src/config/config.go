@@ -19,6 +19,8 @@ var (
 	Title  string
 	Width  int
 	Height int
+
+	Icon *core.SDL_Surface
 )
 
 var (

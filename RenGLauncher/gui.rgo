@@ -1,36 +1,37 @@
 image gui_bg_image = "\gui\bg.png"
 image say = "\gui\say.png"
 image button = "\image\button.png"
-image button2 = "\image\button.png"
+image gopher = "\image\Gopher.png"
 # video ball(path = "\video\test.mp4", size = [1280, 720])
-
-transform ch1 {
-    xpos 0
-    ypos 0
-}
-
-transform ch2 {
-    xpos 640
-    ypos 360
-}
 
 screen main_menu {
     show gui_bg_image
-    imagebutton button at ch1 action Start()
-    imagebutton button2 at ch2 action Start()
+    imagebutton button action Start()
 }
 
 label start {
     show gui_bg_image
-    play music loop "\audio\alone.mp3"
-    "시진이"
-    "과학점수"
-    "64점"
-    "8의 제곱 놀랍다"
-    "와우 대박"
-    pause(1)
-    "메롱"
-    "이게 끝임"
-    "ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ"
-    "ㅅㄱ"
+    # play music loop "\audio\alone.mp3"
+    show gopher
+
+    "테스트 중입니다."
+    "1"
+    "2"
+    for (i = 3; i < 5; ++i) {
+        "[i]"
+    }
+
+    call test
+
+    "테스트 종료"
+
+    # stop music
+    hide gopher
+    hide gui_bg_image
+    return # issue
+}
+
+label test {
+    "test1"
+    "test2"
 }

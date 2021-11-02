@@ -4,3 +4,5 @@ gui_width = 1280
 gui_height = 720
 
 gui_font = "\font\JejuGothic.ttf"
+
+gui_icon = "\gui\icon\Gopher.ico"

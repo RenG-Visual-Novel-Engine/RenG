@@ -118,9 +118,12 @@ func evalRengBlockStatements(block *ast.BlockStatement, env *object.Environment)
 		result = RengEval(statement, env)
 		if result != nil {
 			switch result.Type() {
+			case object.RETURN_VALUE_OBJ:
+				return result
 			case object.ERROR_OBJ:
 				config.LayerMutex.Lock()
 				config.LayerList.Layers[1].DeleteAllTexture()
+				config.LayerList.Layers[2].DeleteAllTexture()
 				config.LayerList.Layers[0].AddNewTexture(config.MainFont.LoadFromRenderedText(result.(*object.Error).Message, config.Renderer, core.CreateColor(0, 0, 0)))
 				config.LayerMutex.Unlock()
 				return result
@@ -131,6 +134,7 @@ func evalRengBlockStatements(block *ast.BlockStatement, env *object.Environment)
 				if !err {
 					return newError("textruelist error")
 				}
+				fmt.Println(result.(*object.String).Value)
 				text := config.MainFont.LoadFromRenderedText(result.(*object.String).Value, config.Renderer, core.CreateColor(0, 0, 0))
 
 				config.LayerMutex.Lock()
@@ -168,11 +172,11 @@ func evalRengBlockStatements(block *ast.BlockStatement, env *object.Environment)
 
 func evalCallLabelExpression(cle *ast.CallLabelExpression, env *object.Environment) object.Object {
 	if label, ok := env.Get(cle.Label.Value); ok {
-		labelBody := label.(*object.Label).Body
-		return RengEval(labelBody, env)
+		RengEval(label.(*object.Label).Body, env)
 	} else {
 		return newError("defined label %s", cle.Label.Value)
 	}
+	return nil
 }
 
 func evalJumpLabelExpression(jle *ast.JumpLabelExpression) object.Object {

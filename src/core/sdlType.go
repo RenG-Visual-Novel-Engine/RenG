@@ -24,6 +24,7 @@ type SDL_Texture struct {
 	Alpha   uint8
 	Degree  float64
 }
+type SDL_Surface C.SDL_Surface
 type SDL_Rect C.SDL_Rect
 type SDL_Color C.SDL_Color
 

@@ -85,7 +85,12 @@ func setUp() {
 	height, _ := env.Get("gui_height")
 	config.Height = int(height.(*object.Integer).Value)
 
-	config.Window, config.Renderer = core.SDLInit(config.Title, config.Width, config.Height)
+	icon, ok := env.Get("gui_icon")
+	if ok {
+		config.Icon = core.IMGLoad(config.Path + icon.(*object.String).Value)
+	}
+
+	config.Window, config.Renderer = core.SDLInit(config.Title, config.Width, config.Height, config.Icon)
 }
 
 func mainLoop(errObject *object.Error) {
@@ -183,7 +188,7 @@ func run(env *object.Environment) {
 		return
 	}
 
-R:
+R2:
 	if label, ok = env.Get(jumpLabel.Label.Value); ok {
 		result = reng.RengEval(label.(*object.Label).Body, env)
 
@@ -195,7 +200,7 @@ R:
 			return
 		}
 
-		goto R
+		goto R2
 	}
 
 }
