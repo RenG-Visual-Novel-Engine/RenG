@@ -186,7 +186,7 @@ func (l *Lexer) NextToken() token.Token {
 	case ';':
 		tok = newToken(token.ENDSENTENCE, l.ch)
 	case '#':
-		for !(l.peekChar() == 13) {
+		for !(l.peekChar() == '\n') {
 			l.readChar()
 		}
 		l.readChar()
@@ -317,7 +317,7 @@ func (l *Lexer) skipWhiteSpace() {
 // \n 개행문자를 스킵하는 역할입니다.
 //     필요성 : 개행문자를 하나의 ENDSENTENCE 토큰으로 판단하므로 필요합니다.
 func (l *Lexer) jumpWhiteSpace() {
-	for l.peekChar() == 13 || l.ch == 13 {
+	for l.peekChar() == '\n' {
 		l.readChar()
 	}
 	l.readChar()

@@ -76,16 +76,16 @@ func interPretation(code string) {
 }
 
 func setUp() {
-	title, _ := env.Get("gui_title")
+	title, _ := env.Get("config_title")
 	config.Title = title.(*object.String).Value
 
-	width, _ := env.Get("gui_width")
+	width, _ := env.Get("config_width")
 	config.Width = int(width.(*object.Integer).Value)
 
-	height, _ := env.Get("gui_height")
+	height, _ := env.Get("config_height")
 	config.Height = int(height.(*object.Integer).Value)
 
-	icon, ok := env.Get("gui_icon")
+	icon, ok := env.Get("config_icon")
 	if ok {
 		config.Icon = core.IMGLoad(config.Path + icon.(*object.String).Value)
 	}
@@ -114,6 +114,7 @@ func mainLoop(errObject *object.Error) {
 		}
 
 		config.Renderer.RenderClear()
+		config.Renderer.SetRenderDrawColor(0xFF, 0xFF, 0xFF, 255)
 
 		config.LayerMutex.Lock()
 		for i := 0; i < len(config.LayerList.Layers); i++ {
@@ -133,22 +134,6 @@ func mainLoop(errObject *object.Error) {
 }
 
 func run(env *object.Environment) {
-	main_menu, _ := env.Get("main_menu")
-	config.Main_Menu = main_menu.(*object.Screen)
-
-	start, _ := env.Get("start")
-	config.Start = start.(*object.Label)
-
-	fontPath, _ := env.Get("gui_font")
-	config.MainFont = core.OpenFont(config.Path + fontPath.(*object.String).Value)
-
-	start, ok := env.Get("start")
-
-	if !ok {
-		config.LayerList.Layers[0].AddNewTexture(config.MainFont.LoadFromRenderedText("Could not find the entry point for your code.", config.Renderer, core.CreateColor(0, 0, 0)))
-		return
-	}
-
 	config.LayerList.Layers = append(config.LayerList.Layers, core.Layer{Name: "error"})
 	config.LayerList.Layers = append(config.LayerList.Layers, core.Layer{Name: "main"})
 	config.LayerList.Layers = append(config.LayerList.Layers, core.Layer{Name: "screen"})
@@ -157,10 +142,51 @@ func run(env *object.Environment) {
 	config.ChannelList.NewChannel("sound", 0)
 	config.ChannelList.NewChannel("voice", 1)
 
+	fontPath, _ := env.Get("config_font")
+	config.MainFont = core.OpenFont(config.Path + fontPath.(*object.String).Value)
+
 	if errValue != nil {
-		config.LayerList.Layers[0].AddNewTexture(config.MainFont.LoadFromRenderedText(errValue.Message, config.Renderer, core.CreateColor(0, 0, 0)))
+		config.LayerMutex.Lock()
+		config.LayerList.Layers[0].AddNewTexture(
+			config.MainFont.LoadFromRenderedText(errValue.Message,
+				config.Renderer,
+				config.Width, config.Height,
+				core.CreateColor(0, 0, 0),
+			),
+		)
+		config.LayerMutex.Unlock()
 		return
 	}
+
+	main_menu, ok := env.Get("main_menu")
+	if !ok {
+		config.LayerMutex.Lock()
+		config.LayerList.Layers[0].AddNewTexture(
+			config.MainFont.LoadFromRenderedText("Could not find the screen main_menu for your code.",
+				config.Renderer,
+				config.Width, config.Height,
+				core.CreateColor(0, 0, 0),
+			),
+		)
+		config.LayerMutex.Unlock()
+		return
+	}
+	config.Main_Menu = main_menu.(*object.Screen)
+
+	start, ok := env.Get("start")
+	if !ok {
+		config.LayerMutex.Lock()
+		config.LayerList.Layers[0].AddNewTexture(
+			config.MainFont.LoadFromRenderedText("Could not find the entry point for your code.",
+				config.Renderer,
+				config.Width, config.Height,
+				core.CreateColor(0, 0, 0),
+			),
+		)
+		config.LayerMutex.Unlock()
+		return
+	}
+	config.Start = start.(*object.Label)
 
 	reng.RengEval(&ast.ShowExpression{
 		Token: token.Token{
@@ -188,8 +214,9 @@ func run(env *object.Environment) {
 		return
 	}
 
-R2:
-	if label, ok = env.Get(jumpLabel.Label.Value); ok {
+	label, ok = env.Get(jumpLabel.Label.Value)
+
+	for ok {
 		result = reng.RengEval(label.(*object.Label).Body, env)
 
 		if result == nil {
@@ -200,7 +227,6 @@ R2:
 			return
 		}
 
-		goto R2
+		label, ok = env.Get(jumpLabel.Label.Value)
 	}
-
 }

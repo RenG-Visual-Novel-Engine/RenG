@@ -121,7 +121,7 @@ func evalProgram(program *ast.Program, env *object.Environment) object.Object {
 
 		switch result := result.(type) {
 		case *object.ReturnValue:
-			return result.Value
+			return result
 		case *object.Error:
 			return result
 		}

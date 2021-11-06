@@ -25,7 +25,7 @@ func evalImageExpression(ie *ast.ImageExpression, env *object.Environment) objec
 	if path, ok := rootObj.(*object.String); ok {
 		texture, suc := config.Renderer.LoadFromFile(config.Path + path.Value)
 		if !suc {
-			return newError("Failed Load %s Texture", path.Value)
+			return newError("Failed Load Texture, Path=%s", path.Value)
 		}
 
 		config.TextureList.Set(ie.Name.Value, texture)

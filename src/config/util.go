@@ -4,36 +4,35 @@ import (
 	"RenG/src/core"
 )
 
-// TODO
 func DeleteScreen(name string) {
-	indexes := ScreenHasIndex[name]
+	screen := ScreenAllIndex[name]
 
-	for i, index := range indexes {
-		num := ScreenTextureIndex[index-i]
-		DeleteScreenTextureIndex(ScreenTextureHasIndex(num))
+	LayerMutex.Lock()
+	for i := 0; i < screen.Count; i++ {
+		LayerList.Layers[2].DeleteTexture(screen.First)
+	}
+	LayerMutex.Unlock()
+
+	for i := 0; i < screen.Count; i++ {
+		ScreenTextureIndex = append(ScreenTextureIndex[:screen.First], ScreenTextureIndex[screen.First+1:]...)
+		ScreenIndex--
 	}
 
-	delete(ScreenHasIndex, name)
+	delete(ScreenAllIndex, name)
+
+	for key, screens := range ScreenAllIndex {
+		if screens.First > screen.First {
+			ScreenAllIndex[key] = Screen{
+				First: screens.First - screen.Count,
+				Count: screens.Count,
+			}
+		}
+	}
 }
 
 func AddScreenTextureIndex(texture *core.SDL_Texture) {
 	ScreenTextureIndex = append(ScreenTextureIndex, texture)
 	ScreenIndex++
-}
-
-func DeleteScreenTextureIndex(index int) {
-	ScreenTextureIndex = append(ScreenTextureIndex[:index], ScreenTextureIndex[index+1:]...)
-}
-
-func ScreenTextureHasIndex(texture *core.SDL_Texture) int {
-	result := 0
-	for _, t := range ScreenTextureIndex {
-		if t == texture {
-			break
-		}
-		result++
-	}
-	return result
 }
 
 func AddShowTextureIndex(texture *core.SDL_Texture) {

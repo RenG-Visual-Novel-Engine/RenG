@@ -1,8 +1,7 @@
-gui_title = "RenG Launcher"
+config_title = "RenG Launcher"
+config_icon = "\image\icon\Gopher.ico"
 
-gui_width = 1280
-gui_height = 720
+config_width = 1280
+config_height = 720
 
-gui_font = "\font\JejuGothic.ttf"
-
-gui_icon = "\gui\icon\Gopher.ico"
+config_font = "\font\JejuGothic.ttf"

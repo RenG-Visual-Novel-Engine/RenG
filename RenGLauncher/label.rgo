@@ -1,0 +1,10 @@
+label start {
+    play music loop "\audio\alone.mp3"
+
+    "테스트 중입니다."
+
+    "테스트 종료"
+
+    stop music
+    return # issue
+}

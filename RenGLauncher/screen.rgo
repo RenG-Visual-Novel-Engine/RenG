@@ -1,0 +1,5 @@
+screen main_menu {
+    show bg
+    show logo at LogoTransform
+    # imagebutton button action Start()
+}

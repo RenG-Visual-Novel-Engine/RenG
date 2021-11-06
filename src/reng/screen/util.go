@@ -19,7 +19,7 @@ func IsInTexture(texture *core.SDL_Texture, x, y int) bool {
 }
 
 func IsScreenEnd(name string) bool {
-	_, ok := config.ScreenHasIndex[name]
+	_, ok := config.ScreenAllIndex[name]
 	return !ok
 }
 

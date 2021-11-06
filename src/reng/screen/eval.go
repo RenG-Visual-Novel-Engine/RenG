@@ -110,7 +110,10 @@ func evalShowExpression(se *ast.ShowExpression, env *object.Environment, name st
 			go transform.TransformEval(transform.TransformBuiltins["default"], texture, env)
 		}
 
-		Set(name, config.ScreenIndex)
+		config.ScreenAllIndex[name] = config.Screen{
+			First: config.ScreenAllIndex[name].First,
+			Count: config.ScreenAllIndex[name].Count + 1,
+		}
 		config.AddScreenTextureIndex(texture)
 
 		config.LayerMutex.Lock()
@@ -118,7 +121,7 @@ func evalShowExpression(se *ast.ShowExpression, env *object.Environment, name st
 		config.LayerMutex.Unlock()
 
 		return nil
-	} else if video, ok := config.VideoList.Get(se.Name.Value); ok {
+	} /* else if video, ok := config.VideoList.Get(se.Name.Value); ok {
 		if trans, ok := env.Get(se.Transform.Value); ok {
 			go transform.TransformEval(trans.(*object.Transform).Body, video.Texture, env)
 		} else {
@@ -131,6 +134,7 @@ func evalShowExpression(se *ast.ShowExpression, env *object.Environment, name st
 		// TODO
 		go core.PlayVideo(video.Video, video.Texture, config.LayerMutex, config.LayerList, config.Renderer)
 	}
+	*/
 
 	return nil
 }
@@ -143,7 +147,10 @@ func evalImagebuttonExpression(ie *ast.ImagebuttonExpression, env *object.Enviro
 			go transform.TransformEval(transform.TransformBuiltins["default"], texture, env)
 		}
 
-		Set(name, config.ScreenIndex)
+		config.ScreenAllIndex[name] = config.Screen{
+			First: config.ScreenAllIndex[name].First,
+			Count: config.ScreenAllIndex[name].Count + 1,
+		}
 		config.AddScreenTextureIndex(texture)
 
 		config.LayerMutex.Lock()
@@ -179,7 +186,14 @@ func evalBlockStatements(block *ast.BlockStatement, env *object.Environment, nam
 			if rt == object.ERROR_OBJ {
 				config.LayerMutex.Lock()
 				config.LayerList.Layers[1].DeleteAllTexture()
-				config.LayerList.Layers[0].AddNewTexture(config.MainFont.LoadFromRenderedText(result.(*object.Error).Message, config.Renderer, core.CreateColor(0, 0, 0)))
+				config.LayerList.Layers[0].AddNewTexture(
+					config.MainFont.LoadFromRenderedText(
+						result.(*object.Error).Message,
+						config.Renderer,
+						config.Width, config.Height,
+						core.CreateColor(0, 0, 0),
+					),
+				)
 				config.LayerMutex.Unlock()
 				return result
 			}

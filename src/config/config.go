@@ -6,6 +6,11 @@ import (
 	"sync"
 )
 
+type Screen struct {
+	First int
+	Count int
+}
+
 var (
 	Path string
 	Code string
@@ -68,7 +73,7 @@ var (
 	ShowTextureIndex = make([]*core.SDL_Texture, 0)
 	ShowIndex        = 0
 
-	ScreenHasIndex     = make(map[string][]int)
+	ScreenAllIndex     = make(map[string]Screen)
 	ScreenTextureIndex = make([]*core.SDL_Texture, 0)
 	ScreenIndex        = 0
 )

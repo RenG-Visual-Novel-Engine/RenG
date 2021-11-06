@@ -16,6 +16,13 @@ func RengEval(node ast.Node, env *object.Environment) object.Object {
 	switch node := node.(type) {
 	case *ast.BlockStatement:
 		return evalRengBlockStatements(node, env)
+	case *ast.ReturnStatement:
+		val := RengEval(node.ReturnValue, env)
+		if isError(val) {
+			return val
+		}
+
+		return &object.ReturnValue{Value: val}
 	case *ast.ExpressionStatement:
 		return RengEval(node.Expression, env)
 	case *ast.PrefixExpression:
@@ -124,7 +131,14 @@ func evalRengBlockStatements(block *ast.BlockStatement, env *object.Environment)
 				config.LayerMutex.Lock()
 				config.LayerList.Layers[1].DeleteAllTexture()
 				config.LayerList.Layers[2].DeleteAllTexture()
-				config.LayerList.Layers[0].AddNewTexture(config.MainFont.LoadFromRenderedText(result.(*object.Error).Message, config.Renderer, core.CreateColor(0, 0, 0)))
+				config.LayerList.Layers[0].AddNewTexture(
+					config.MainFont.LoadFromRenderedText(
+						result.(*object.Error).Message,
+						config.Renderer, config.Width,
+						config.Height,
+						core.CreateColor(0, 0, 0),
+					),
+				)
 				config.LayerMutex.Unlock()
 				return result
 			case object.JUMP_LABEL_OBJ:
@@ -135,7 +149,12 @@ func evalRengBlockStatements(block *ast.BlockStatement, env *object.Environment)
 					return newError("textruelist error")
 				}
 				fmt.Println(result.(*object.String).Value)
-				text := config.MainFont.LoadFromRenderedText(result.(*object.String).Value, config.Renderer, core.CreateColor(0, 0, 0))
+				text := config.MainFont.LoadFromRenderedText(
+					result.(*object.String).Value,
+					config.Renderer,
+					config.Width, config.Height,
+					core.CreateColor(0, 0, 0),
+				)
 
 				config.LayerMutex.Lock()
 
@@ -209,10 +228,10 @@ func evalShowExpression(se *ast.ShowExpression, env *object.Environment) object.
 
 		// TODO
 		go core.PlayVideo(video.Video, video.Texture, config.LayerMutex, config.LayerList, config.Renderer)
-	} else if screenObj, ok := env.Get(se.Name.Value); ok {
-		if screenTar, ok := screenObj.(*object.Screen); ok {
-			config.ScreenHasIndex[screenTar.Name.Value] = make([]int, 0)
-			return screen.ScreenEval(screenTar.Body, env, screenTar.Name.Value)
+	} else if screens, ok := env.Get(se.Name.Value); ok {
+		if screenObj, ok := screens.(*object.Screen); ok {
+			config.ScreenAllIndex[screenObj.Name.Value] = config.Screen{First: config.ScreenIndex, Count: 0}
+			return screen.ScreenEval(screenObj.Body, env, screenObj.Name.Value)
 		}
 	}
 
@@ -222,11 +241,17 @@ func evalShowExpression(se *ast.ShowExpression, env *object.Environment) object.
 func evalHideExpression(he *ast.HideExpression, env *object.Environment) object.Object {
 	if texture, ok := config.TextureList.Get(he.Name.Value); ok {
 		index := config.ShowTextureHasIndex(texture)
+
 		config.LayerMutex.Lock()
 		config.LayerList.Layers[1].DeleteTexture(index)
 		config.LayerMutex.Unlock()
+
 		config.DeleteShowTextureIndex(index)
 		config.ShowIndex--
+	} else if screens, ok := env.Get(he.Name.Value); ok {
+		if screenObj, ok := screens.(*object.Screen); ok {
+			config.DeleteScreen(screenObj.Name.Value)
+		}
 	}
 	return nil
 }
