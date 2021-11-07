@@ -1,5 +1,7 @@
 screen main_menu {
     show bg
     show logo at LogoTransform
+    textbutton "Start" at Button1 action print("Click Start!")
+    textbutton "Build" at Button2 action print("Click Build!")
     # imagebutton button action Start()
 }

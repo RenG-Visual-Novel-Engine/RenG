@@ -98,6 +98,8 @@ func ScreenEval(node ast.Node, env *object.Environment, name string) object.Obje
 		return evalShowExpression(node, env, name)
 	case *ast.ImagebuttonExpression:
 		return evalImagebuttonExpression(node, env, name)
+	case *ast.TextbuttonExpression:
+		return evalTextbuttonExpression(node, env, name)
 	}
 	return nil
 }
@@ -157,7 +159,6 @@ func evalImagebuttonExpression(ie *ast.ImagebuttonExpression, env *object.Enviro
 		config.LayerList.Layers[2].AddNewTexture(texture)
 		config.LayerMutex.Unlock()
 
-		// TODO
 		go func() {
 			for {
 				event := <-config.MouseDownEventChan
@@ -173,6 +174,56 @@ func evalImagebuttonExpression(ie *ast.ImagebuttonExpression, env *object.Enviro
 			}
 		}()
 	}
+	return nil
+}
+
+func evalTextbuttonExpression(te *ast.TextbuttonExpression, env *object.Environment, name string) object.Object {
+	text := ScreenEval(te.Text, env, name)
+	if isError(text) {
+		return text
+	}
+
+	if textObj, ok := text.(*object.String); ok {
+
+		textTexture := config.MainFont.LoadFromRenderedText(
+			textObj.Value,
+			config.Renderer,
+			config.Width, config.Height,
+			core.CreateColor(0, 0, 0),
+		)
+
+		if trans, ok := env.Get(te.Transform.Value); ok {
+			go transform.TransformEval(trans.(*object.Transform).Body, textTexture, env)
+		} else {
+			go transform.TransformEval(transform.TransformBuiltins["default"], textTexture, env)
+		}
+
+		config.ScreenAllIndex[name] = config.Screen{
+			First: config.ScreenAllIndex[name].First,
+			Count: config.ScreenAllIndex[name].Count + 1,
+		}
+		config.AddScreenTextureIndex(textTexture)
+
+		config.LayerMutex.Lock()
+		config.LayerList.Layers[2].AddNewTexture(textTexture)
+		config.LayerMutex.Unlock()
+
+		go func() {
+			for {
+				event := <-config.MouseDownEventChan
+				if IsScreenEnd(name) {
+					return
+				}
+				if IsInTexture(textTexture, event.Mouse.Down.X, event.Mouse.Down.Y) {
+					ScreenEval(te.Action, env, name)
+				}
+				if IsScreenEnd(name) {
+					return
+				}
+			}
+		}()
+	}
+
 	return nil
 }
 

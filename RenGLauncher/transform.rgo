@@ -2,3 +2,13 @@ transform LogoTransform {
     xpos 0
     ypos 0
 }
+
+transform Button1 {
+    xpos 700
+    ypos 650
+}
+
+transform Button2 {
+    xpos 800
+    ypos 650
+}

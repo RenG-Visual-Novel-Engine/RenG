@@ -88,6 +88,7 @@ const (
 	SCREEN = "SCREEN"
 
 	IMAGEBUTTON = "IMAGEBUTTON"
+	TEXTBUTTON  = "TEXTBUTTON"
 	ACTION      = "ACTION"
 
 	CALL = "CALL"
@@ -129,6 +130,7 @@ var keywords = map[string]TokenType{
 	"jump":        JUMP,
 	"screen":      SCREEN,
 	"imagebutton": IMAGEBUTTON,
+	"textbutton":  TEXTBUTTON,
 	"action":      ACTION,
 	"image":       IMAGE,
 	"video":       VIDEO,

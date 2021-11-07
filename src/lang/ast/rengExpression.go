@@ -43,6 +43,26 @@ func (ie *ImagebuttonExpression) String() string {
 	return out.String()
 }
 
+type TextbuttonExpression struct {
+	Token     token.Token
+	Text      Expression
+	Transform *Identifier
+	Action    Expression
+}
+
+func (te *TextbuttonExpression) expressionNode()      {}
+func (te *TextbuttonExpression) TokenLiteral() string { return te.Token.Literal }
+func (te *TextbuttonExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("textbutton ")
+	out.WriteString(te.Text.String())
+	out.WriteString(te.Transform.String())
+	out.WriteString(te.Action.String())
+
+	return out.String()
+}
+
 type LabelExpression struct {
 	Token token.Token
 	Name  *Identifier
