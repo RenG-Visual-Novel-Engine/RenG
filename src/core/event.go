@@ -30,9 +30,6 @@ Sint32 GetWheelY(SDL_Event e)
 }
 */
 import "C"
-import (
-	"time"
-)
 
 type Event struct {
 	Type  uint32
@@ -90,8 +87,6 @@ func (event *SDL_Event) HandleEvent(eventType int, eventChan chan Event) {
 					},
 				}
 
-				time.Sleep(time.Microsecond)
-
 				if len(eventChan) > 0 {
 					<-eventChan
 					break
@@ -137,8 +132,6 @@ func (event *SDL_Event) HandleEvent(eventType int, eventChan chan Event) {
 					},
 				}
 
-				time.Sleep(time.Microsecond)
-
 				if len(eventChan) > 0 {
 					<-eventChan
 					break
@@ -163,8 +156,6 @@ func (event *SDL_Event) HandleEvent(eventType int, eventChan chan Event) {
 						},
 					},
 				}
-
-				time.Sleep(time.Microsecond)
 
 				if len(eventChan) > 0 {
 					<-eventChan

@@ -230,7 +230,10 @@ func evalShowExpression(se *ast.ShowExpression, env *object.Environment) object.
 		go core.PlayVideo(video.Video, video.Texture, config.LayerMutex, config.LayerList, config.Renderer)
 	} else if screens, ok := env.Get(se.Name.Value); ok {
 		if screenObj, ok := screens.(*object.Screen); ok {
+			screen.ScreenMutex.Lock()
 			config.ScreenAllIndex[screenObj.Name.Value] = config.Screen{First: config.ScreenIndex, Count: 0}
+			config.ScreenPriority = append(config.ScreenPriority, screenObj.Name.Value)
+			screen.ScreenMutex.Unlock()
 			return screen.ScreenEval(screenObj.Body, env, screenObj.Name.Value)
 		}
 	}
@@ -250,7 +253,13 @@ func evalHideExpression(he *ast.HideExpression, env *object.Environment) object.
 		config.ShowIndex--
 	} else if screens, ok := env.Get(he.Name.Value); ok {
 		if screenObj, ok := screens.(*object.Screen); ok {
+			screen.ScreenMutex.Lock()
 			config.DeleteScreen(screenObj.Name.Value)
+			config.DeleteScreen(screenObj.Name.Value)
+			if index := screen.FindScreenPriority(screenObj.Name.Value); index != -1 {
+				config.ScreenPriority = append(config.ScreenPriority[:index], config.ScreenPriority[index+1:]...)
+			}
+			screen.ScreenMutex.Unlock()
 		}
 	}
 	return nil

@@ -1,6 +1,25 @@
 transform LogoTransform {
     xpos 0
-    ypos 0
+    ypos -100
+}
+
+transform Icon1 {
+    xpos 1210
+    ypos 30
+    xsize 50
+    ysize 50
+}
+
+transform Icon2 {
+    xpos 1210
+    ypos 120
+    xsize 50
+    ysize 50
+}
+
+transform Config1 {
+    xpos 50
+    ypos 450
 }
 
 transform Button1 {
@@ -11,4 +30,9 @@ transform Button1 {
 transform Button2 {
     xpos 800
     ypos 650
+}
+
+transform s {
+    xsize 100
+    ysize 200
 }

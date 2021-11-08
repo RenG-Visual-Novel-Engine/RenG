@@ -76,6 +76,7 @@ var (
 	ScreenAllIndex     = make(map[string]Screen)
 	ScreenTextureIndex = make([]*core.SDL_Texture, 0)
 	ScreenIndex        = 0
+	ScreenPriority     = make([]string, 0)
 )
 
 var (

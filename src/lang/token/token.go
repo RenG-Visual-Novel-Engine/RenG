@@ -113,6 +113,9 @@ const (
 const (
 	XPOS = "XPOS"
 	YPOS = "YPOS"
+
+	XSIZE = "XSIZE"
+	YSIZE = "YSIZE"
 )
 
 var keywords = map[string]TokenType{
@@ -142,6 +145,8 @@ var keywords = map[string]TokenType{
 	"at":          AT,
 	"xpos":        XPOS,
 	"ypos":        YPOS,
+	"xsize":       XSIZE,
+	"ysize":       YSIZE,
 	"play":        PLAY,
 	"stop":        STOP,
 }

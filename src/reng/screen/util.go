@@ -6,6 +6,7 @@ import (
 	"RenG/src/lang/ast"
 	"RenG/src/lang/object"
 	"fmt"
+	"sync"
 )
 
 var (
@@ -14,8 +15,29 @@ var (
 	FALSE = &object.Boolean{Value: false}
 )
 
+var (
+	ScreenMutex = &sync.RWMutex{}
+)
+
 func IsInTexture(texture *core.SDL_Texture, x, y int) bool {
 	return x >= texture.Xpos && x <= texture.Width+texture.Xpos && y >= texture.Ypos && y <= texture.Height+texture.Ypos
+}
+
+func IsFirstPriority(name string) bool {
+	if len(config.ScreenPriority) <= 0 {
+		return false
+	}
+	return config.ScreenPriority[len(config.ScreenPriority)-1] == name
+}
+
+func FindScreenPriority(name string) int {
+	for i := 0; i < len(config.ScreenPriority); i++ {
+		if config.ScreenPriority[i] == name {
+			return i
+		}
+	}
+
+	return -1
 }
 
 func IsScreenEnd(name string) bool {

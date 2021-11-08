@@ -4,6 +4,8 @@ import (
 	"RenG/src/config"
 	"RenG/src/lang/object"
 	"fmt"
+	"os/exec"
+	"runtime"
 	"time"
 )
 
@@ -63,6 +65,16 @@ var FunctionBuiltins = map[string]*object.Builtin{
 			config.DeleteScreen("main_menu")
 
 			config.StartChannel <- true
+
+			return nil
+		},
+	},
+	"GoSite": {
+		Fn: func(args ...object.Object) object.Object {
+			if runtime.GOOS == "windows" {
+				cmd := exec.Command("cmd", "/C", "start", "/max", args[0].(*object.String).Value)
+				cmd.Run()
+			}
 
 			return nil
 		},

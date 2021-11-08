@@ -115,6 +115,8 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.TRANSFORM, p.parseTranformExpression)
 	p.registerPrefix(token.XPOS, p.parseXposExpression)
 	p.registerPrefix(token.YPOS, p.parseYposExpression)
+	p.registerPrefix(token.XSIZE, p.parseXSizeExpression)
+	p.registerPrefix(token.YSIZE, p.parseYSizeExpression)
 	p.registerPrefix(token.PLAY, p.parsePlayExpression)
 	p.registerPrefix(token.STOP, p.parseStopExpression)
 

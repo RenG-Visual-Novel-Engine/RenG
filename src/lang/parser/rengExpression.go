@@ -249,6 +249,26 @@ func (p *Parser) parseYposExpression() ast.Expression {
 	return exp
 }
 
+func (p *Parser) parseXSizeExpression() ast.Expression {
+	exp := &ast.XSizeExpression{Token: p.curToken}
+
+	p.nextToken()
+
+	exp.Value = p.parseExpression(PREFIX)
+
+	return exp
+}
+
+func (p *Parser) parseYSizeExpression() ast.Expression {
+	exp := &ast.YSizeExpression{Token: p.curToken}
+
+	p.nextToken()
+
+	exp.Value = p.parseExpression(PREFIX)
+
+	return exp
+}
+
 func (p *Parser) parsePlayExpression() ast.Expression {
 	exp := &ast.PlayExpression{Token: p.curToken}
 

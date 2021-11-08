@@ -1,7 +1,16 @@
 screen main_menu {
-    show bg
-    show logo at LogoTransform
+    show img_bg
+    show img_logo at LogoTransform
+
+    imagebutton img_github_icon at Icon1 action GoSite("https://github.com/RenG-Visual-Novel-Engine/RenG")
+    imagebutton img_discord_icon at Icon2 action GoSite("https://discord.gg/v2WeqhXBrr")
+
+    textbutton "Environment" at Config1 action show hides
+
     textbutton "Start" at Button1 action print("Click Start!")
     textbutton "Build" at Button2 action print("Click Build!")
-    # imagebutton button action Start()
+}
+
+screen hides {
+    imagebutton say at s action hide hides
 }

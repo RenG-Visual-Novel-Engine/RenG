@@ -104,6 +104,14 @@ func TransformEval(node ast.Node, texture *core.SDL_Texture, env *object.Environ
 		result := TransformEval(node.Value, texture, env)
 		ypos := result.(*object.Integer).Value
 		texture.Ypos = int(ypos)
+	case *ast.XSizeExpression:
+		result := TransformEval(node.Value, texture, env)
+		xsize := result.(*object.Integer).Value
+		texture.Width = int(xsize)
+	case *ast.YSizeExpression:
+		result := TransformEval(node.Value, texture, env)
+		ysize := result.(*object.Integer).Value
+		texture.Height = int(ysize)
 	}
 	return nil
 }

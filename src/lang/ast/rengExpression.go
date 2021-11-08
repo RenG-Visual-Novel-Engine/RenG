@@ -195,6 +195,28 @@ func (ype *YPosExpression) String() string {
 	return ype.Value.String()
 }
 
+type XSizeExpression struct {
+	Token token.Token
+	Value Expression
+}
+
+func (xse *XSizeExpression) expressionNode()      {}
+func (xse *XSizeExpression) TokenLiteral() string { return xse.Token.Literal }
+func (xse *XSizeExpression) String() string {
+	return xse.Value.String()
+}
+
+type YSizeExpression struct {
+	Token token.Token
+	Value Expression
+}
+
+func (yse *YSizeExpression) expressionNode()      {}
+func (yse *YSizeExpression) TokenLiteral() string { return yse.Token.Literal }
+func (yse *YSizeExpression) String() string {
+	return yse.Value.String()
+}
+
 type PlayExpression struct {
 	Token   token.Token
 	Channel *Identifier

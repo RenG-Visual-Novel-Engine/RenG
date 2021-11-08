@@ -96,6 +96,8 @@ func ScreenEval(node ast.Node, env *object.Environment, name string) object.Obje
 		return &object.Array{Elements: elements}
 	case *ast.ShowExpression:
 		return evalShowExpression(node, env, name)
+	case *ast.HideExpression:
+		return evalHideExpression(node, env)
 	case *ast.ImagebuttonExpression:
 		return evalImagebuttonExpression(node, env, name)
 	case *ast.TextbuttonExpression:
@@ -123,7 +125,19 @@ func evalShowExpression(se *ast.ShowExpression, env *object.Environment, name st
 		config.LayerMutex.Unlock()
 
 		return nil
-	} /* else if video, ok := config.VideoList.Get(se.Name.Value); ok {
+	} else if screens, ok := env.Get(se.Name.Value); ok {
+		if screenObj, ok := screens.(*object.Screen); ok {
+			if IsScreenEnd(screenObj.Name.Value) {
+				ScreenMutex.Lock()
+				config.ScreenAllIndex[screenObj.Name.Value] = config.Screen{First: config.ScreenIndex, Count: 0}
+				config.ScreenPriority = append(config.ScreenPriority, screenObj.Name.Value)
+				ScreenMutex.Unlock()
+				return ScreenEval(screenObj.Body, env, screenObj.Name.Value)
+			}
+		}
+	}
+
+	/* else if video, ok := config.VideoList.Get(se.Name.Value); ok {
 		if trans, ok := env.Get(se.Transform.Value); ok {
 			go transform.TransformEval(trans.(*object.Transform).Body, video.Texture, env)
 		} else {
@@ -138,6 +152,20 @@ func evalShowExpression(se *ast.ShowExpression, env *object.Environment, name st
 	}
 	*/
 
+	return nil
+}
+
+func evalHideExpression(he *ast.HideExpression, env *object.Environment) object.Object {
+	if screens, ok := env.Get(he.Name.Value); ok {
+		if screenObj, ok := screens.(*object.Screen); ok {
+			ScreenMutex.Lock()
+			config.DeleteScreen(screenObj.Name.Value)
+			if index := FindScreenPriority(screenObj.Name.Value); index != -1 {
+				config.ScreenPriority = append(config.ScreenPriority[:index], config.ScreenPriority[index+1:]...)
+			}
+			ScreenMutex.Unlock()
+		}
+	}
 	return nil
 }
 
@@ -165,7 +193,7 @@ func evalImagebuttonExpression(ie *ast.ImagebuttonExpression, env *object.Enviro
 				if IsScreenEnd(name) {
 					return
 				}
-				if IsInTexture(texture, event.Mouse.Down.X, event.Mouse.Down.Y) {
+				if IsInTexture(texture, event.Mouse.Down.X, event.Mouse.Down.Y) && IsFirstPriority(name) {
 					ScreenEval(ie.Action, env, name)
 				}
 				if IsScreenEnd(name) {
@@ -214,7 +242,7 @@ func evalTextbuttonExpression(te *ast.TextbuttonExpression, env *object.Environm
 				if IsScreenEnd(name) {
 					return
 				}
-				if IsInTexture(textTexture, event.Mouse.Down.X, event.Mouse.Down.Y) {
+				if IsInTexture(textTexture, event.Mouse.Down.X, event.Mouse.Down.Y) && IsFirstPriority(name) {
 					ScreenEval(te.Action, env, name)
 				}
 				if IsScreenEnd(name) {
