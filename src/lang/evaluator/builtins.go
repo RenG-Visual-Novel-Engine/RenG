@@ -26,7 +26,7 @@ var FunctionBuiltins = map[string]*object.Builtin{
 			}
 		},
 	},
-	"push": {
+	"append": {
 		Fn: func(args ...object.Object) object.Object {
 			if len(args) != 2 {
 				return newError("wrong number of arguments. got=%d, want=2", len(args))
@@ -50,12 +50,15 @@ var FunctionBuiltins = map[string]*object.Builtin{
 			if len(args) != 1 {
 				return newError("wrong number of arguments. got=%d, want=1", len(args))
 			}
-			// TODO 실수형도 지원해야함
-			if args[0].Type() != object.INTEGER_OBJ {
-				return newError("argument to pause must be INTEGER, got %s", args[0].Type())
-			}
 
-			time.Sleep(time.Second * time.Duration(args[0].(*object.Integer).Value))
+			switch args[0].Type() {
+			case object.INTEGER_OBJ:
+				time.Sleep(time.Second * time.Duration(args[0].(*object.Integer).Value))
+			case object.FLOAT_OBJ:
+				time.Sleep(time.Second * time.Duration(args[0].(*object.Float).Value))
+			default:
+				return newError("argument to pause must be INTEGER or FLOAT, got %s", args[0].Type())
+			}
 
 			return nil
 		},

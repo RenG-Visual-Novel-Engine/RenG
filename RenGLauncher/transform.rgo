@@ -22,17 +22,19 @@ transform Config1 {
     ypos 450
 }
 
-transform Button1 {
+transform Start_Button {
     xpos 700
     ypos 650
 }
 
-transform Button2 {
+transform Build_Button {
     xpos 800
     ypos 650
 }
 
-transform s {
-    xsize 100
-    ysize 200
+transform Exit {
+    xpos 900
+    ypos 80
+    xsize 50
+    ysize 50
 }

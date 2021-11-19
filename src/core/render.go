@@ -18,17 +18,12 @@ import (
 	"unsafe"
 )
 
-func (t *SDL_Texture) Render(renderer *SDL_Renderer, clip *SDL_Rect) {
-	renderQuad := CreateRect(t.Xpos, t.Ypos, t.Width, t.Height)
-
-	if clip != nil {
-		renderQuad.w = clip.w
-		renderQuad.h = clip.h
-	}
+func (t *SDL_Texture) Render(renderer *SDL_Renderer, w, h, cw, ch int) {
+	renderQuad := CreateRect(ResizeInt(w, cw, t.Xpos), ResizeInt(h, ch, t.Ypos), ResizeInt(w, cw, t.Width), ResizeInt(w, cw, t.Height))
 
 	t.SetAlpha(t.Alpha)
 
-	C.SDL_RenderCopyEx((*C.SDL_Renderer)(renderer), t.Texture, (*C.SDL_Rect)(clip), &renderQuad, C.double(t.Degree), nil, SDL_FLIP_NONE)
+	C.SDL_RenderCopyEx((*C.SDL_Renderer)(renderer), t.Texture, nil, &renderQuad, C.double(t.Degree), nil, SDL_FLIP_NONE)
 }
 
 func (renderer *SDL_Renderer) SetRenderDrawColor(r, g, b, a uint8) {

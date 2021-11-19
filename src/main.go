@@ -85,6 +85,9 @@ func setUp() {
 	height, _ := env.Get("config_height")
 	config.Height = int(height.(*object.Integer).Value)
 
+	config.ChangeWidth = config.Width
+	config.ChangeHeight = config.Height
+
 	icon, ok := env.Get("config_icon")
 	if ok {
 		config.Icon = core.IMGLoad(config.Path + icon.(*object.String).Value)
@@ -102,6 +105,11 @@ func mainLoop(errObject *object.Error) {
 			switch config.Event.EventType() {
 			case core.SDL_QUIT:
 				config.Quit = true
+			case core.SDL_WINDOWEVENT:
+				switch config.Event.WindowEventType() {
+				case core.SDL_WINDOWEVENT_SIZE_CHANGED:
+					config.ChangeWidth, config.ChangeHeight = config.Event.ChangeWidthAndHeight()
+				}
 			case core.SDL_MOUSEMOTION:
 				config.Event.HandleEvent(core.SDL_MOUSEMOTION, config.MouseMotionEventChan)
 			case core.SDL_MOUSEBUTTONDOWN:
@@ -119,7 +127,7 @@ func mainLoop(errObject *object.Error) {
 		config.LayerMutex.Lock()
 		for i := 0; i < len(config.LayerList.Layers); i++ {
 			for j := 0; j < len(config.LayerList.Layers[i].Images); j++ {
-				config.LayerList.Layers[i].Images[j].Render(config.Renderer, nil)
+				config.LayerList.Layers[i].Images[j].Render(config.Renderer, config.Width, config.Height, config.ChangeWidth, config.ChangeHeight)
 			}
 		}
 		config.LayerMutex.Unlock()

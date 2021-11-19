@@ -20,7 +20,10 @@ var (
 )
 
 func IsInTexture(texture *core.SDL_Texture, x, y int) bool {
-	return x >= texture.Xpos && x <= texture.Width+texture.Xpos && y >= texture.Ypos && y <= texture.Height+texture.Ypos
+	return x >= core.ResizeInt(config.Width, config.ChangeWidth, texture.Xpos) &&
+		x <= core.ResizeInt(config.Width, config.ChangeWidth, texture.Width)+core.ResizeInt(config.Width, config.ChangeWidth, texture.Xpos) &&
+		y >= core.ResizeInt(config.Height, config.ChangeHeight, texture.Ypos) &&
+		y <= core.ResizeInt(config.Height, config.ChangeHeight, texture.Height)+core.ResizeInt(config.Height, config.ChangeHeight, texture.Ypos)
 }
 
 func IsFirstPriority(name string) bool {

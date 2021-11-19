@@ -25,6 +25,9 @@ var (
 	Width  int
 	Height int
 
+	ChangeWidth  int
+	ChangeHeight int
+
 	Icon *core.SDL_Surface
 )
 

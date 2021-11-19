@@ -28,6 +28,16 @@ Sint32 GetWheelY(SDL_Event e)
 {
 	return e.wheel.y;
 }
+
+Sint32 GetWindowResizeWidth(SDL_Event e)
+{
+	return e.window.data1;
+}
+
+Sint32 GetWindowResizeHeight(SDL_Event e)
+{
+	return e.window.data2;
+}
 */
 import "C"
 
@@ -176,4 +186,8 @@ func (e *SDL_Event) EventType() C.Uint32 {
 
 func (e *SDL_Event) WindowEventType() C.Uint32 {
 	return C.windowEventType((C.SDL_Event)(*e))
+}
+
+func (e *SDL_Event) ChangeWidthAndHeight() (int, int) {
+	return int(C.GetWindowResizeWidth((C.SDL_Event)(*e))), int(C.GetWindowResizeHeight((C.SDL_Event)(*e)))
 }

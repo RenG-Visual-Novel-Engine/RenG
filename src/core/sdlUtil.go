@@ -30,3 +30,7 @@ func CreateColor(r, g, b int) SDL_Color {
 func CreateRect(x, y, w, h int) C.SDL_Rect {
 	return C.createRect(C.int(x), C.int(y), C.int(w), C.int(h))
 }
+
+func ResizeInt(normal, change int, value int) int {
+	return int(float32(change) / float32(normal) * float32(value))
+}
