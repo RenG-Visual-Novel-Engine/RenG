@@ -144,44 +144,20 @@ func evalRengBlockStatements(block *ast.BlockStatement, env *object.Environment)
 			case object.JUMP_LABEL_OBJ:
 				return result
 			case object.STRING_OBJ:
-				say, err := config.TextureList.Get("say")
+				say, err := env.Get("say")
 				if !err {
-					return newError("textruelist error")
+					return newError("Not Defined Say Screen")
 				}
-				fmt.Println(result.(*object.String).Value)
-				text := config.MainFont.LoadFromRenderedText(
-					result.(*object.String).Value,
-					config.Renderer,
-					config.Width, config.Height,
-					core.CreateColor(0, 0, 0),
-				)
 
-				config.LayerMutex.Lock()
+				config.What = result.(*object.String).Value
 
-				config.LayerList.Layers[1].AddNewTexture(say)
-				config.AddShowTextureIndex(say)
-
-				config.LayerList.Layers[1].AddNewTexture(text)
-				config.AddShowTextureIndex(text)
-
-				config.LayerMutex.Unlock()
-
-				// fmt.Println(config.LayerList.Layers[1])
-				// fmt.Println(config.LayerList.Layers[2])
+				screen.ScreenEval(say.(*object.Screen).Body, env, "say")
 
 				<-config.MouseDownEventChan
 
-				config.LayerMutex.Lock()
+				config.DeleteScreen("say")
 
-				config.LayerList.Layers[1].DeleteTexture(config.ShowTextureHasIndex(say))
-				config.DeleteShowTextureIndex(config.ShowTextureHasIndex(say))
-				config.ShowIndex--
-
-				config.LayerList.Layers[1].DeleteTexture(config.ShowTextureHasIndex(text))
-				config.DeleteShowTextureIndex(config.ShowTextureHasIndex(text))
-				config.ShowIndex--
-
-				config.LayerMutex.Unlock()
+				config.What = ""
 			}
 		}
 	}
@@ -205,9 +181,9 @@ func evalJumpLabelExpression(jle *ast.JumpLabelExpression) object.Object {
 func evalShowExpression(se *ast.ShowExpression, env *object.Environment) object.Object {
 	if texture, ok := config.TextureList.Get(se.Name.Value); ok {
 		if trans, ok := env.Get(se.Transform.Value); ok {
-			go transform.TransformEval(trans.(*object.Transform).Body, texture, env)
+			transform.TransformEval(trans.(*object.Transform).Body, texture, env)
 		} else {
-			go transform.TransformEval(transform.TransformBuiltins["default"], texture, env)
+			transform.TransformEval(transform.TransformBuiltins["default"], texture, env)
 		}
 
 		config.AddShowTextureIndex(texture)
@@ -217,17 +193,6 @@ func evalShowExpression(se *ast.ShowExpression, env *object.Environment) object.
 		config.LayerMutex.Unlock()
 
 		return nil
-	} else if video, ok := config.VideoList.Get(se.Name.Value); ok {
-		if trans, ok := env.Get(se.Transform.Value); ok {
-			go transform.TransformEval(trans.(*object.Transform).Body, video.Texture, env)
-		} else {
-			go transform.TransformEval(transform.TransformBuiltins["default"], video.Texture, env)
-		}
-
-		config.AddShowTextureIndex(video.Texture)
-
-		// TODO
-		go core.PlayVideo(video.Video, video.Texture, config.LayerMutex, config.LayerList, config.Renderer)
 	} else if screens, ok := env.Get(se.Name.Value); ok {
 		if screenObj, ok := screens.(*object.Screen); ok {
 			screen.ScreenMutex.Lock()
@@ -236,6 +201,17 @@ func evalShowExpression(se *ast.ShowExpression, env *object.Environment) object.
 			screen.ScreenMutex.Unlock()
 			return screen.ScreenEval(screenObj.Body, env, screenObj.Name.Value)
 		}
+	} else if video, ok := config.VideoList.Get(se.Name.Value); ok {
+		if trans, ok := env.Get(se.Transform.Value); ok {
+			transform.TransformEval(trans.(*object.Transform).Body, video.Texture, env)
+		} else {
+			transform.TransformEval(transform.TransformBuiltins["default"], video.Texture, env)
+		}
+
+		config.AddShowTextureIndex(video.Texture)
+
+		// TODO
+		go core.PlayVideo(video.Video, video.Texture, config.LayerMutex, config.LayerList, config.Renderer)
 	}
 
 	return nil

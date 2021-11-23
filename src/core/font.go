@@ -47,7 +47,7 @@ func (f *TTF_Font) LoadFromRenderedText(text string, renderer *SDL_Renderer, w, 
 		Ypos:    (h - int(textSurface.h)) / 2,
 		Width:   int(textSurface.w),
 		Height:  int(textSurface.h),
-		Alpha:   255,
+		Alpha:   220,
 		Degree:  0,
 	}
 

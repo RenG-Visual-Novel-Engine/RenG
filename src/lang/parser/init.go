@@ -119,6 +119,8 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.YSIZE, p.parseYSizeExpression)
 	p.registerPrefix(token.PLAY, p.parsePlayExpression)
 	p.registerPrefix(token.STOP, p.parseStopExpression)
+	p.registerPrefix(token.WHO, p.parseWhoExpression)
+	p.registerPrefix(token.WHAT, p.parseWhatExpression)
 
 	p.infixParseFns = make(map[token.TokenType]infixParseFn)
 	p.registerInfix(token.PLUS, p.parseInfixExpression)

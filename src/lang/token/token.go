@@ -118,6 +118,11 @@ const (
 	YSIZE = "YSIZE"
 )
 
+const (
+	WHAT = "WHAT"
+	WHO  = "WHO"
+)
+
 var keywords = map[string]TokenType{
 	"def":         FUNCTION,
 	"true":        TRUE,
@@ -149,6 +154,8 @@ var keywords = map[string]TokenType{
 	"ysize":       YSIZE,
 	"play":        PLAY,
 	"stop":        STOP,
+	"who":         WHO,
+	"what":        WHAT,
 }
 
 func LookupIdent(ident string) TokenType {

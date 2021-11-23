@@ -1,3 +1,6 @@
 *.cmake
 *.zip
+
 /RenG
+
+/test

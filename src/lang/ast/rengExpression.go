@@ -240,3 +240,23 @@ func (se *StopExpression) TokenLiteral() string { return se.Token.Literal }
 func (se *StopExpression) String() string {
 	return "stop " + se.Channel.String()
 }
+
+type WhoExpression struct {
+	Token token.Token
+}
+
+func (we *WhoExpression) expressionNode()      {}
+func (we *WhoExpression) TokenLiteral() string { return we.Token.Literal }
+func (we *WhoExpression) String() string {
+	return "who"
+}
+
+type WhatExpression struct {
+	Token token.Token
+}
+
+func (we *WhatExpression) expressionNode()      {}
+func (we *WhatExpression) TokenLiteral() string { return we.Token.Literal }
+func (we *WhatExpression) String() string {
+	return "what"
+}

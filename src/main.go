@@ -36,7 +36,14 @@ func init() {
 }
 
 func main() {
-	config.Path = *PATH
+	initRenG()
+	interPretation(config.Code)
+	mainLoop(errValue)
+	clear()
+}
+
+func initRenG() {
+	config.Path = *PATH + "\\"
 
 	dir, err := ioutil.ReadDir(config.Path)
 	if err != nil {
@@ -45,13 +52,13 @@ func main() {
 
 	for _, file := range dir {
 		if file.Name() == "config.rgo" {
-			f, err := ioutil.ReadFile(config.Path + "\\config.rgo")
+			f, err := ioutil.ReadFile(config.Path + "config.rgo")
 			if err != nil {
 				panic(err)
 			}
 			interPretation(string(f))
 		} else if file.Name()[len(file.Name())-3:] == "rgo" && file.Name() != "config.rgo" {
-			f, err := ioutil.ReadFile(config.Path + "\\" + file.Name())
+			f, err := ioutil.ReadFile(config.Path + file.Name())
 			if err != nil {
 				panic(err)
 			}
@@ -59,23 +66,6 @@ func main() {
 		}
 	}
 
-	setUp()
-
-	interPretation(config.Code)
-
-	mainLoop(errValue)
-}
-
-func interPretation(code string) {
-	l := lexer.New(code)
-	p := parser.New(l)
-	program := p.ParseProgram()
-
-	obj := evaluator.Eval(program, env)
-	errValue, _ = obj.(*object.Error)
-}
-
-func setUp() {
 	title, _ := env.Get("config_title")
 	config.Title = title.(*object.String).Value
 
@@ -94,6 +84,15 @@ func setUp() {
 	}
 
 	config.Window, config.Renderer = core.SDLInit(config.Title, config.Width, config.Height, config.Icon)
+}
+
+func interPretation(code string) {
+	l := lexer.New(code)
+	p := parser.New(l)
+	program := p.ParseProgram()
+
+	obj := evaluator.Eval(program, env)
+	errValue, _ = obj.(*object.Error)
 }
 
 func mainLoop(errObject *object.Error) {
@@ -134,11 +133,6 @@ func mainLoop(errObject *object.Error) {
 
 		config.Renderer.RenderPresent()
 	}
-
-	config.TextureList.DestroyAll()
-	config.MusicList.FreaAll()
-	config.ChunkList.FreeAll()
-	core.Close(config.Window, config.Renderer)
 }
 
 func run(env *object.Environment) {
@@ -194,7 +188,16 @@ func run(env *object.Environment) {
 		config.LayerMutex.Unlock()
 		return
 	}
+
 	config.Start = start.(*object.Label)
+
+	var (
+		result    object.Object
+		jumpLabel *object.JumpLabel
+		label     object.Object
+	)
+
+MAIN:
 
 	reng.RengEval(&ast.ShowExpression{
 		Token: token.Token{
@@ -206,19 +209,15 @@ func run(env *object.Environment) {
 
 	<-config.StartChannel
 
-	var (
-		result    object.Object
-		jumpLabel *object.JumpLabel
-		label     object.Object
-	)
-
 	result = reng.RengEval(start.(*object.Label).Body, env)
 
 	if result == nil {
 		return
-	}
-
-	if jumpLabel, ok = result.(*object.JumpLabel); !ok {
+	} else if _, ok = result.(*object.ReturnValue); ok {
+		config.StopAllChannel()
+		config.DeleteAllLayerTexture()
+		goto MAIN
+	} else if jumpLabel, ok = result.(*object.JumpLabel); !ok {
 		return
 	}
 
@@ -229,12 +228,21 @@ func run(env *object.Environment) {
 
 		if result == nil {
 			return
-		}
-
-		if jumpLabel, ok = result.(*object.JumpLabel); !ok {
+		} else if _, ok = result.(*object.ReturnValue); ok {
+			config.StopAllChannel()
+			config.DeleteAllLayerTexture()
+			goto MAIN
+		} else if jumpLabel, ok = result.(*object.JumpLabel); !ok {
 			return
 		}
 
 		label, ok = env.Get(jumpLabel.Label.Value)
 	}
+}
+
+func clear() {
+	config.TextureList.DestroyAll()
+	config.MusicList.FreaAll()
+	config.ChunkList.FreeAll()
+	core.Close(config.Window, config.Renderer)
 }

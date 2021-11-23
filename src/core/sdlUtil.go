@@ -11,7 +11,7 @@ package core
 
 SDL_Color colorSet(int r, int g, int b)
 {
-	SDL_Color textColor = { 0, 0, 0 };
+	SDL_Color textColor = { r, g, b };
 	return textColor;
 }
 

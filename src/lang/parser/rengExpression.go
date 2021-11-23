@@ -316,3 +316,11 @@ func (p *Parser) parseStopExpression() ast.Expression {
 
 	return exp
 }
+
+func (p *Parser) parseWhoExpression() ast.Expression {
+	return &ast.WhoExpression{Token: p.curToken}
+}
+
+func (p *Parser) parseWhatExpression() ast.Expression {
+	return &ast.WhatExpression{Token: p.curToken}
+}

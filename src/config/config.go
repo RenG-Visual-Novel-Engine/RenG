@@ -85,3 +85,8 @@ var (
 var (
 	LayerMutex = &sync.RWMutex{}
 )
+
+var (
+	Who  string
+	What string
+)

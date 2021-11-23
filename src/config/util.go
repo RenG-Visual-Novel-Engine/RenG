@@ -60,3 +60,17 @@ func DeleteAllShowTextureIndex() {
 		ShowTextureIndex = append(ShowTextureIndex[:0], ShowTextureIndex[1:]...)
 	}
 }
+
+func DeleteAllLayerTexture() {
+	cnt := len(LayerList.Layers)
+
+	LayerMutex.Lock()
+	for i := 0; i < cnt; i++ {
+		LayerList.Layers[i].DeleteAllTexture()
+	}
+	LayerMutex.Unlock()
+}
+
+func StopAllChannel() {
+	core.StopMusic(-1)
+}

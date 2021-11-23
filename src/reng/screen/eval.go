@@ -102,6 +102,18 @@ func ScreenEval(node ast.Node, env *object.Environment, name string) object.Obje
 		return evalImagebuttonExpression(node, env, name)
 	case *ast.TextbuttonExpression:
 		return evalTextbuttonExpression(node, env, name)
+	case *ast.WhoExpression:
+		if config.Who != "" {
+			return &object.String{Value: config.Who}
+		}
+
+		return newError("Not Init who value")
+	case *ast.WhatExpression:
+		if config.What != "" {
+			return &object.String{Value: config.What}
+		}
+
+		return newError("Not Init what value")
 	}
 	return nil
 }
@@ -109,9 +121,9 @@ func ScreenEval(node ast.Node, env *object.Environment, name string) object.Obje
 func evalShowExpression(se *ast.ShowExpression, env *object.Environment, name string) object.Object {
 	if texture, ok := config.TextureList.Get(se.Name.Value); ok {
 		if trans, ok := env.Get(se.Transform.Value); ok {
-			go transform.TransformEval(trans.(*object.Transform).Body, texture, env)
+			transform.TransformEval(trans.(*object.Transform).Body, texture, env)
 		} else {
-			go transform.TransformEval(transform.TransformBuiltins["default"], texture, env)
+			transform.TransformEval(transform.TransformBuiltins["default"], texture, env)
 		}
 
 		config.ScreenAllIndex[name] = config.Screen{
@@ -172,9 +184,9 @@ func evalHideExpression(he *ast.HideExpression, env *object.Environment) object.
 func evalImagebuttonExpression(ie *ast.ImagebuttonExpression, env *object.Environment, name string) object.Object {
 	if texture, ok := config.TextureList.Get(ie.MainImage.Value); ok {
 		if trans, ok := env.Get(ie.Transform.Value); ok {
-			go transform.TransformEval(trans.(*object.Transform).Body, texture, env)
+			transform.TransformEval(trans.(*object.Transform).Body, texture, env)
 		} else {
-			go transform.TransformEval(transform.TransformBuiltins["default"], texture, env)
+			transform.TransformEval(transform.TransformBuiltins["default"], texture, env)
 		}
 
 		config.ScreenAllIndex[name] = config.Screen{
@@ -217,13 +229,13 @@ func evalTextbuttonExpression(te *ast.TextbuttonExpression, env *object.Environm
 			textObj.Value,
 			config.Renderer,
 			config.Width, config.Height,
-			core.CreateColor(0, 0, 0),
+			core.CreateColor(235, 235, 235),
 		)
 
 		if trans, ok := env.Get(te.Transform.Value); ok {
-			go transform.TransformEval(trans.(*object.Transform).Body, textTexture, env)
+			transform.TransformEval(trans.(*object.Transform).Body, textTexture, env)
 		} else {
-			go transform.TransformEval(transform.TransformBuiltins["default"], textTexture, env)
+			transform.TransformEval(transform.TransformBuiltins["default"], textTexture, env)
 		}
 
 		config.ScreenAllIndex[name] = config.Screen{
