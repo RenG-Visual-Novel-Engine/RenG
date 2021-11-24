@@ -116,6 +116,9 @@ const (
 
 	XSIZE = "XSIZE"
 	YSIZE = "YSIZE"
+
+	ROTATE = "ROTATE"
+	ALPHA  = "ALPHA"
 )
 
 const (
@@ -152,6 +155,8 @@ var keywords = map[string]TokenType{
 	"ypos":        YPOS,
 	"xsize":       XSIZE,
 	"ysize":       YSIZE,
+	"rotate":      ROTATE,
+	"alpha":       ALPHA,
 	"play":        PLAY,
 	"stop":        STOP,
 	"who":         WHO,

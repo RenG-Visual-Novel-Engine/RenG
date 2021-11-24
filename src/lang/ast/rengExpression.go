@@ -217,6 +217,28 @@ func (yse *YSizeExpression) String() string {
 	return yse.Value.String()
 }
 
+type RotateExpression struct {
+	Token token.Token
+	Value Expression
+}
+
+func (re *RotateExpression) expressionNode()      {}
+func (re *RotateExpression) TokenLiteral() string { return re.Token.Literal }
+func (re *RotateExpression) String() string {
+	return re.Value.String()
+}
+
+type AlphaExpression struct {
+	Token token.Token
+	Value Expression
+}
+
+func (ae *AlphaExpression) expressionNode()      {}
+func (ae *AlphaExpression) TokenLiteral() string { return ae.Token.Literal }
+func (ae *AlphaExpression) String() string {
+	return ae.Value.String()
+}
+
 type PlayExpression struct {
 	Token   token.Token
 	Channel *Identifier

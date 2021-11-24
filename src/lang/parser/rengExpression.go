@@ -269,6 +269,26 @@ func (p *Parser) parseYSizeExpression() ast.Expression {
 	return exp
 }
 
+func (p *Parser) parseRotateExpression() ast.Expression {
+	exp := &ast.RotateExpression{Token: p.curToken}
+
+	p.nextToken()
+
+	exp.Value = p.parseExpression(LOWEST)
+
+	return exp
+}
+
+func (p *Parser) parseAlphaExpression() ast.Expression {
+	exp := &ast.AlphaExpression{Token: p.curToken}
+
+	p.nextToken()
+
+	exp.Value = p.parseExpression(LOWEST)
+
+	return exp
+}
+
 func (p *Parser) parsePlayExpression() ast.Expression {
 	exp := &ast.PlayExpression{Token: p.curToken}
 

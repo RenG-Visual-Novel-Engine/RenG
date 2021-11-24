@@ -38,6 +38,7 @@ func init() {
 func main() {
 	initRenG()
 	interPretation(config.Code)
+	go run(env)
 	mainLoop(errValue)
 	clear()
 }
@@ -96,9 +97,6 @@ func interPretation(code string) {
 }
 
 func mainLoop(errObject *object.Error) {
-
-	go run(env)
-
 	for !config.Quit {
 		for config.Event.PollEvent() != 0 {
 			switch config.Event.EventType() {
@@ -188,7 +186,6 @@ func run(env *object.Environment) {
 		config.LayerMutex.Unlock()
 		return
 	}
-
 	config.Start = start.(*object.Label)
 
 	var (

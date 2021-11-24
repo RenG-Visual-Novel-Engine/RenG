@@ -98,20 +98,64 @@ func TransformEval(node ast.Node, texture *core.SDL_Texture, env *object.Environ
 		return evalTransformExpression(node, texture, env)
 	case *ast.XPosExpression:
 		result := TransformEval(node.Value, texture, env)
-		xpos := result.(*object.Integer).Value
-		texture.Xpos = int(xpos)
+		switch xpos := result.(type) {
+		case *object.Integer:
+			texture.Xpos = int(xpos.Value)
+		case *object.Float:
+			texture.Ypos = int(xpos.Value)
+		default:
+			return newError("xpos expression isn't integer or float")
+		}
 	case *ast.YPosExpression:
 		result := TransformEval(node.Value, texture, env)
-		ypos := result.(*object.Integer).Value
-		texture.Ypos = int(ypos)
+		switch ypos := result.(type) {
+		case *object.Integer:
+			texture.Ypos = int(ypos.Value)
+		case *object.Float:
+			texture.Ypos = int(ypos.Value)
+		default:
+			return newError("ypos expression isn't integer or float")
+		}
 	case *ast.XSizeExpression:
 		result := TransformEval(node.Value, texture, env)
-		xsize := result.(*object.Integer).Value
-		texture.Width = int(xsize)
+		switch xsize := result.(type) {
+		case *object.Integer:
+			texture.Width = int(xsize.Value)
+		case *object.Float:
+			texture.Width = int(xsize.Value)
+		default:
+			return newError("xsize expression isn't integer or float")
+		}
 	case *ast.YSizeExpression:
 		result := TransformEval(node.Value, texture, env)
-		ysize := result.(*object.Integer).Value
-		texture.Height = int(ysize)
+		switch ysize := result.(type) {
+		case *object.Integer:
+			texture.Height = int(ysize.Value)
+		case *object.Float:
+			texture.Height = int(ysize.Value)
+		default:
+			return newError("ysize expression isn't integer or float")
+		}
+	case *ast.RotateExpression:
+		result := TransformEval(node.Value, texture, env)
+		switch rotate := result.(type) {
+		case *object.Integer:
+			texture.Degree = float64(rotate.Value)
+		case *object.Float:
+			texture.Degree = rotate.Value
+		default:
+			return newError("rotate expression isn't integer or float")
+		}
+	case *ast.AlphaExpression:
+		result := TransformEval(node.Value, texture, env)
+		switch alpha := result.(type) {
+		case *object.Integer:
+			texture.Alpha = uint8(alpha.Value)
+		case *object.Float:
+			texture.Alpha = uint8(alpha.Value)
+		default:
+			return newError("alpha expression isn't integer or float")
+		}
 	}
 	return nil
 }
