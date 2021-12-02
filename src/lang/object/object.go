@@ -1,6 +1,7 @@
 package object
 
 import (
+	"RenG/src/core"
 	"RenG/src/lang/ast"
 	"bytes"
 	"fmt"
@@ -24,8 +25,8 @@ const (
 
 	SCREEN_OBJ     = "SCREEN_OBJ"
 	LABEL_OBJ      = "LABEL_OBJ"
+	CHARACTER_OBJ  = "CHARACTER_OBJ"
 	JUMP_LABEL_OBJ = "JUMP_LABEL"
-	IMAGE_OBJ      = "IMAGE_OBJ"
 	TRANSFORM_OBJ  = "TRANSFORM_OBJ"
 )
 
@@ -152,6 +153,14 @@ type Label struct {
 
 func (l *Label) Type() ObjectType { return LABEL_OBJ }
 func (l *Label) Inspect() string  { return "{ " + l.Body.String() + " }" }
+
+type Character struct {
+	Name  *String
+	Color *core.SDL_Color
+}
+
+func (c *Character) Type() ObjectType { return CHARACTER_OBJ }
+func (c *Character) Inspect() string  { return c.Name.Value }
 
 type JumpLabel struct {
 	Label *ast.Identifier

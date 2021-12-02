@@ -22,6 +22,7 @@ func (e *Environment) Get(name string) (Object, bool) {
 	if !ok && e.outer != nil {
 		EnvMutex.RUnlock()
 		obj, ok = e.outer.Get(name)
+		return obj, ok
 	}
 	EnvMutex.RUnlock()
 	return obj, ok

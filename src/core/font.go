@@ -26,7 +26,7 @@ func OpenFont(path string) *TTF_Font {
 	return (*TTF_Font)(f)
 }
 
-func (f *TTF_Font) LoadFromRenderedText(text string, renderer *SDL_Renderer, w, h int, color SDL_Color) *SDL_Texture {
+func (f *TTF_Font) LoadFromRenderedText(text string, renderer *SDL_Renderer, w, h int, color SDL_Color, alpha uint8, degree float64) *SDL_Texture {
 	cText := C.CString(text)
 	defer C.free(unsafe.Pointer(cText))
 
@@ -40,15 +40,14 @@ func (f *TTF_Font) LoadFromRenderedText(text string, renderer *SDL_Renderer, w, 
 		fmt.Println("texture nil")
 	}
 
-	// TODO
 	texture := &SDL_Texture{
 		Texture: t,
 		Xpos:    (w - int(textSurface.w)) / 2,
 		Ypos:    (h - int(textSurface.h)) / 2,
 		Width:   int(textSurface.w),
 		Height:  int(textSurface.h),
-		Alpha:   220,
-		Degree:  0,
+		Alpha:   alpha,
+		Degree:  degree,
 	}
 
 	C.SDL_FreeSurface(textSurface)

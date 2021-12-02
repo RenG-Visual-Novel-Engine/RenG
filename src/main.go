@@ -107,6 +107,8 @@ func mainLoop(errObject *object.Error) {
 				case core.SDL_WINDOWEVENT_SIZE_CHANGED:
 					config.ChangeWidth, config.ChangeHeight = config.Event.ChangeWidthAndHeight()
 				}
+			case core.SDL_KEYDOWN:
+				config.Event.HandleEvent(core.SDL_KEYDOWN, config.KeyDownEventChan)
 			case core.SDL_MOUSEMOTION:
 				config.Event.HandleEvent(core.SDL_MOUSEMOTION, config.MouseMotionEventChan)
 			case core.SDL_MOUSEBUTTONDOWN:
@@ -119,7 +121,7 @@ func mainLoop(errObject *object.Error) {
 		}
 
 		config.Renderer.RenderClear()
-		config.Renderer.SetRenderDrawColor(0xFF, 0xFF, 0xFF, 255)
+		config.Renderer.SetRenderDrawColor(0x00, 0x00, 0x00, 255)
 
 		config.LayerMutex.Lock()
 		for i := 0; i < len(config.LayerList.Layers); i++ {
@@ -142,6 +144,8 @@ func run(env *object.Environment) {
 	config.ChannelList.NewChannel("sound", 0)
 	config.ChannelList.NewChannel("voice", 1)
 
+	core.SetVolume(-1, 32)
+
 	fontPath, _ := env.Get("config_font")
 	config.MainFont = core.OpenFont(config.Path + fontPath.(*object.String).Value)
 
@@ -151,7 +155,9 @@ func run(env *object.Environment) {
 			config.MainFont.LoadFromRenderedText(errValue.Message,
 				config.Renderer,
 				config.Width, config.Height,
-				core.CreateColor(0, 0, 0),
+				core.CreateColor(0xFF, 0xFF, 0xFF),
+				255,
+				0,
 			),
 		)
 		config.LayerMutex.Unlock()
@@ -165,7 +171,9 @@ func run(env *object.Environment) {
 			config.MainFont.LoadFromRenderedText("Could not find the screen main_menu for your code.",
 				config.Renderer,
 				config.Width, config.Height,
-				core.CreateColor(0, 0, 0),
+				core.CreateColor(0xFF, 0xFF, 0xFF),
+				255,
+				0,
 			),
 		)
 		config.LayerMutex.Unlock()
@@ -180,7 +188,9 @@ func run(env *object.Environment) {
 			config.MainFont.LoadFromRenderedText("Could not find the entry point for your code.",
 				config.Renderer,
 				config.Width, config.Height,
-				core.CreateColor(0, 0, 0),
+				core.CreateColor(0xFF, 0xFF, 0xFF),
+				255,
+				0,
 			),
 		)
 		config.LayerMutex.Unlock()

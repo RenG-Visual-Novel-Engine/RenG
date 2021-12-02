@@ -43,6 +43,9 @@ var (
 	MouseDownEventChan   = make(chan core.Event, 5)
 	MouseUpEventChan     = make(chan core.Event, 5)
 	MouseWheelEventChan  = make(chan core.Event, 5)
+
+	KeyDownEventChan = make(chan core.Event, 5)
+	KeyUpEventChan   = make(chan core.Event, 5)
 )
 
 var (
@@ -87,6 +90,7 @@ var (
 )
 
 var (
-	Who  string
-	What string
+	Who      string = ""
+	What     string = ""
+	WhoColor *core.SDL_Color
 )

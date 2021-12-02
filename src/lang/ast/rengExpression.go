@@ -23,6 +23,18 @@ func (se *ScreenExpression) String() string {
 	return out.String()
 }
 
+type TextExpression struct {
+	Token     token.Token
+	Text      Expression
+	Transform *Identifier
+}
+
+func (te *TextExpression) expressionNode()      {}
+func (te *TextExpression) TokenLiteral() string { return te.Token.Literal }
+func (te *TextExpression) String() string {
+	return te.Text.String()
+}
+
 type ImagebuttonExpression struct {
 	Token     token.Token
 	MainImage *Identifier
@@ -61,6 +73,18 @@ func (te *TextbuttonExpression) String() string {
 	out.WriteString(te.Action.String())
 
 	return out.String()
+}
+
+type KeyExpression struct {
+	Token  token.Token
+	Key    Expression
+	Action Expression
+}
+
+func (ke *KeyExpression) expressionNode()      {}
+func (ke *KeyExpression) TokenLiteral() string { return ke.Token.Literal }
+func (ke *KeyExpression) String() string {
+	return "key " + ke.Key.String() + " action " + ke.Action.String()
 }
 
 type LabelExpression struct {

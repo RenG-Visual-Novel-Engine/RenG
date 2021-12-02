@@ -1,6 +1,12 @@
 screen main_menu {
-    show bg
-    show logo at LogoTransform
-    textbutton "시작" action Start()
-    # imagebutton button action Start()
+    show black
+    show mollu
+    key "1" action print("1")
+    textbutton "Start" at test action Start()
+}
+
+screen say {
+    show say_bg
+    text who at who_pos
+    text what at content_pos
 }

@@ -57,6 +57,29 @@ func (p *Parser) parseJumpLabelExpression() ast.Expression {
 	return exp
 }
 
+func (p *Parser) parseTextExpression() ast.Expression {
+	exp := &ast.TextExpression{Token: p.curToken}
+
+	p.nextToken()
+
+	exp.Text = p.parseExpression(LOWEST)
+	exp.Transform = &ast.Identifier{
+		Token: token.Token{
+			Type:    token.IDENT,
+			Literal: "IDENT",
+		},
+		Value: "default",
+	}
+
+	if p.expectPeek(token.AT) {
+		p.nextToken()
+
+		exp.Transform = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+	}
+
+	return exp
+}
+
 func (p *Parser) parseImagebuttonExpression() ast.Expression {
 	exp := &ast.ImagebuttonExpression{Token: p.curToken}
 
@@ -111,6 +134,24 @@ func (p *Parser) parseTextbuttonExpression() ast.Expression {
 			exp.Transform = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
 		}
 	}
+
+	return exp
+}
+
+func (p *Parser) parseKeyExpression() ast.Expression {
+	exp := &ast.KeyExpression{Token: p.curToken}
+
+	p.nextToken()
+
+	exp.Key = p.parseExpression(LOWEST)
+
+	if !p.expectPeek(token.ACTION) {
+		return nil
+	}
+
+	p.nextToken()
+
+	exp.Action = p.parseExpression(LOWEST)
 
 	return exp
 }

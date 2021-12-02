@@ -136,7 +136,9 @@ func evalRengBlockStatements(block *ast.BlockStatement, env *object.Environment)
 						result.(*object.Error).Message,
 						config.Renderer, config.Width,
 						config.Height,
-						core.CreateColor(0, 0, 0),
+						core.CreateColor(0xFF, 0xFF, 0xFF),
+						255,
+						0,
 					),
 				)
 				config.LayerMutex.Unlock()
@@ -144,8 +146,8 @@ func evalRengBlockStatements(block *ast.BlockStatement, env *object.Environment)
 			case object.JUMP_LABEL_OBJ:
 				return result
 			case object.STRING_OBJ:
-				say, err := env.Get("say")
-				if !err {
+				say, ok := env.Get("say")
+				if !ok {
 					return newError("Not Defined Say Screen")
 				}
 
@@ -157,7 +159,12 @@ func evalRengBlockStatements(block *ast.BlockStatement, env *object.Environment)
 
 				config.DeleteScreen("say")
 
+				config.Who = ""
 				config.What = ""
+				config.WhoColor = nil
+			case object.CHARACTER_OBJ:
+				config.Who = result.(*object.Character).Name.Value
+				config.WhoColor = result.(*object.Character).Color
 			}
 		}
 	}
@@ -171,7 +178,7 @@ func evalCallLabelExpression(cle *ast.CallLabelExpression, env *object.Environme
 	} else {
 		return newError("defined label %s", cle.Label.Value)
 	}
-	return nil
+	return NULL
 }
 
 func evalJumpLabelExpression(jle *ast.JumpLabelExpression) object.Object {
@@ -214,7 +221,7 @@ func evalShowExpression(se *ast.ShowExpression, env *object.Environment) object.
 		go core.PlayVideo(video.Video, video.Texture, config.LayerMutex, config.LayerList, config.Renderer)
 	}
 
-	return nil
+	return NULL
 }
 
 func evalHideExpression(he *ast.HideExpression, env *object.Environment) object.Object {
@@ -238,7 +245,7 @@ func evalHideExpression(he *ast.HideExpression, env *object.Environment) object.
 			screen.ScreenMutex.Unlock()
 		}
 	}
-	return nil
+	return NULL
 }
 
 func evalPlayExpression(pe *ast.PlayExpression, env *object.Environment) object.Object {
@@ -269,7 +276,7 @@ func evalPlayExpression(pe *ast.PlayExpression, env *object.Environment) object.
 		return newError("MusicRoot is not String")
 	}
 
-	return nil
+	return NULL
 }
 
 func evalStopExpression(se *ast.StopExpression) object.Object {
@@ -281,7 +288,7 @@ func evalStopExpression(se *ast.StopExpression) object.Object {
 	case "voice":
 		core.StopMusic(1)
 	}
-	return nil
+	return NULL
 }
 
 func evalExpressions(exps []ast.Expression, env *object.Environment) []object.Object {

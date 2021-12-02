@@ -16,9 +16,8 @@ go build -o RenG.exe -ldflags -H=windowsgui main.go
 
 cd ..
 copy %~dp0src\RenG.exe %~dp0RenG\core
+del %~dp0src\RenG.exe
 
 go build -o RenGLauncher.exe -ldflags -H=windowsgui main.go
-copy RenGLauncher.exe %~dp0RenG
-
+copy RenGLauncher.exe %~dp0RenGLauncher
 del RenGLauncher.exe
-del %~dp0src\RenG.exe

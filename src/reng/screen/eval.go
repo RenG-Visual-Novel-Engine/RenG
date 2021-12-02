@@ -98,10 +98,14 @@ func ScreenEval(node ast.Node, env *object.Environment, name string) object.Obje
 		return evalShowExpression(node, env, name)
 	case *ast.HideExpression:
 		return evalHideExpression(node, env)
+	case *ast.TextExpression:
+		return evalTextExpression(node, env, name)
 	case *ast.ImagebuttonExpression:
 		return evalImagebuttonExpression(node, env, name)
 	case *ast.TextbuttonExpression:
 		return evalTextbuttonExpression(node, env, name)
+	case *ast.KeyExpression:
+		return evalKeyExpression(node, env, name)
 	case *ast.WhoExpression:
 		if config.Who != "" {
 			return &object.String{Value: config.Who}
@@ -139,7 +143,7 @@ func evalShowExpression(se *ast.ShowExpression, env *object.Environment, name st
 		return nil
 	} else if screens, ok := env.Get(se.Name.Value); ok {
 		if screenObj, ok := screens.(*object.Screen); ok {
-			if IsScreenEnd(screenObj.Name.Value) {
+			if isScreenEnd(screenObj.Name.Value) {
 				ScreenMutex.Lock()
 				config.ScreenAllIndex[screenObj.Name.Value] = config.Screen{First: config.ScreenIndex, Count: 0}
 				config.ScreenPriority = append(config.ScreenPriority, screenObj.Name.Value)
@@ -164,7 +168,7 @@ func evalShowExpression(se *ast.ShowExpression, env *object.Environment, name st
 	}
 	*/
 
-	return nil
+	return NULL
 }
 
 func evalHideExpression(he *ast.HideExpression, env *object.Environment) object.Object {
@@ -178,7 +182,43 @@ func evalHideExpression(he *ast.HideExpression, env *object.Environment) object.
 			ScreenMutex.Unlock()
 		}
 	}
-	return nil
+	return NULL
+}
+
+func evalTextExpression(te *ast.TextExpression, env *object.Environment, name string) object.Object {
+	textObj := ScreenEval(te.Text, env, name)
+	if isError(textObj) {
+		return textObj
+	}
+
+	if text, ok := textObj.(*object.String); ok {
+		textTexture := config.MainFont.LoadFromRenderedText(
+			text.Value,
+			config.Renderer,
+			config.Width, config.Height,
+			core.CreateColor(0xFF, 0xFF, 0xFF),
+			255,
+			0,
+		)
+
+		if trans, ok := env.Get(te.Transform.Value); ok {
+			transform.TransformEval(trans.(*object.Transform).Body, textTexture, env)
+		} else {
+			transform.TransformEval(transform.TransformBuiltins["default"], textTexture, env)
+		}
+
+		config.ScreenAllIndex[name] = config.Screen{
+			First: config.ScreenAllIndex[name].First,
+			Count: config.ScreenAllIndex[name].Count + 1,
+		}
+		config.AddScreenTextureIndex(textTexture)
+
+		config.LayerMutex.Lock()
+		config.LayerList.Layers[2].AddNewTexture(textTexture)
+		config.LayerMutex.Unlock()
+	}
+
+	return NULL
 }
 
 func evalImagebuttonExpression(ie *ast.ImagebuttonExpression, env *object.Environment, name string) object.Object {
@@ -202,19 +242,19 @@ func evalImagebuttonExpression(ie *ast.ImagebuttonExpression, env *object.Enviro
 		go func() {
 			for {
 				event := <-config.MouseDownEventChan
-				if IsScreenEnd(name) {
+				if isScreenEnd(name) {
 					return
 				}
-				if IsInTexture(texture, event.Mouse.Down.X, event.Mouse.Down.Y) && IsFirstPriority(name) {
+				if isInTexture(texture, event.Mouse.Down.X, event.Mouse.Down.Y) && isFirstPriority(name) {
 					ScreenEval(ie.Action, env, name)
 				}
-				if IsScreenEnd(name) {
+				if isScreenEnd(name) {
 					return
 				}
 			}
 		}()
 	}
-	return nil
+	return NULL
 }
 
 func evalTextbuttonExpression(te *ast.TextbuttonExpression, env *object.Environment, name string) object.Object {
@@ -229,7 +269,9 @@ func evalTextbuttonExpression(te *ast.TextbuttonExpression, env *object.Environm
 			textObj.Value,
 			config.Renderer,
 			config.Width, config.Height,
-			core.CreateColor(235, 235, 235),
+			core.CreateColor(0xFF, 0xFF, 0xFF),
+			255,
+			0,
 		)
 
 		if trans, ok := env.Get(te.Transform.Value); ok {
@@ -251,20 +293,51 @@ func evalTextbuttonExpression(te *ast.TextbuttonExpression, env *object.Environm
 		go func() {
 			for {
 				event := <-config.MouseDownEventChan
-				if IsScreenEnd(name) {
+				if isScreenEnd(name) {
 					return
 				}
-				if IsInTexture(textTexture, event.Mouse.Down.X, event.Mouse.Down.Y) && IsFirstPriority(name) {
+				if isInTexture(textTexture, event.Mouse.Down.X, event.Mouse.Down.Y) && isFirstPriority(name) {
 					ScreenEval(te.Action, env, name)
 				}
-				if IsScreenEnd(name) {
+				if isScreenEnd(name) {
 					return
 				}
 			}
 		}()
 	}
 
-	return nil
+	return NULL
+}
+
+func evalKeyExpression(ke *ast.KeyExpression, env *object.Environment, name string) object.Object {
+	keyObj := ScreenEval(ke.Key, env, name)
+	if isError(keyObj) {
+		return keyObj
+	}
+
+	key, ok := keyObj.(*object.String)
+	if !ok {
+		return newError("'%v' is not string", key)
+	}
+
+	// TODO : 키가 제대로 된 키인지 확인이 필요함.
+
+	go func() {
+		for {
+			event := <-config.KeyDownEventChan
+			if isScreenEnd(name) {
+				return
+			}
+			if isKeyWant(key.Value, event.Key.KeyType) {
+				ScreenEval(ke.Action, env, name)
+			}
+			if isScreenEnd(name) {
+				return
+			}
+		}
+	}()
+
+	return NULL
 }
 
 func evalBlockStatements(block *ast.BlockStatement, env *object.Environment, name string) object.Object {
@@ -275,17 +348,21 @@ func evalBlockStatements(block *ast.BlockStatement, env *object.Environment, nam
 		if result != nil {
 			rt := result.Type()
 			if rt == object.ERROR_OBJ {
+				config.DeleteAllLayerTexture()
+
 				config.LayerMutex.Lock()
-				config.LayerList.Layers[1].DeleteAllTexture()
 				config.LayerList.Layers[0].AddNewTexture(
 					config.MainFont.LoadFromRenderedText(
 						result.(*object.Error).Message,
 						config.Renderer,
 						config.Width, config.Height,
-						core.CreateColor(0, 0, 0),
+						core.CreateColor(0xFF, 0xFF, 0xFF),
+						255,
+						0,
 					),
 				)
 				config.LayerMutex.Unlock()
+
 				return result
 			}
 		}

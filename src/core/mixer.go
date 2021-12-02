@@ -78,6 +78,20 @@ func PlayingMusicChannel(channel int) bool {
 	return int(C.Mix_Playing(C.int(channel))) != 0
 }
 
+/* Set the volume in the range of 0-128 of a specific channel or chunk.
+   If the specified channel is -1, set volume for all channels.
+   Returns the original volume.
+   If the specified volume is -1, just return the current volume.
+*/
+func SetVolume(channel int, volume int) {
+	switch channel {
+	case -1:
+		C.Mix_VolumeMusic(C.int(volume))
+	default:
+		C.Mix_Volume(C.int(channel), C.int(volume))
+	}
+}
+
 func StopMusic(channel int) {
 	switch channel {
 	case -1:
