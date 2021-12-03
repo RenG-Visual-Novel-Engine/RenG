@@ -70,11 +70,23 @@ func (p *Parser) parseTextExpression() ast.Expression {
 		},
 		Value: "default",
 	}
+	exp.Style = &ast.Identifier{
+		Token: token.Token{
+			Type:    token.IDENT,
+			Literal: "IDENT",
+		},
+		Value: "defaultStyle",
+	}
 
-	if p.expectPeek(token.AT) {
-		p.nextToken()
-
-		exp.Transform = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+	for p.expectPeek(token.AT) || p.expectPeek(token.AS) {
+		switch p.curToken.Type {
+		case token.AT:
+			p.nextToken()
+			exp.Transform = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+		case token.AS:
+			p.nextToken()
+			exp.Style = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+		}
 	}
 
 	return exp
@@ -95,14 +107,13 @@ func (p *Parser) parseImagebuttonExpression() ast.Expression {
 	}
 
 	for p.expectPeek(token.AT) || p.expectPeek(token.ACTION) {
-		if p.curTokenIs(token.ACTION) {
+		switch p.curToken.Type {
+		case token.AT:
 			p.nextToken()
-
-			exp.Action = p.parseExpression(LOWEST)
-		} else if p.curTokenIs(token.AT) {
-			p.nextToken()
-
 			exp.Transform = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+		case token.ACTION:
+			p.nextToken()
+			exp.Action = p.parseExpression(LOWEST)
 		}
 	}
 
@@ -122,16 +133,25 @@ func (p *Parser) parseTextbuttonExpression() ast.Expression {
 		},
 		Value: "default",
 	}
+	exp.Style = &ast.Identifier{
+		Token: token.Token{
+			Type:    token.IDENT,
+			Literal: "IDENT",
+		},
+		Value: "defaultStyle",
+	}
 
-	for p.expectPeek(token.AT) || p.expectPeek(token.ACTION) {
-		if p.curTokenIs(token.ACTION) {
+	for p.expectPeek(token.AT) || p.expectPeek(token.AS) || p.expectPeek(token.ACTION) {
+		switch p.curToken.Type {
+		case token.AT:
 			p.nextToken()
-
-			exp.Action = p.parseExpression(LOWEST)
-		} else if p.curTokenIs(token.AT) {
-			p.nextToken()
-
 			exp.Transform = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+		case token.AS:
+			p.nextToken()
+			exp.Style = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+		case token.ACTION:
+			p.nextToken()
+			exp.Action = p.parseExpression(LOWEST)
 		}
 	}
 
@@ -270,6 +290,22 @@ func (p *Parser) parseTranformExpression() ast.Expression {
 	return exp
 }
 
+func (p *Parser) parseStyleExpression() ast.Expression {
+	exp := &ast.StyleExpression{Token: p.curToken}
+
+	p.nextToken()
+
+	exp.Name = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+
+	if !p.expectPeek(token.LBRACE) {
+		return nil
+	}
+
+	exp.Body = p.parseBlockStatement()
+
+	return exp
+}
+
 func (p *Parser) parseXposExpression() ast.Expression {
 	exp := &ast.XPosExpression{Token: p.curToken}
 
@@ -322,6 +358,16 @@ func (p *Parser) parseRotateExpression() ast.Expression {
 
 func (p *Parser) parseAlphaExpression() ast.Expression {
 	exp := &ast.AlphaExpression{Token: p.curToken}
+
+	p.nextToken()
+
+	exp.Value = p.parseExpression(LOWEST)
+
+	return exp
+}
+
+func (p *Parser) parseColorExpression() ast.Expression {
+	exp := &ast.ColorExpression{Token: p.curToken}
 
 	p.nextToken()
 

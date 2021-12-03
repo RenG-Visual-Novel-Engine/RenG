@@ -6,6 +6,7 @@ import (
 	"RenG/src/lang/ast"
 	"RenG/src/lang/evaluator"
 	"RenG/src/lang/object"
+	"RenG/src/reng/style"
 	"RenG/src/reng/transform"
 	"fmt"
 	"strconv"
@@ -192,11 +193,27 @@ func evalTextExpression(te *ast.TextExpression, env *object.Environment, name st
 	}
 
 	if text, ok := textObj.(*object.String); ok {
+		var color object.Object
+
+		if sty, ok := env.Get(te.Style.Value); ok {
+			temp := style.StyleEval(sty.(*object.Style).Body, env)
+			if isError(temp) {
+				return temp
+			}
+
+			if _, ok := temp.(*object.Color); !ok {
+				return newError("Text Expression has only color style")
+			}
+			color = temp
+		} else {
+			color = &object.Color{Color: core.CreateColor(0xFF, 0xFF, 0xFF)}
+		}
+
 		textTexture := config.MainFont.LoadFromRenderedText(
 			text.Value,
 			config.Renderer,
 			config.Width, config.Height,
-			core.CreateColor(0xFF, 0xFF, 0xFF),
+			color.(*object.Color).Color,
 			255,
 			0,
 		)
@@ -264,12 +281,23 @@ func evalTextbuttonExpression(te *ast.TextbuttonExpression, env *object.Environm
 	}
 
 	if textObj, ok := text.(*object.String); ok {
+		var color object.Object
+
+		if sty, ok := env.Get(te.Style.Value); ok {
+			temp := style.StyleEval(sty.(*object.Style).Body, env)
+			if _, ok := temp.(*object.Color); !ok {
+				return newError("Text Expression has only color style")
+			}
+			color = temp
+		} else {
+			color = &object.Color{Color: core.CreateColor(0xFF, 0xFF, 0xFF)}
+		}
 
 		textTexture := config.MainFont.LoadFromRenderedText(
 			textObj.Value,
 			config.Renderer,
 			config.Width, config.Height,
-			core.CreateColor(0xFF, 0xFF, 0xFF),
+			color.(*object.Color).Color,
 			255,
 			0,
 		)

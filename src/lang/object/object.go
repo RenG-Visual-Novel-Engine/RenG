@@ -25,9 +25,11 @@ const (
 
 	SCREEN_OBJ     = "SCREEN_OBJ"
 	LABEL_OBJ      = "LABEL_OBJ"
+	COLOR_OBJ      = "COLOR_OBJ"
 	CHARACTER_OBJ  = "CHARACTER_OBJ"
 	JUMP_LABEL_OBJ = "JUMP_LABEL"
 	TRANSFORM_OBJ  = "TRANSFORM_OBJ"
+	STYLE_OBJ      = "STYLE_OBJ"
 )
 
 type ObjectType string
@@ -154,9 +156,16 @@ type Label struct {
 func (l *Label) Type() ObjectType { return LABEL_OBJ }
 func (l *Label) Inspect() string  { return "{ " + l.Body.String() + " }" }
 
+type Color struct {
+	Color core.SDL_Color
+}
+
+func (c *Color) Type() ObjectType { return CHARACTER_OBJ }
+func (c *Color) Inspect() string  { return "" }
+
 type Character struct {
 	Name  *String
-	Color *core.SDL_Color
+	Color *Color
 }
 
 func (c *Character) Type() ObjectType { return CHARACTER_OBJ }
@@ -176,3 +185,11 @@ type Transform struct {
 
 func (t *Transform) Type() ObjectType { return TRANSFORM_OBJ }
 func (t *Transform) Inspect() string  { return t.Name.String() }
+
+type Style struct {
+	Name *ast.Identifier
+	Body *ast.BlockStatement
+}
+
+func (s *Style) Type() ObjectType { return STYLE_OBJ }
+func (s *Style) Inspect() string  { return s.Name.String() }

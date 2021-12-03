@@ -236,16 +236,16 @@ var FunctionBuiltins = map[string]*object.Builtin{
 				hex[1], _ = strconv.ParseInt(color.Value[3:5], 16, 32)
 				hex[2], _ = strconv.ParseInt(color.Value[5:7], 16, 32)
 			default:
-				return newError("Color support hex code")
+				return newError("Color support only hex code")
 			}
-
-			c := core.CreateColor(int(hex[0]), int(hex[1]), int(hex[2]))
 
 			return &object.Character{
 				Name: &object.String{
 					Value: name.Value,
 				},
-				Color: &c,
+				Color: &object.Color{
+					Color: core.CreateColor(int(hex[0]), int(hex[1]), int(hex[2])),
+				},
 			}
 		},
 	},

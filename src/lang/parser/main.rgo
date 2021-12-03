@@ -8,5 +8,5 @@ screen main_menu {
 screen say {
     show say_bg
     text who at who_pos
-    text what at content_pos
+    text what at content_pos as red
 }

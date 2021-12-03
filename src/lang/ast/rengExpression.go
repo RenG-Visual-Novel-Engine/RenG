@@ -14,25 +14,20 @@ type ScreenExpression struct {
 func (se *ScreenExpression) expressionNode()      {}
 func (se *ScreenExpression) TokenLiteral() string { return se.Token.Literal }
 func (se *ScreenExpression) String() string {
-	var out bytes.Buffer
-
-	out.WriteString("screen ")
-	out.WriteString(se.Name.String())
-	out.WriteString(se.Body.String())
-
-	return out.String()
+	return "screen " + se.Name.String() + " {\n" + se.Body.String() + "\n}\n"
 }
 
 type TextExpression struct {
 	Token     token.Token
 	Text      Expression
 	Transform *Identifier
+	Style     *Identifier
 }
 
 func (te *TextExpression) expressionNode()      {}
 func (te *TextExpression) TokenLiteral() string { return te.Token.Literal }
 func (te *TextExpression) String() string {
-	return te.Text.String()
+	return "text \"" + te.Text.String() + "\" at " + te.Transform.String() + " as " + te.Style.String() + "\n"
 }
 
 type ImagebuttonExpression struct {
@@ -59,6 +54,7 @@ type TextbuttonExpression struct {
 	Token     token.Token
 	Text      Expression
 	Transform *Identifier
+	Style     *Identifier
 	Action    Expression
 }
 
@@ -71,6 +67,7 @@ func (te *TextbuttonExpression) String() string {
 	out.WriteString(te.Text.String())
 	out.WriteString(te.Transform.String())
 	out.WriteString(te.Action.String())
+	out.WriteString("\n")
 
 	return out.String()
 }
@@ -84,7 +81,7 @@ type KeyExpression struct {
 func (ke *KeyExpression) expressionNode()      {}
 func (ke *KeyExpression) TokenLiteral() string { return ke.Token.Literal }
 func (ke *KeyExpression) String() string {
-	return "key " + ke.Key.String() + " action " + ke.Action.String()
+	return "key " + ke.Key.String() + " action " + ke.Action.String() + "\n"
 }
 
 type LabelExpression struct {
@@ -174,6 +171,18 @@ func (te *TransformExpression) String() string {
 	return "transform " + te.Name.String() + "{" + te.Body.String() + "}"
 }
 
+type StyleExpression struct {
+	Token token.Token
+	Name  *Identifier
+	Body  *BlockStatement
+}
+
+func (se *StyleExpression) expressionNode()      {}
+func (se *StyleExpression) TokenLiteral() string { return se.Token.Literal }
+func (se *StyleExpression) String() string {
+	return "style " + se.Name.String() + "{" + se.Body.String() + "}"
+}
+
 type ShowExpression struct {
 	Token     token.Token
 	Name      *Identifier
@@ -261,6 +270,17 @@ func (ae *AlphaExpression) expressionNode()      {}
 func (ae *AlphaExpression) TokenLiteral() string { return ae.Token.Literal }
 func (ae *AlphaExpression) String() string {
 	return ae.Value.String()
+}
+
+type ColorExpression struct {
+	Token token.Token
+	Value Expression
+}
+
+func (ce *ColorExpression) expressionNode()      {}
+func (ce *ColorExpression) TokenLiteral() string { return ce.Token.Literal }
+func (ce *ColorExpression) String() string {
+	return ce.Value.String()
 }
 
 type PlayExpression struct {

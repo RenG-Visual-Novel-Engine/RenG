@@ -87,9 +87,33 @@ type buttonWheel struct {
 func (event *SDL_Event) HandleEvent(eventType int, eventChan chan Event) {
 	switch eventType {
 	case SDL_KEYDOWN:
-		KeyEventChanSendAll(SDL_KEYDOWN, uint8(C.keyType((C.SDL_Event)(*event))), eventChan)
+		for {
+			eventChan <- Event{
+				Type: SDL_KEYDOWN,
+				Key: key{
+					KeyType: uint8(C.keyType((C.SDL_Event)(*event))),
+				},
+			}
+
+			if len(eventChan) > 0 {
+				<-eventChan
+				break
+			}
+		}
 	case SDL_KEYUP:
-		KeyEventChanSendAll(SDL_KEYUP, uint8(C.keyType((C.SDL_Event)(*event))), eventChan)
+		for {
+			eventChan <- Event{
+				Type: SDL_KEYUP,
+				Key: key{
+					KeyType: uint8(C.keyType((C.SDL_Event)(*event))),
+				},
+			}
+
+			if len(eventChan) > 0 {
+				<-eventChan
+				break
+			}
+		}
 	case SDL_MOUSEMOTION:
 		go func() {
 			var x, y C.int
@@ -182,24 +206,6 @@ func (event *SDL_Event) HandleEvent(eventType int, eventChan chan Event) {
 			}
 		}()
 	}
-}
-
-func KeyEventChanSendAll(eventType uint32, keyType uint8, eventChan chan Event) {
-	go func() {
-		for {
-			eventChan <- Event{
-				Type: eventType,
-				Key: key{
-					KeyType: keyType,
-				},
-			}
-
-			if len(eventChan) > 0 {
-				<-eventChan
-				break
-			}
-		}
-	}()
 }
 
 func (e *SDL_Event) PollEvent() int {

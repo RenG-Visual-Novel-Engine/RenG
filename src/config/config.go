@@ -6,11 +6,6 @@ import (
 	"sync"
 )
 
-type Screen struct {
-	First int
-	Count int
-}
-
 var (
 	Path string
 	Code string
@@ -49,12 +44,6 @@ var (
 )
 
 var (
-	Main_Menu *object.Screen
-	Say       *object.Screen
-	Choice    *object.Screen
-)
-
-var (
 	Start *object.Label
 )
 
@@ -76,21 +65,11 @@ var (
 )
 
 var (
-	ShowTextureIndex = make([]*core.SDL_Texture, 0)
-	ShowIndex        = 0
-
-	ScreenAllIndex     = make(map[string]Screen)
-	ScreenTextureIndex = make([]*core.SDL_Texture, 0)
-	ScreenIndex        = 0
-	ScreenPriority     = make([]string, 0)
-)
-
-var (
 	LayerMutex = &sync.RWMutex{}
 )
 
 var (
 	Who      string = ""
 	What     string = ""
-	WhoColor *core.SDL_Color
+	WhoColor core.SDL_Color
 )

@@ -161,10 +161,9 @@ func evalRengBlockStatements(block *ast.BlockStatement, env *object.Environment)
 
 				config.Who = ""
 				config.What = ""
-				config.WhoColor = nil
 			case object.CHARACTER_OBJ:
 				config.Who = result.(*object.Character).Name.Value
-				config.WhoColor = result.(*object.Character).Color
+				config.WhoColor = result.(*object.Character).Color.Color
 			}
 		}
 	}
@@ -260,13 +259,14 @@ func evalPlayExpression(pe *ast.PlayExpression, env *object.Environment) object.
 			case "noloop":
 				go playMusic(config.Path+musicRoot.Value, false)
 			default:
-				return newError("It is not Loop or NoLoop. got=%s", pe.Loop.Value)
+				return newError("It is not loop or noloop. got=%s", pe.Loop.Value)
 			}
 		case "sound":
 			go play(config.Path+musicRoot.Value, 0)
 		case "voice":
 			go play(config.Path+musicRoot.Value, 1)
 		default:
+			// TODO : 사용자 정의 채널 미구현
 			_, ok := config.ChannelList.GetChannel(pe.Channel.Value)
 			if !ok {
 				return newError("%s is not audio channel", pe.Channel.Value)

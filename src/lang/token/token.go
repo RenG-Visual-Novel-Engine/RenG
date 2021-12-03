@@ -96,16 +96,21 @@ const (
 	CALL = "CALL"
 	JUMP = "JUMP"
 
-	IMAGE     = "IMAGE"
-	VIDEO     = "VIDEO"
+	IMAGE = "IMAGE"
+	VIDEO = "VIDEO"
+
 	CHARACTER = "CHARACTER"
+
 	TRANSFORM = "TRANSFORM"
+	STYLE     = "STYLE"
 
 	SCENE = "SCENE"
 
 	SHOW = "SHOW"
 	HIDE = "HIDE"
-	AT   = "AT"
+
+	AT = "AT"
+	AS = "AS"
 
 	PLAY = "PLAY"
 	STOP = "STOP"
@@ -121,6 +126,11 @@ const (
 
 	ROTATE = "ROTATE"
 	ALPHA  = "ALPHA"
+)
+
+// only style
+const (
+	COLOR = "COLOR"
 )
 
 const (
@@ -151,16 +161,19 @@ var keywords = map[string]TokenType{
 	"video":       VIDEO,
 	"character":   CHARACTER,
 	"transform":   TRANSFORM,
+	"style":       STYLE,
 	"scene":       SCENE,
 	"show":        SHOW,
 	"hide":        HIDE,
 	"at":          AT,
+	"as":          AS,
 	"xpos":        XPOS,
 	"ypos":        YPOS,
 	"xsize":       XSIZE,
 	"ysize":       YSIZE,
 	"rotate":      ROTATE,
 	"alpha":       ALPHA,
+	"color":       COLOR,
 	"play":        PLAY,
 	"stop":        STOP,
 	"who":         WHO,

@@ -10,13 +10,13 @@ import (
 func evalScreenExpression(se *ast.ScreenExpression, env *object.Environment) object.Object {
 	env.Set(se.Name.Value, &object.Screen{Name: se.Name, Body: se.Body})
 
-	return nil
+	return NULL
 }
 
 func evalLabelExpression(le *ast.LabelExpression, env *object.Environment) object.Object {
 	env.Set(le.Name.Value, &object.Label{Name: le.Name, Body: le.Body})
 
-	return nil
+	return NULL
 }
 
 func evalImageExpression(ie *ast.ImageExpression, env *object.Environment) object.Object {
@@ -33,7 +33,7 @@ func evalImageExpression(ie *ast.ImageExpression, env *object.Environment) objec
 		return newError("Path is not string")
 	}
 
-	return nil
+	return NULL
 }
 
 func evalVideoExpression(ve *ast.VideoExpression, env *object.Environment) object.Object {
@@ -50,11 +50,17 @@ func evalVideoExpression(ve *ast.VideoExpression, env *object.Environment) objec
 
 	config.VideoList.Set(ve.Name.Value, &video)
 
-	return nil
+	return NULL
 }
 
 func evalTransformExpression(te *ast.TransformExpression, env *object.Environment) object.Object {
 	env.Set(te.Name.Value, &object.Transform{Name: te.Name, Body: te.Body})
 
-	return nil
+	return NULL
+}
+
+func evalStyleExpression(se *ast.StyleExpression, env *object.Environment) object.Object {
+	env.Set(se.Name.Value, &object.Style{Name: se.Name, Body: se.Body})
+
+	return NULL
 }

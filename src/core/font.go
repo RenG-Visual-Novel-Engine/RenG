@@ -10,7 +10,6 @@ package core
 */
 import "C"
 import (
-	"fmt"
 	"unsafe"
 )
 
@@ -20,7 +19,7 @@ func OpenFont(path string) *TTF_Font {
 
 	f := C.TTF_OpenFont(cPath, 28)
 	if f == nil {
-		fmt.Println("failed TTF OpenFont")
+		return nil
 	}
 
 	return (*TTF_Font)(f)
@@ -32,12 +31,12 @@ func (f *TTF_Font) LoadFromRenderedText(text string, renderer *SDL_Renderer, w, 
 
 	textSurface := C.TTF_RenderUTF8_Blended((*C.TTF_Font)(f), cText, (C.SDL_Color)(color))
 	if textSurface == nil {
-		fmt.Println("failed renderText")
+		return nil
 	}
 
 	t := C.SDL_CreateTextureFromSurface((*C.SDL_Renderer)(renderer), textSurface)
 	if t == nil {
-		fmt.Println("texture nil")
+		return nil
 	}
 
 	texture := &SDL_Texture{
