@@ -1,6 +1,7 @@
 package style
 
 import (
+	"RenG/src/core"
 	"RenG/src/lang/ast"
 	"RenG/src/lang/object"
 	"fmt"
@@ -12,11 +13,11 @@ var (
 	FALSE = &object.Boolean{Value: false}
 )
 
-func applyFunction(fn object.Object, args []object.Object) object.Object {
+func applyFunction(fn object.Object, texture *core.SDL_Texture, args []object.Object) object.Object {
 	switch fn := fn.(type) {
 	case *object.Function:
 		extendedEnv := extendFunctionEnv(fn, args)
-		evaluated := StyleEval(fn.Body, extendedEnv)
+		evaluated := StyleEval(fn.Body, texture, extendedEnv)
 		return unwrapReturnValue(evaluated)
 	case *object.Builtin:
 		return fn.Fn(args...)

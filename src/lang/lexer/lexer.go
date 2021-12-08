@@ -161,12 +161,7 @@ func (l *Lexer) NextToken() token.Token {
 	case ')':
 		tok = newToken(token.RPAREN, l.ch)
 	case '{':
-		if l.peekChar() == 13 {
-			tok = newToken(token.LBRACE, l.ch)
-			l.jumpWhiteSpace()
-		} else {
-			tok = newToken(token.LBRACE, l.ch)
-		}
+		tok = newToken(token.LBRACE, l.ch)
 	case '}':
 		tok = newToken(token.RBRACE, l.ch)
 	case '[':
@@ -183,6 +178,8 @@ func (l *Lexer) NextToken() token.Token {
 		tok = newToken(token.RBRACKET, l.ch)
 	case '\n':
 		tok = newToken(token.ENDSENTENCE, l.ch)
+		l.skipWhiteSpaceWithENDSENTENCE()
+		return tok
 	case ';':
 		tok = newToken(token.ENDSENTENCE, l.ch)
 	case '#':
@@ -316,9 +313,8 @@ func (l *Lexer) skipWhiteSpace() {
 
 // \n 개행문자를 스킵하는 역할입니다.
 //     필요성 : 개행문자를 하나의 ENDSENTENCE 토큰으로 판단하므로 필요합니다.
-func (l *Lexer) jumpWhiteSpace() {
-	for l.peekChar() == '\n' {
+func (l *Lexer) skipWhiteSpaceWithENDSENTENCE() {
+	for l.ch == '\n' || l.ch == ' ' || l.ch == '\t' || l.ch == '\r' {
 		l.readChar()
 	}
-	l.readChar()
 }

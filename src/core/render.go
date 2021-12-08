@@ -19,11 +19,16 @@ import (
 )
 
 func (t *SDL_Texture) Render(renderer *SDL_Renderer, w, h, cw, ch int) {
-	renderQuad := CreateRect(ResizeInt(w, cw, t.Xpos), ResizeInt(h, ch, t.Ypos), ResizeInt(w, cw, t.Width), ResizeInt(w, cw, t.Height))
-
-	t.SetAlpha(t.Alpha)
-
-	C.SDL_RenderCopyEx((*C.SDL_Renderer)(renderer), t.Texture, nil, &renderQuad, C.double(t.Degree), nil, SDL_FLIP_NONE)
+	switch t.TextureType {
+	case TEXTTEXTURE:
+		renderQuad := CreateRect(ResizeInt(w, cw, t.TextTexture.Xpos), ResizeInt(h, ch, t.TextTexture.Ypos), ResizeInt(w, cw, t.TextTexture.Width), ResizeInt(w, cw, t.TextTexture.Height))
+		t.SetAlpha(t.TextTexture.Alpha)
+		C.SDL_RenderCopyEx((*C.SDL_Renderer)(renderer), t.Texture, nil, &renderQuad, C.double(t.TextTexture.Degree), nil, SDL_FLIP_NONE)
+	case IMAGETEXTURE:
+		renderQuad := CreateRect(ResizeInt(w, cw, t.ImageTexture.Xpos), ResizeInt(h, ch, t.ImageTexture.Ypos), ResizeInt(w, cw, t.ImageTexture.Width), ResizeInt(w, cw, t.ImageTexture.Height))
+		t.SetAlpha(t.ImageTexture.Alpha)
+		C.SDL_RenderCopyEx((*C.SDL_Renderer)(renderer), t.Texture, nil, &renderQuad, C.double(t.ImageTexture.Degree), nil, SDL_FLIP_NONE)
+	}
 }
 
 func (renderer *SDL_Renderer) SetRenderDrawColor(r, g, b, a uint8) {
@@ -51,11 +56,14 @@ func (r *SDL_Renderer) LoadFromFile(root string) (*SDL_Texture, bool) {
 	C.SDL_SetColorKey(loadedSurface, SDL_TRUE, C.SDL_MapRGB(C.surfaceFormat(loadedSurface), 0, 0xFF, 0xFF))
 
 	newTexture := &SDL_Texture{
-		Texture: C.SDL_CreateTextureFromSurface((*C.SDL_Renderer)(r), loadedSurface),
-		Width:   int(loadedSurface.w),
-		Height:  int(loadedSurface.h),
-		Alpha:   255,
-		Degree:  0,
+		Texture:     C.SDL_CreateTextureFromSurface((*C.SDL_Renderer)(r), loadedSurface),
+		TextureType: IMAGETEXTURE,
+		ImageTexture: Image{
+			Width:  int(loadedSurface.w),
+			Height: int(loadedSurface.h),
+			Alpha:  255,
+			Degree: 0,
+		},
 	}
 
 	newTexture.SetBlendMode()
@@ -64,6 +72,7 @@ func (r *SDL_Renderer) LoadFromFile(root string) (*SDL_Texture, bool) {
 	return newTexture, true
 }
 
+/*
 func (r *SDL_Renderer) CreateTexture(width, height int) *SDL_Texture {
 	var texture SDL_Texture
 
@@ -81,3 +90,4 @@ func (r *SDL_Renderer) CreateTexture(width, height int) *SDL_Texture {
 
 	return &texture
 }
+*/

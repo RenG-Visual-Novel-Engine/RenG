@@ -1,6 +1,7 @@
 package style
 
 import (
+	"RenG/src/config"
 	"RenG/src/core"
 	"RenG/src/lang/ast"
 	"RenG/src/lang/evaluator"
@@ -9,17 +10,17 @@ import (
 	"strconv"
 )
 
-func StyleEval(node ast.Node, env *object.Environment) object.Object {
+func StyleEval(node ast.Node, texture *core.SDL_Texture, env *object.Environment) object.Object {
 	switch node := node.(type) {
 	case *ast.BlockStatement:
-		return evalBlockStatements(node, env)
+		return evalBlockStatements(node, texture, env)
 	case *ast.ExpressionStatement:
-		return StyleEval(node.Expression, env)
+		return StyleEval(node.Expression, texture, env)
 	case *ast.PrefixExpression:
 		if rightValue, ok := node.Right.(*ast.Identifier); ok {
 			return evalAssignPrefixExpression(node.Operator, rightValue, env)
 		} else {
-			right := StyleEval(node.Right, env)
+			right := StyleEval(node.Right, texture, env)
 			if isError(right) {
 				return right
 			}
@@ -27,19 +28,19 @@ func StyleEval(node ast.Node, env *object.Environment) object.Object {
 		}
 	case *ast.InfixExpression:
 		if leftValue, ok := node.Left.(*ast.Identifier); ok && isAssign(node.Operator) {
-			right := StyleEval(node.Right, env)
+			right := StyleEval(node.Right, texture, env)
 			if isError(right) {
 				return right
 			}
 
 			return evalAssignInfixExpression(node.Operator, leftValue, right, env)
 		} else {
-			left := StyleEval(node.Left, env)
+			left := StyleEval(node.Left, texture, env)
 			if isError(left) {
 				return left
 			}
 
-			right := StyleEval(node.Right, env)
+			right := StyleEval(node.Right, texture, env)
 			if isError(right) {
 				return right
 			}
@@ -47,30 +48,30 @@ func StyleEval(node ast.Node, env *object.Environment) object.Object {
 			return evalInfixExpression(node.Operator, left, right)
 		}
 	case *ast.IfExpression:
-		return evalIfExpression(node, env)
+		return evalIfExpression(node, texture, env)
 	case *ast.ForExpression:
-		return evalForExpression(node, env)
+		return evalForExpression(node, texture, env)
 	case *ast.WhileExpression:
-		return evalWhileExpression(node, env)
+		return evalWhileExpression(node, texture, env)
 	case *ast.CallFunctionExpression:
-		function := StyleEval(node.Function, env)
+		function := StyleEval(node.Function, texture, env)
 		if isError(function) {
 			return function
 		}
 
-		args := evalExpressions(node.Arguments, env)
+		args := evalExpressions(node.Arguments, texture, env)
 		if len(args) == 1 && isError(args[0]) {
 			return args[0]
 		}
 
-		return applyFunction(function, args)
+		return applyFunction(function, texture, args)
 	case *ast.IndexExpression:
-		left := StyleEval(node.Left, env)
+		left := StyleEval(node.Left, texture, env)
 		if isError(left) {
 			return left
 		}
 
-		index := StyleEval(node.Index, env)
+		index := StyleEval(node.Index, texture, env)
 		if isError(index) {
 			return index
 		}
@@ -85,15 +86,15 @@ func StyleEval(node ast.Node, env *object.Environment) object.Object {
 	case *ast.FloatLiteral:
 		return &object.Float{Value: node.Value}
 	case *ast.StringLiteral:
-		return evalStringLiteral(node, env)
+		return evalStringLiteral(node, texture, env)
 	case *ast.ArrayLiteral:
-		elements := evalExpressions(node.Elements, env)
+		elements := evalExpressions(node.Elements, texture, env)
 		if len(elements) == 1 && isError(elements[0]) {
 			return elements[0]
 		}
 		return &object.Array{Elements: elements}
 	case *ast.ColorExpression:
-		colorObj := StyleEval(node.Value, env)
+		colorObj := StyleEval(node.Value, texture, env)
 		if isError(colorObj) {
 			return colorObj
 		}
@@ -109,17 +110,17 @@ func StyleEval(node ast.Node, env *object.Environment) object.Object {
 				return newError("Color support only hex code")
 			}
 
-			return &object.Color{Color: core.CreateColor(int(hex[0]), int(hex[1]), int(hex[2]))}
+			config.MainFont.ChangeTextColor(texture, config.Renderer, texture.TextTexture.Text, core.CreateColor(int(hex[0]), int(hex[1]), int(hex[2])))
 		}
 	}
 	return nil
 }
 
-func evalBlockStatements(block *ast.BlockStatement, env *object.Environment) object.Object {
+func evalBlockStatements(block *ast.BlockStatement, texture *core.SDL_Texture, env *object.Environment) object.Object {
 	var result object.Object
 
 	for _, statement := range block.Statements {
-		result = StyleEval(statement, env)
+		result = StyleEval(statement, texture, env)
 		if result != nil {
 			rt := result.Type()
 			if rt == object.ERROR_OBJ {
@@ -131,11 +132,11 @@ func evalBlockStatements(block *ast.BlockStatement, env *object.Environment) obj
 	return result
 }
 
-func evalExpressions(exps []ast.Expression, env *object.Environment) []object.Object {
+func evalExpressions(exps []ast.Expression, texture *core.SDL_Texture, env *object.Environment) []object.Object {
 	var result []object.Object
 
 	for _, e := range exps {
-		evaluated := StyleEval(e, env)
+		evaluated := StyleEval(e, texture, env)
 		if isError(evaluated) {
 			return []object.Object{evaluated}
 		}
@@ -145,7 +146,7 @@ func evalExpressions(exps []ast.Expression, env *object.Environment) []object.Ob
 	return result
 }
 
-func evalStringLiteral(str *ast.StringLiteral, env *object.Environment) *object.String {
+func evalStringLiteral(str *ast.StringLiteral, texture *core.SDL_Texture, env *object.Environment) *object.String {
 	result := &object.String{Value: str.Value}
 
 	// TODO : 최적화하기
@@ -159,7 +160,7 @@ func evalStringLiteral(str *ast.StringLiteral, env *object.Environment) *object.
 
 		for isCurrentExp(index, str) {
 
-			val := StyleEval(str.Exp[expIndex].Exp, env)
+			val := StyleEval(str.Exp[expIndex].Exp, texture, env)
 
 			switch value := val.(type) {
 			case *object.Integer:
@@ -205,60 +206,60 @@ func evalArrayIndexExpression(array, index object.Object) object.Object {
 	return arrayObject.Elements[idx]
 }
 
-func evalIfExpression(ie *ast.IfExpression, env *object.Environment) object.Object {
-	condition := StyleEval(ie.Condition, env)
+func evalIfExpression(ie *ast.IfExpression, texture *core.SDL_Texture, env *object.Environment) object.Object {
+	condition := StyleEval(ie.Condition, texture, env)
 	if isError(condition) {
 		return condition
 	}
 
 	if isTruthy(condition) {
-		return StyleEval(ie.Consequence, env)
+		return StyleEval(ie.Consequence, texture, env)
 	}
 
 	for _, ee := range ie.Elif {
 		if ee != nil {
-			elifCondition := StyleEval(ee.Condition, env)
+			elifCondition := StyleEval(ee.Condition, texture, env)
 			if isError(elifCondition) {
 				return elifCondition
 			}
 			if isTruthy(elifCondition) {
-				return StyleEval(ee.Consequence, env)
+				return StyleEval(ee.Consequence, texture, env)
 			}
 		}
 	}
 
 	if ie.Alternative != nil {
-		return StyleEval(ie.Alternative, env)
+		return StyleEval(ie.Alternative, texture, env)
 	} else {
 		return NULL
 	}
 }
 
-func evalForExpression(node *ast.ForExpression, env *object.Environment) object.Object {
+func evalForExpression(node *ast.ForExpression, texture *core.SDL_Texture, env *object.Environment) object.Object {
 	var define, condition, result, run object.Object
 
-	define = StyleEval(node.Define, env)
+	define = StyleEval(node.Define, texture, env)
 	if isError(define) {
 		return define
 	}
 
-	condition = StyleEval(node.Condition, env)
+	condition = StyleEval(node.Condition, texture, env)
 	if isError(condition) {
 		return condition
 	}
 
 	for isTruthy(condition) {
-		result = StyleEval(node.Body, env)
+		result = StyleEval(node.Body, texture, env)
 		if isError(result) {
 			return result
 		}
 
-		run = StyleEval(node.Run, env)
+		run = StyleEval(node.Run, texture, env)
 		if isError(run) {
 			return run
 		}
 
-		condition = StyleEval(node.Condition, env)
+		condition = StyleEval(node.Condition, texture, env)
 		if isError(condition) {
 			return condition
 		}
@@ -266,19 +267,19 @@ func evalForExpression(node *ast.ForExpression, env *object.Environment) object.
 	return nil
 }
 
-func evalWhileExpression(node *ast.WhileExpression, env *object.Environment) object.Object {
-	condition := StyleEval(node.Condition, env)
+func evalWhileExpression(node *ast.WhileExpression, texture *core.SDL_Texture, env *object.Environment) object.Object {
+	condition := StyleEval(node.Condition, texture, env)
 	if isError(condition) {
 		return condition
 	}
 
 	for isTruthy(condition) {
-		result := StyleEval(node.Body, env)
+		result := StyleEval(node.Body, texture, env)
 		if isError(result) {
 			return result
 		}
 
-		condition = StyleEval(node.Condition, env)
+		condition = StyleEval(node.Condition, texture, env)
 		if isError(condition) {
 			return condition
 		}

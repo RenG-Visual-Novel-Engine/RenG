@@ -13,10 +13,8 @@ func DeleteScreen(name string) {
 	}
 	LayerMutex.Unlock()
 
-	for i := 0; i < screen.Count; i++ {
-		ScreenTextureIndex = append(ScreenTextureIndex[:screen.First], ScreenTextureIndex[screen.First+1:]...)
-		ScreenIndex--
-	}
+	ScreenTextureIndex = append(ScreenTextureIndex[:screen.First], ScreenTextureIndex[screen.First+screen.Count:]...)
+	ScreenIndex -= screen.Count
 
 	delete(ScreenAllIndex, name)
 

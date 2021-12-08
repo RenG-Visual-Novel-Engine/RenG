@@ -6,6 +6,7 @@ import (
 	"RenG/src/lang/ast"
 	"RenG/src/lang/object"
 	"fmt"
+	"strings"
 	"sync"
 )
 
@@ -20,10 +21,19 @@ var (
 )
 
 func isInTexture(texture *core.SDL_Texture, x, y int) bool {
-	return x >= core.ResizeInt(config.Width, config.ChangeWidth, texture.Xpos) &&
-		x <= core.ResizeInt(config.Width, config.ChangeWidth, texture.Width)+core.ResizeInt(config.Width, config.ChangeWidth, texture.Xpos) &&
-		y >= core.ResizeInt(config.Height, config.ChangeHeight, texture.Ypos) &&
-		y <= core.ResizeInt(config.Height, config.ChangeHeight, texture.Height)+core.ResizeInt(config.Height, config.ChangeHeight, texture.Ypos)
+	switch texture.TextureType {
+	case core.TEXTTEXTURE:
+		return x >= core.ResizeInt(config.Width, config.ChangeWidth, texture.TextTexture.Xpos) &&
+			x <= core.ResizeInt(config.Width, config.ChangeWidth, texture.TextTexture.Width)+core.ResizeInt(config.Width, config.ChangeWidth, texture.TextTexture.Xpos) &&
+			y >= core.ResizeInt(config.Height, config.ChangeHeight, texture.TextTexture.Ypos) &&
+			y <= core.ResizeInt(config.Height, config.ChangeHeight, texture.TextTexture.Height)+core.ResizeInt(config.Height, config.ChangeHeight, texture.TextTexture.Ypos)
+	case core.IMAGETEXTURE:
+		return x >= core.ResizeInt(config.Width, config.ChangeWidth, texture.ImageTexture.Xpos) &&
+			x <= core.ResizeInt(config.Width, config.ChangeWidth, texture.ImageTexture.Width)+core.ResizeInt(config.Width, config.ChangeWidth, texture.ImageTexture.Xpos) &&
+			y >= core.ResizeInt(config.Height, config.ChangeHeight, texture.ImageTexture.Ypos) &&
+			y <= core.ResizeInt(config.Height, config.ChangeHeight, texture.ImageTexture.Height)+core.ResizeInt(config.Height, config.ChangeHeight, texture.ImageTexture.Ypos)
+	}
+	return false
 }
 
 func isFirstPriority(name string) bool {
@@ -49,7 +59,7 @@ func isScreenEnd(name string) bool {
 }
 
 func isKeyWant(keyName string, inputKey uint8) bool {
-	switch keyName {
+	switch strings.ToLower(keyName) {
 	case "0":
 		return inputKey == uint8(core.SDLK_0)
 	case "1":
@@ -70,58 +80,6 @@ func isKeyWant(keyName string, inputKey uint8) bool {
 		return inputKey == uint8(core.SDLK_8)
 	case "9":
 		return inputKey == uint8(core.SDLK_9)
-	case "A":
-		return inputKey == uint8(core.SDLK_a)
-	case "B":
-		return inputKey == uint8(core.SDLK_b)
-	case "C":
-		return inputKey == uint8(core.SDLK_c)
-	case "D":
-		return inputKey == uint8(core.SDLK_d)
-	case "E":
-		return inputKey == uint8(core.SDLK_e)
-	case "F":
-		return inputKey == uint8(core.SDLK_f)
-	case "G":
-		return inputKey == uint8(core.SDLK_g)
-	case "H":
-		return inputKey == uint8(core.SDLK_h)
-	case "I":
-		return inputKey == uint8(core.SDLK_i)
-	case "J":
-		return inputKey == uint8(core.SDLK_j)
-	case "K":
-		return inputKey == uint8(core.SDLK_k)
-	case "L":
-		return inputKey == uint8(core.SDLK_l)
-	case "M":
-		return inputKey == uint8(core.SDLK_m)
-	case "N":
-		return inputKey == uint8(core.SDLK_n)
-	case "O":
-		return inputKey == uint8(core.SDLK_o)
-	case "P":
-		return inputKey == uint8(core.SDLK_p)
-	case "Q":
-		return inputKey == uint8(core.SDLK_q)
-	case "R":
-		return inputKey == uint8(core.SDLK_r)
-	case "S":
-		return inputKey == uint8(core.SDLK_s)
-	case "T":
-		return inputKey == uint8(core.SDLK_t)
-	case "U":
-		return inputKey == uint8(core.SDLK_u)
-	case "V":
-		return inputKey == uint8(core.SDLK_v)
-	case "W":
-		return inputKey == uint8(core.SDLK_w)
-	case "X":
-		return inputKey == uint8(core.SDLK_x)
-	case "Y":
-		return inputKey == uint8(core.SDLK_y)
-	case "Z":
-		return inputKey == uint8(core.SDLK_z)
 	case "a":
 		return inputKey == uint8(core.SDLK_a)
 	case "b":
@@ -172,6 +130,54 @@ func isKeyWant(keyName string, inputKey uint8) bool {
 		return inputKey == uint8(core.SDLK_y)
 	case "z":
 		return inputKey == uint8(core.SDLK_z)
+	case "f1":
+		return uint32(inputKey) == uint32(core.SDLK_F1)
+	case "f2":
+		return uint32(inputKey) == uint32(core.SDLK_F2)
+	case "f3":
+		return uint32(inputKey) == uint32(core.SDLK_F3)
+	case "f4":
+		return uint32(inputKey) == uint32(core.SDLK_F4)
+	case "f5":
+		return uint32(inputKey) == uint32(core.SDLK_F5)
+	case "f6":
+		return uint32(inputKey) == uint32(core.SDLK_F6)
+	case "f7":
+		return uint32(inputKey) == uint32(core.SDLK_F7)
+	case "f8":
+		return uint32(inputKey) == uint32(core.SDLK_F8)
+	case "f9":
+		return uint32(inputKey) == uint32(core.SDLK_F9)
+	case "f10":
+		return uint32(inputKey) == uint32(core.SDLK_F10)
+	case "f11":
+		return uint32(inputKey) == uint32(core.SDLK_F11)
+	case "f12":
+		return uint32(inputKey) == uint32(core.SDLK_F12)
+	case "f13":
+		return uint32(inputKey) == uint32(core.SDLK_F13)
+	case "f14":
+		return uint32(inputKey) == uint32(core.SDLK_F14)
+	case "f15":
+		return uint32(inputKey) == uint32(core.SDLK_F15)
+	case "f16":
+		return uint32(inputKey) == uint32(core.SDLK_F16)
+	case "f17":
+		return uint32(inputKey) == uint32(core.SDLK_F17)
+	case "f18":
+		return uint32(inputKey) == uint32(core.SDLK_F18)
+	case "f19":
+		return uint32(inputKey) == uint32(core.SDLK_F19)
+	case "f20":
+		return uint32(inputKey) == uint32(core.SDLK_F20)
+	case "f21":
+		return uint32(inputKey) == uint32(core.SDLK_F21)
+	case "f22":
+		return uint32(inputKey) == uint32(core.SDLK_F22)
+	case "f23":
+		return uint32(inputKey) == uint32(core.SDLK_F23)
+	case "f24":
+		return uint32(inputKey) == uint32(core.SDLK_F24)
 	default:
 		return false
 	}

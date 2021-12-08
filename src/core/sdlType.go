@@ -16,15 +16,30 @@ type SDL_Renderer C.SDL_Renderer
 type SDL_Event C.SDL_Event
 
 type SDL_Texture struct {
-	Texture *C.SDL_Texture
-	Xpos    int
-	Ypos    int
-	Width   int
-	Height  int
-	Alpha   uint8
-	Degree  float64
+	Texture      *C.SDL_Texture
+	TextureType  int
+	TextTexture  Text
+	ImageTexture Image
 }
 type SDL_Surface C.SDL_Surface
+type Text struct {
+	Text   string
+	Color  SDL_Color
+	Xpos   int
+	Ypos   int
+	Width  int
+	Height int
+	Alpha  uint8
+	Degree float64
+}
+type Image struct {
+	Xpos   int
+	Ypos   int
+	Width  int
+	Height int
+	Alpha  uint8
+	Degree float64
+}
 type SDL_Rect C.SDL_Rect
 type SDL_Color C.SDL_Color
 
@@ -32,6 +47,11 @@ type Mix_Music C.Mix_Music
 type Mix_Chunk C.Mix_Chunk
 
 type TTF_Font C.TTF_Font
+
+const (
+	IMAGETEXTURE = iota
+	TEXTTEXTURE
+)
 
 const (
 	SDL_INIT_TIMER = C.SDL_INIT_TIMER
@@ -139,44 +159,51 @@ const (
 	SDLK_y = C.SDLK_y
 	SDLK_z = C.SDLK_z
 
-	SDLK_DOWN = C.SDL_KEYDOWN
+	SDLK_UP    = C.SDLK_UP
+	SDLK_DOWN  = C.SDLK_DOWN
+	SDLK_RIGHT = C.SDLK_RIGHT
+	SDLK_LEFT  = C.SDLK_LEFT
 
 	SDLK_COMMA  = C.SDLK_COMMA
 	SDLK_EQUALS = C.SDLK_EQUALS
 
-	SDLK_BACKSPACE = C.SDLK_BACKSPACE
-	SDLK_CAPSLOCK  = C.SDLK_CAPSLOCK
+	SDLK_TAB      = C.SDLK_TAB
+	SDLK_CAPSLOCK = C.SDLK_CAPSLOCK
+	SDLK_LSHIFT   = C.SDLK_LSHIFT
+
+	SDLK_RSHIFT = C.SDLK_RSHIFT
+
+	SDLK_SPACE = C.SDLK_SPACE
 
 	SDLK_HOME   = C.SDLK_HOME
 	SDLK_END    = C.SDLK_END
 	SDLK_DELETE = C.SDLK_DELETE
 
 	SDLK_ESCAPE = C.SDLK_ESCAPE
-
-	SDLK_F1  = C.SDLK_F1
-	SDLK_F2  = C.SDLK_F2
-	SDLK_F3  = C.SDLK_F3
-	SDLK_F4  = C.SDLK_F4
-	SDLK_F5  = C.SDLK_F5
-	SDLK_F6  = C.SDLK_F6
-	SDLK_F7  = C.SDLK_F7
-	SDLK_F8  = C.SDLK_F8
-	SDLK_F9  = C.SDLK_F9
-	SDLK_F10 = C.SDLK_F10
-	SDLK_F11 = C.SDLK_F11
-	SDLK_F12 = C.SDLK_F12
-	SDLK_F13 = C.SDLK_F13
-	SDLK_F14 = C.SDLK_F14
-	SDLK_F15 = C.SDLK_F15
-	SDLK_F16 = C.SDLK_F16
-	SDLK_F17 = C.SDLK_F17
-	SDLK_F18 = C.SDLK_F18
-	SDLK_F19 = C.SDLK_F19
-	SDLK_F20 = C.SDLK_F20
-	SDLK_F21 = C.SDLK_F21
-	SDLK_F22 = C.SDLK_F22
-	SDLK_F23 = C.SDLK_F23
-	SDLK_F24 = C.SDLK_F24
+	SDLK_F1     = C.SDLK_F1
+	SDLK_F2     = C.SDLK_F2
+	SDLK_F3     = C.SDLK_F3
+	SDLK_F4     = C.SDLK_F4
+	SDLK_F5     = C.SDLK_F5
+	SDLK_F6     = C.SDLK_F6
+	SDLK_F7     = C.SDLK_F7
+	SDLK_F8     = C.SDLK_F8
+	SDLK_F9     = C.SDLK_F9
+	SDLK_F10    = C.SDLK_F10
+	SDLK_F11    = C.SDLK_F11
+	SDLK_F12    = C.SDLK_F12
+	SDLK_F13    = C.SDLK_F13
+	SDLK_F14    = C.SDLK_F14
+	SDLK_F15    = C.SDLK_F15
+	SDLK_F16    = C.SDLK_F16
+	SDLK_F17    = C.SDLK_F17
+	SDLK_F18    = C.SDLK_F18
+	SDLK_F19    = C.SDLK_F19
+	SDLK_F20    = C.SDLK_F20
+	SDLK_F21    = C.SDLK_F21
+	SDLK_F22    = C.SDLK_F22
+	SDLK_F23    = C.SDLK_F23
+	SDLK_F24    = C.SDLK_F24
 )
 
 const (

@@ -8,7 +8,7 @@ xcopy %~dp0test\*.* %~dp0Blue\game /e /h /k
 copy %~dp0dll\*.dll %~dp0Blue\core
 
 cd src
-go build -o RenG.exe -ldflags -H=windowsgui main.go
+go build -o RenG.exe -ldflags -H=windowsgui .
 
 cd ..
 copy %~dp0src\RenG.exe %~dp0Blue\core

@@ -72,4 +72,5 @@ var (
 	Who      string = ""
 	What     string = ""
 	WhoColor core.SDL_Color
+	Items    *object.Array
 )

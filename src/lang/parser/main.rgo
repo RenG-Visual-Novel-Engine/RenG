@@ -1,12 +1,57 @@
 screen main_menu {
     show black
     show mollu
-    key "1" action print("1")
+    key "1" action print("Test print")
     textbutton "Start" at test action Start()
 }
 
 screen say {
     show say_bg
     text who at who_pos
-    text what at content_pos as red
+    text what at content_pos as red limitWidth 880
+}
+
+screen choice {
+    for (i = 1; i < len(items) + 1; ++i) {
+        textbutton items[i] at button action print(i)
+    }
+}
+
+style red {
+    color "#FF0000"
+}
+
+transform test {
+    xpos 600
+    ypos 600
+}
+
+transform m {
+    xpos 1200
+    ypos 300
+}
+
+transform ch1 {
+    xpos 460
+    ypos 0
+    xsize 340
+    ysize 800
+    rotate 0 # 시계 방향으로 돌아가는거 같음
+    alpha 255 # 0 ~ 255 사이 값으로 지정됨
+}
+
+transform button {
+    print(i)
+    xpos 500
+    ypos i * 100 + 300
+}
+
+transform who_pos {
+    xpos 200
+    ypos 500
+}
+
+transform content_pos {
+    xpos 200
+    ypos 550
 }

@@ -22,12 +22,13 @@ type TextExpression struct {
 	Text      Expression
 	Transform *Identifier
 	Style     *Identifier
+	Width     Expression
 }
 
 func (te *TextExpression) expressionNode()      {}
 func (te *TextExpression) TokenLiteral() string { return te.Token.Literal }
 func (te *TextExpression) String() string {
-	return "text \"" + te.Text.String() + "\" at " + te.Transform.String() + " as " + te.Style.String() + "\n"
+	return "text \"" + te.Text.String() + "\" at " + te.Transform.String() + " as " + te.Style.String() + " limitWidth " + te.Width.String() + "\n"
 }
 
 type ImagebuttonExpression struct {
@@ -65,8 +66,8 @@ func (te *TextbuttonExpression) String() string {
 
 	out.WriteString("textbutton ")
 	out.WriteString(te.Text.String())
-	out.WriteString(te.Transform.String())
-	out.WriteString(te.Action.String())
+	out.WriteString("at " + te.Transform.String())
+	out.WriteString(" action " + te.Action.String())
 	out.WriteString("\n")
 
 	return out.String()
@@ -95,9 +96,33 @@ func (le *LabelExpression) TokenLiteral() string { return le.Token.Literal }
 func (le *LabelExpression) String() string {
 	var out bytes.Buffer
 
-	out.WriteString("label ")
-	out.WriteString(le.Name.String())
+	out.WriteString("label " + le.Name.String() + " {\n")
 	out.WriteString(le.Body.String())
+	out.WriteString("\n}")
+
+	return out.String()
+}
+
+type MenuExpression struct {
+	Token  token.Token
+	Key    []Expression
+	Action []*BlockStatement
+}
+
+func (me *MenuExpression) expressionNode()      {}
+func (me *MenuExpression) TokenLiteral() string { return me.Token.Literal }
+func (me *MenuExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("menu {\n")
+
+	for i := 0; i < len(me.Key); i++ {
+		out.WriteString("	" + me.Key[i].String() + " {\n")
+		out.WriteString("		" + me.Action[i].String() + "\n")
+		out.WriteString("	}\n")
+	}
+
+	out.WriteString("}\n")
 
 	return out.String()
 }
@@ -192,7 +217,7 @@ type ShowExpression struct {
 func (se *ShowExpression) expressionNode()      {}
 func (se *ShowExpression) TokenLiteral() string { return se.Token.Literal }
 func (se *ShowExpression) String() string {
-	return "show " + se.Name.String() + "at" + se.Transform.String()
+	return "show " + se.Name.String() + " at " + se.Transform.String() + "\n"
 }
 
 type HideExpression struct {
@@ -325,4 +350,14 @@ func (we *WhatExpression) expressionNode()      {}
 func (we *WhatExpression) TokenLiteral() string { return we.Token.Literal }
 func (we *WhatExpression) String() string {
 	return "what"
+}
+
+type ItemsExpression struct {
+	Token token.Token
+}
+
+func (ie *ItemsExpression) expressionNode()      {}
+func (ie *ItemsExpression) TokenLiteral() string { return ie.Token.Literal }
+func (ie *ItemsExpression) String() string {
+	return "items"
 }

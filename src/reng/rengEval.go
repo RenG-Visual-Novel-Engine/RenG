@@ -106,6 +106,8 @@ func RengEval(node ast.Node, env *object.Environment) object.Object {
 		return evalCallLabelExpression(node, env)
 	case *ast.JumpLabelExpression:
 		return evalJumpLabelExpression(node)
+	case *ast.MenuExpression:
+		return evalMenuExpression(node, env)
 	case *ast.ShowExpression:
 		return evalShowExpression(node, env)
 	case *ast.HideExpression:
@@ -134,8 +136,8 @@ func evalRengBlockStatements(block *ast.BlockStatement, env *object.Environment)
 				config.LayerList.Layers[0].AddNewTexture(
 					config.MainFont.LoadFromRenderedText(
 						result.(*object.Error).Message,
-						config.Renderer, config.Width,
-						config.Height,
+						config.Renderer,
+						uint(config.Width),
 						core.CreateColor(0xFF, 0xFF, 0xFF),
 						255,
 						0,
@@ -184,12 +186,56 @@ func evalJumpLabelExpression(jle *ast.JumpLabelExpression) object.Object {
 	return &object.JumpLabel{Label: jle.Label}
 }
 
+func evalMenuExpression(me *ast.MenuExpression, env *object.Environment) object.Object {
+	var (
+		key  object.Object
+		keys []object.Object
+	)
+
+	for i := 0; i < len(me.Key); i++ {
+		key = RengEval(me.Key[i], env)
+		if isError(key) {
+			return key
+		}
+
+		if _, ok := key.(*object.String); !ok {
+			return newError("menu key %v is not string value", key)
+		}
+
+		keys = append(keys, key)
+	}
+
+	config.Items = &object.Array{
+		Elements: keys,
+	}
+
+	choice, ok := env.Get("choice")
+	if !ok {
+		return newError("chocie screen is not defined")
+	}
+
+	if choiceScreen, ok := choice.(*object.Screen); ok {
+		screen.ScreenMutex.Lock()
+		config.ScreenAllIndex[choiceScreen.Name.Value] = config.Screen{First: config.ScreenIndex, Count: 0}
+		config.ScreenPriority = append(config.ScreenPriority, choiceScreen.Name.Value)
+		screen.ScreenMutex.Unlock()
+		screen.ScreenEval(choiceScreen.Body, env, choiceScreen.Name.Value)
+	} else {
+		return newError("choice ident is not screen object")
+	}
+
+	return NULL
+}
+
 func evalShowExpression(se *ast.ShowExpression, env *object.Environment) object.Object {
 	if texture, ok := config.TextureList.Get(se.Name.Value); ok {
 		if trans, ok := env.Get(se.Transform.Value); ok {
 			transform.TransformEval(trans.(*object.Transform).Body, texture, env)
 		} else {
-			transform.TransformEval(transform.TransformBuiltins["default"], texture, env)
+			transform.TransformEval(
+				transform.BuiltInsTransform("default", texture.ImageTexture.Width, texture.ImageTexture.Height),
+				texture, env,
+			)
 		}
 
 		config.AddShowTextureIndex(texture)
@@ -207,11 +253,13 @@ func evalShowExpression(se *ast.ShowExpression, env *object.Environment) object.
 			screen.ScreenMutex.Unlock()
 			return screen.ScreenEval(screenObj.Body, env, screenObj.Name.Value)
 		}
-	} else if video, ok := config.VideoList.Get(se.Name.Value); ok {
+	}
+
+	/* else if video, ok := config.VideoList.Get(se.Name.Value); ok {
 		if trans, ok := env.Get(se.Transform.Value); ok {
 			transform.TransformEval(trans.(*object.Transform).Body, video.Texture, env)
 		} else {
-			transform.TransformEval(transform.TransformBuiltins["default"], video.Texture, env)
+			// transform.TransformEval(transform.BuiltInsTransform("default", video.), video.Texture, env)
 		}
 
 		config.AddShowTextureIndex(video.Texture)
@@ -219,6 +267,7 @@ func evalShowExpression(se *ast.ShowExpression, env *object.Environment) object.
 		// TODO
 		go core.PlayVideo(video.Video, video.Texture, config.LayerMutex, config.LayerList, config.Renderer)
 	}
+	*/
 
 	return NULL
 }

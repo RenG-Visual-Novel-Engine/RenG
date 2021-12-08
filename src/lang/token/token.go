@@ -92,7 +92,9 @@ const (
 	TEXTBUTTON  = "TEXTBUTTON"
 	KEY         = "KEY"
 	ACTION      = "ACTION"
+	LIMITWIDTH  = "LIMITWIDTH"
 
+	MENU = "MENU"
 	CALL = "CALL"
 	JUMP = "JUMP"
 
@@ -136,6 +138,8 @@ const (
 const (
 	WHAT = "WHAT"
 	WHO  = "WHO"
+
+	ITEMS = "ITEMS"
 )
 
 var keywords = map[string]TokenType{
@@ -149,6 +153,7 @@ var keywords = map[string]TokenType{
 	"for":         FOR,
 	"while":       WHILE,
 	"label":       LABEL,
+	"menu":        MENU,
 	"call":        CALL,
 	"jump":        JUMP,
 	"screen":      SCREEN,
@@ -157,6 +162,7 @@ var keywords = map[string]TokenType{
 	"textbutton":  TEXTBUTTON,
 	"key":         KEY,
 	"action":      ACTION,
+	"limitWidth":  LIMITWIDTH,
 	"image":       IMAGE,
 	"video":       VIDEO,
 	"character":   CHARACTER,
@@ -178,6 +184,7 @@ var keywords = map[string]TokenType{
 	"stop":        STOP,
 	"who":         WHO,
 	"what":        WHAT,
+	"items":       ITEMS,
 }
 
 func LookupIdent(ident string) TokenType {

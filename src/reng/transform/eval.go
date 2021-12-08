@@ -1,12 +1,10 @@
 package transform
 
 import (
-	"RenG/src/config"
 	"RenG/src/core"
 	"RenG/src/lang/ast"
 	"RenG/src/lang/evaluator"
 	"RenG/src/lang/object"
-	"RenG/src/lang/token"
 	"fmt"
 	"strconv"
 )
@@ -100,59 +98,139 @@ func TransformEval(node ast.Node, texture *core.SDL_Texture, env *object.Environ
 		result := TransformEval(node.Value, texture, env)
 		switch xpos := result.(type) {
 		case *object.Integer:
-			texture.Xpos = int(xpos.Value)
+			switch texture.TextureType {
+			case core.TEXTTEXTURE:
+				texture.TextTexture.Xpos = int(xpos.Value)
+			case core.IMAGETEXTURE:
+				texture.ImageTexture.Xpos = int(xpos.Value)
+			}
 		case *object.Float:
-			texture.Ypos = int(xpos.Value)
+			switch texture.TextureType {
+			case core.TEXTTEXTURE:
+				texture.TextTexture.Xpos = int(xpos.Value)
+			case core.IMAGETEXTURE:
+				texture.ImageTexture.Xpos = int(xpos.Value)
+			}
 		default:
 			return newError("xpos expression isn't integer or float")
 		}
 	case *ast.YPosExpression:
 		result := TransformEval(node.Value, texture, env)
+		if isError(result) {
+			return result
+		}
+
 		switch ypos := result.(type) {
 		case *object.Integer:
-			texture.Ypos = int(ypos.Value)
+			switch texture.TextureType {
+			case core.TEXTTEXTURE:
+				texture.TextTexture.Ypos = int(ypos.Value)
+			case core.IMAGETEXTURE:
+				texture.ImageTexture.Ypos = int(ypos.Value)
+			}
 		case *object.Float:
-			texture.Ypos = int(ypos.Value)
+			switch texture.TextureType {
+			case core.TEXTTEXTURE:
+				texture.TextTexture.Ypos = int(ypos.Value)
+			case core.IMAGETEXTURE:
+				texture.ImageTexture.Ypos = int(ypos.Value)
+			}
 		default:
 			return newError("ypos expression isn't integer or float")
 		}
 	case *ast.XSizeExpression:
 		result := TransformEval(node.Value, texture, env)
+		if isError(result) {
+			return result
+		}
+
 		switch xsize := result.(type) {
 		case *object.Integer:
-			texture.Width = int(xsize.Value)
+			switch texture.TextureType {
+			case core.TEXTTEXTURE:
+				texture.TextTexture.Width = int(xsize.Value)
+			case core.IMAGETEXTURE:
+				texture.ImageTexture.Width = int(xsize.Value)
+			}
 		case *object.Float:
-			texture.Width = int(xsize.Value)
+			switch texture.TextureType {
+			case core.TEXTTEXTURE:
+				texture.TextTexture.Width = int(xsize.Value)
+			case core.IMAGETEXTURE:
+				texture.ImageTexture.Width = int(xsize.Value)
+			}
 		default:
 			return newError("xsize expression isn't integer or float")
 		}
 	case *ast.YSizeExpression:
 		result := TransformEval(node.Value, texture, env)
+		if isError(result) {
+			return result
+		}
+
 		switch ysize := result.(type) {
 		case *object.Integer:
-			texture.Height = int(ysize.Value)
+			switch texture.TextureType {
+			case core.TEXTTEXTURE:
+				texture.TextTexture.Height = int(ysize.Value)
+			case core.IMAGETEXTURE:
+				texture.ImageTexture.Height = int(ysize.Value)
+			}
 		case *object.Float:
-			texture.Height = int(ysize.Value)
+			switch texture.TextureType {
+			case core.TEXTTEXTURE:
+				texture.TextTexture.Height = int(ysize.Value)
+			case core.IMAGETEXTURE:
+				texture.ImageTexture.Height = int(ysize.Value)
+			}
 		default:
 			return newError("ysize expression isn't integer or float")
 		}
 	case *ast.RotateExpression:
 		result := TransformEval(node.Value, texture, env)
+		if isError(result) {
+			return result
+		}
+
 		switch rotate := result.(type) {
 		case *object.Integer:
-			texture.Degree = float64(rotate.Value)
+			switch texture.TextureType {
+			case core.TEXTTEXTURE:
+				texture.TextTexture.Degree = float64(rotate.Value)
+			case core.IMAGETEXTURE:
+				texture.ImageTexture.Degree = float64(rotate.Value)
+			}
 		case *object.Float:
-			texture.Degree = rotate.Value
+			switch texture.TextureType {
+			case core.TEXTTEXTURE:
+				texture.TextTexture.Degree = rotate.Value
+			case core.IMAGETEXTURE:
+				texture.ImageTexture.Degree = rotate.Value
+			}
 		default:
 			return newError("rotate expression isn't integer or float")
 		}
 	case *ast.AlphaExpression:
 		result := TransformEval(node.Value, texture, env)
+		if isError(result) {
+			return result
+		}
+
 		switch alpha := result.(type) {
 		case *object.Integer:
-			texture.Alpha = uint8(alpha.Value)
+			switch texture.TextureType {
+			case core.TEXTTEXTURE:
+				texture.TextTexture.Alpha = uint8(alpha.Value)
+			case core.IMAGETEXTURE:
+				texture.ImageTexture.Alpha = uint8(alpha.Value)
+			}
 		case *object.Float:
-			texture.Alpha = uint8(alpha.Value)
+			switch texture.TextureType {
+			case core.TEXTTEXTURE:
+				texture.TextTexture.Alpha = uint8(alpha.Value)
+			case core.IMAGETEXTURE:
+				texture.ImageTexture.Alpha = uint8(alpha.Value)
+			}
 		default:
 			return newError("alpha expression isn't integer or float")
 		}
@@ -177,106 +255,8 @@ func evalBlockStatements(block *ast.BlockStatement, texture *core.SDL_Texture, e
 }
 
 func evalTransformExpression(transform *ast.TransformExpression, texture *core.SDL_Texture, env *object.Environment) object.Object {
-	switch transform.Name.Value {
-	case "default":
-		transform.Body.Statements = append(transform.Body.Statements, &ast.ExpressionStatement{
-			Token: token.Token{
-				Type:    token.XPOS,
-				Literal: "xpos",
-			},
-			Expression: &ast.XPosExpression{
-				Token: token.Token{
-					Type:    token.XPOS,
-					Literal: "xpos",
-				},
-				Value: &ast.InfixExpression{
-					Token: token.Token{
-						Type:    token.SLASH,
-						Literal: "/",
-					},
-					Left: &ast.InfixExpression{
-						Token: token.Token{
-							Type:    token.MINUS,
-							Literal: "-",
-						},
-						Left: &ast.IntegerLiteral{
-							Token: token.Token{
-								Type:    token.INT,
-								Literal: strconv.Itoa(config.Width),
-							},
-							Value: int64(config.Width),
-						},
-						Operator: "-",
-						Right: &ast.IntegerLiteral{
-							Token: token.Token{
-								Type:    token.INT,
-								Literal: strconv.Itoa(texture.Width),
-							},
-							Value: int64(texture.Width),
-						},
-					},
-					Operator: "/",
-					Right: &ast.IntegerLiteral{
-						Token: token.Token{
-							Type:    token.INT,
-							Literal: "2",
-						},
-						Value: 2,
-					},
-				},
-			},
-		})
-		transform.Body.Statements = append(transform.Body.Statements, &ast.ExpressionStatement{
-			Token: token.Token{
-				Type:    token.YPOS,
-				Literal: "ypos",
-			},
-			Expression: &ast.YPosExpression{
-				Token: token.Token{
-					Type:    token.YPOS,
-					Literal: "ypos",
-				},
-				Value: &ast.InfixExpression{
-					Token: token.Token{
-						Type:    token.SLASH,
-						Literal: "/",
-					},
-					Left: &ast.InfixExpression{
-						Token: token.Token{
-							Type:    token.MINUS,
-							Literal: "-",
-						},
-						Left: &ast.IntegerLiteral{
-							Token: token.Token{
-								Type:    token.INT,
-								Literal: strconv.Itoa(config.Height),
-							},
-							Value: int64(config.Height),
-						},
-						Operator: "-",
-						Right: &ast.IntegerLiteral{
-							Token: token.Token{
-								Type:    token.INT,
-								Literal: strconv.Itoa(texture.Height),
-							},
-							Value: int64(texture.Height),
-						},
-					},
-					Operator: "/",
-					Right: &ast.IntegerLiteral{
-						Token: token.Token{
-							Type:    token.INT,
-							Literal: "2",
-						},
-						Value: 2,
-					},
-				},
-			},
-		})
-	}
 	TransformEval(transform.Body, texture, env)
-
-	return nil
+	return NULL
 }
 
 func evalExpressions(exps []ast.Expression, texture *core.SDL_Texture, env *object.Environment) []object.Object {
@@ -411,7 +391,7 @@ func evalForExpression(node *ast.ForExpression, texture *core.SDL_Texture, env *
 			return condition
 		}
 	}
-	return nil
+	return NULL
 }
 
 func evalWhileExpression(node *ast.WhileExpression, texture *core.SDL_Texture, env *object.Environment) object.Object {
@@ -431,7 +411,7 @@ func evalWhileExpression(node *ast.WhileExpression, texture *core.SDL_Texture, e
 			return condition
 		}
 	}
-	return nil
+	return NULL
 }
 
 func evalIdentifier(node *ast.Identifier, env *object.Environment) object.Object {

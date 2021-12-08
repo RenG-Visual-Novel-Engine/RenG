@@ -24,4 +24,6 @@ var (
 	ScreenTextureIndex = make([]*core.SDL_Texture, 0)
 	ScreenIndex        = 0
 	ScreenPriority     = make([]string, 0)
+
+	SelectMenuIndex = make(chan int, 1)
 )

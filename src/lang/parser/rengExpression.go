@@ -37,6 +37,30 @@ func (p *Parser) parseLabelExpression() ast.Expression {
 	return exp
 }
 
+func (p *Parser) parseMenuExpression() ast.Expression {
+	exp := &ast.MenuExpression{Token: p.curToken}
+
+	if !p.expectPeek(token.LBRACE) {
+		return nil
+	}
+
+	p.expectPeek(token.ENDSENTENCE)
+	p.nextToken()
+
+	for p.curTokenIs(token.STRING) {
+		exp.Key = append(exp.Key, p.parseExpression(LOWEST))
+		if !p.expectPeek(token.LBRACE) {
+			return nil
+		}
+
+		exp.Action = append(exp.Action, p.parseBlockStatement())
+		p.expectPeek(token.ENDSENTENCE)
+		p.nextToken()
+	}
+
+	return exp
+}
+
 func (p *Parser) parseCallLabelExpression() ast.Expression {
 	exp := &ast.CallLabelExpression{Token: p.curToken}
 
@@ -77,8 +101,15 @@ func (p *Parser) parseTextExpression() ast.Expression {
 		},
 		Value: "defaultStyle",
 	}
+	exp.Width = &ast.IntegerLiteral{
+		Token: token.Token{
+			Type:    token.INT,
+			Literal: "1280",
+		},
+		Value: 1280,
+	}
 
-	for p.expectPeek(token.AT) || p.expectPeek(token.AS) {
+	for p.expectPeek(token.AT) || p.expectPeek(token.AS) || p.expectPeek(token.LIMITWIDTH) {
 		switch p.curToken.Type {
 		case token.AT:
 			p.nextToken()
@@ -86,6 +117,9 @@ func (p *Parser) parseTextExpression() ast.Expression {
 		case token.AS:
 			p.nextToken()
 			exp.Style = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+		case token.LIMITWIDTH:
+			p.nextToken()
+			exp.Width = p.parseExpression(LOWEST)
 		}
 	}
 
@@ -311,7 +345,7 @@ func (p *Parser) parseXposExpression() ast.Expression {
 
 	p.nextToken()
 
-	exp.Value = p.parseExpression(PREFIX)
+	exp.Value = p.parseExpression(LOWEST)
 
 	return exp
 }
@@ -321,7 +355,7 @@ func (p *Parser) parseYposExpression() ast.Expression {
 
 	p.nextToken()
 
-	exp.Value = p.parseExpression(PREFIX)
+	exp.Value = p.parseExpression(LOWEST)
 
 	return exp
 }
@@ -331,7 +365,7 @@ func (p *Parser) parseXSizeExpression() ast.Expression {
 
 	p.nextToken()
 
-	exp.Value = p.parseExpression(PREFIX)
+	exp.Value = p.parseExpression(LOWEST)
 
 	return exp
 }
@@ -341,7 +375,7 @@ func (p *Parser) parseYSizeExpression() ast.Expression {
 
 	p.nextToken()
 
-	exp.Value = p.parseExpression(PREFIX)
+	exp.Value = p.parseExpression(LOWEST)
 
 	return exp
 }
@@ -430,4 +464,8 @@ func (p *Parser) parseWhoExpression() ast.Expression {
 
 func (p *Parser) parseWhatExpression() ast.Expression {
 	return &ast.WhatExpression{Token: p.curToken}
+}
+
+func (p *Parser) parseItemsExpression() ast.Expression {
+	return &ast.ItemsExpression{Token: p.curToken}
 }

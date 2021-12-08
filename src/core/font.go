@@ -25,11 +25,11 @@ func OpenFont(path string) *TTF_Font {
 	return (*TTF_Font)(f)
 }
 
-func (f *TTF_Font) LoadFromRenderedText(text string, renderer *SDL_Renderer, w, h int, color SDL_Color, alpha uint8, degree float64) *SDL_Texture {
+func (f *TTF_Font) LoadFromRenderedText(text string, renderer *SDL_Renderer, limitWidth uint, color SDL_Color, alpha uint8, degree float64) *SDL_Texture {
 	cText := C.CString(text)
 	defer C.free(unsafe.Pointer(cText))
 
-	textSurface := C.TTF_RenderUTF8_Blended((*C.TTF_Font)(f), cText, (C.SDL_Color)(color))
+	textSurface := C.TTF_RenderUTF8_Blended_Wrapped((*C.TTF_Font)(f), cText, (C.SDL_Color)(color), C.uint(limitWidth))
 	if textSurface == nil {
 		return nil
 	}
@@ -40,16 +40,37 @@ func (f *TTF_Font) LoadFromRenderedText(text string, renderer *SDL_Renderer, w, 
 	}
 
 	texture := &SDL_Texture{
-		Texture: t,
-		Xpos:    (w - int(textSurface.w)) / 2,
-		Ypos:    (h - int(textSurface.h)) / 2,
-		Width:   int(textSurface.w),
-		Height:  int(textSurface.h),
-		Alpha:   alpha,
-		Degree:  degree,
+		Texture:     t,
+		TextureType: TEXTTEXTURE,
+		TextTexture: Text{
+			Text:   text,
+			Width:  int(textSurface.w),
+			Height: int(textSurface.h),
+			Alpha:  alpha,
+			Degree: degree,
+		},
 	}
 
 	C.SDL_FreeSurface(textSurface)
 
 	return texture
+}
+
+func (f *TTF_Font) ChangeTextColor(texture *SDL_Texture, renderer *SDL_Renderer, text string, color SDL_Color) {
+	cText := C.CString(text)
+	defer C.free(unsafe.Pointer(cText))
+
+	textSurface := C.TTF_RenderUTF8_Blended_Wrapped((*C.TTF_Font)(f), cText, (C.SDL_Color)(color), C.uint(texture.TextTexture.Width))
+	if textSurface == nil {
+		return
+	}
+
+	t := C.SDL_CreateTextureFromSurface((*C.SDL_Renderer)(renderer), textSurface)
+	if t == nil {
+		return
+	}
+
+	texture.Texture = t
+
+	C.SDL_FreeSurface(textSurface)
 }

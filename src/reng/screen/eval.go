@@ -119,6 +119,12 @@ func ScreenEval(node ast.Node, env *object.Environment, name string) object.Obje
 		}
 
 		return newError("Not Init what value")
+	case *ast.ItemsExpression:
+		if config.Items != nil {
+			return config.Items
+		}
+
+		return newError("Not Init items value")
 	}
 	return nil
 }
@@ -128,7 +134,10 @@ func evalShowExpression(se *ast.ShowExpression, env *object.Environment, name st
 		if trans, ok := env.Get(se.Transform.Value); ok {
 			transform.TransformEval(trans.(*object.Transform).Body, texture, env)
 		} else {
-			transform.TransformEval(transform.TransformBuiltins["default"], texture, env)
+			transform.TransformEval(
+				transform.BuiltInsTransform("default", texture.ImageTexture.Width, texture.ImageTexture.Height),
+				texture, env,
+			)
 		}
 
 		config.ScreenAllIndex[name] = config.Screen{
@@ -193,27 +202,19 @@ func evalTextExpression(te *ast.TextExpression, env *object.Environment, name st
 	}
 
 	if text, ok := textObj.(*object.String); ok {
-		var color object.Object
+		var width uint
 
-		if sty, ok := env.Get(te.Style.Value); ok {
-			temp := style.StyleEval(sty.(*object.Style).Body, env)
-			if isError(temp) {
-				return temp
-			}
-
-			if _, ok := temp.(*object.Color); !ok {
-				return newError("Text Expression has only color style")
-			}
-			color = temp
+		if te.Width != nil {
+			width = uint(ScreenEval(te.Width, env, name).(*object.Integer).Value)
 		} else {
-			color = &object.Color{Color: core.CreateColor(0xFF, 0xFF, 0xFF)}
+			width = uint(config.Width)
 		}
 
 		textTexture := config.MainFont.LoadFromRenderedText(
 			text.Value,
 			config.Renderer,
-			config.Width, config.Height,
-			color.(*object.Color).Color,
+			uint(width),
+			core.CreateColor(0xFF, 0xFF, 0xFF),
 			255,
 			0,
 		)
@@ -221,7 +222,14 @@ func evalTextExpression(te *ast.TextExpression, env *object.Environment, name st
 		if trans, ok := env.Get(te.Transform.Value); ok {
 			transform.TransformEval(trans.(*object.Transform).Body, textTexture, env)
 		} else {
-			transform.TransformEval(transform.TransformBuiltins["default"], textTexture, env)
+			transform.TransformEval(
+				transform.BuiltInsTransform("default", textTexture.TextTexture.Width, textTexture.TextTexture.Height),
+				textTexture, env,
+			)
+		}
+
+		if sty, ok := env.Get(te.Style.Value); ok {
+			style.StyleEval(sty.(*object.Style).Body, textTexture, env)
 		}
 
 		config.ScreenAllIndex[name] = config.Screen{
@@ -243,7 +251,10 @@ func evalImagebuttonExpression(ie *ast.ImagebuttonExpression, env *object.Enviro
 		if trans, ok := env.Get(ie.Transform.Value); ok {
 			transform.TransformEval(trans.(*object.Transform).Body, texture, env)
 		} else {
-			transform.TransformEval(transform.TransformBuiltins["default"], texture, env)
+			transform.TransformEval(
+				transform.BuiltInsTransform("default", texture.ImageTexture.Width, texture.ImageTexture.Height),
+				texture, env,
+			)
 		}
 
 		config.ScreenAllIndex[name] = config.Screen{
@@ -281,23 +292,11 @@ func evalTextbuttonExpression(te *ast.TextbuttonExpression, env *object.Environm
 	}
 
 	if textObj, ok := text.(*object.String); ok {
-		var color object.Object
-
-		if sty, ok := env.Get(te.Style.Value); ok {
-			temp := style.StyleEval(sty.(*object.Style).Body, env)
-			if _, ok := temp.(*object.Color); !ok {
-				return newError("Text Expression has only color style")
-			}
-			color = temp
-		} else {
-			color = &object.Color{Color: core.CreateColor(0xFF, 0xFF, 0xFF)}
-		}
-
 		textTexture := config.MainFont.LoadFromRenderedText(
 			textObj.Value,
 			config.Renderer,
-			config.Width, config.Height,
-			color.(*object.Color).Color,
+			uint(config.Width),
+			core.CreateColor(0xFF, 0xFF, 0xFF),
 			255,
 			0,
 		)
@@ -305,7 +304,14 @@ func evalTextbuttonExpression(te *ast.TextbuttonExpression, env *object.Environm
 		if trans, ok := env.Get(te.Transform.Value); ok {
 			transform.TransformEval(trans.(*object.Transform).Body, textTexture, env)
 		} else {
-			transform.TransformEval(transform.TransformBuiltins["default"], textTexture, env)
+			transform.TransformEval(
+				transform.BuiltInsTransform("default", textTexture.TextTexture.Width, textTexture.TextTexture.Height),
+				textTexture, env,
+			)
+		}
+
+		if sty, ok := env.Get(te.Style.Value); ok {
+			style.StyleEval(sty.(*object.Style).Body, textTexture, env)
 		}
 
 		config.ScreenAllIndex[name] = config.Screen{
@@ -356,7 +362,7 @@ func evalKeyExpression(ke *ast.KeyExpression, env *object.Environment, name stri
 			if isScreenEnd(name) {
 				return
 			}
-			if isKeyWant(key.Value, event.Key.KeyType) {
+			if isKeyWant(key.Value, event.Key.KeyType) && isFirstPriority(name) {
 				ScreenEval(ke.Action, env, name)
 			}
 			if isScreenEnd(name) {
@@ -383,7 +389,7 @@ func evalBlockStatements(block *ast.BlockStatement, env *object.Environment, nam
 					config.MainFont.LoadFromRenderedText(
 						result.(*object.Error).Message,
 						config.Renderer,
-						config.Width, config.Height,
+						uint(config.Width),
 						core.CreateColor(0xFF, 0xFF, 0xFF),
 						255,
 						0,

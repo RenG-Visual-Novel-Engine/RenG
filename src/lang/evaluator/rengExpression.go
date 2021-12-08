@@ -2,7 +2,6 @@ package evaluator
 
 import (
 	"RenG/src/config"
-	"RenG/src/core"
 	"RenG/src/lang/ast"
 	"RenG/src/lang/object"
 )
@@ -36,6 +35,7 @@ func evalImageExpression(ie *ast.ImageExpression, env *object.Environment) objec
 	return NULL
 }
 
+/*
 func evalVideoExpression(ve *ast.VideoExpression, env *object.Environment) object.Object {
 	var video object.VideoObject
 	path := Eval(ve.Info["path"], env)
@@ -52,7 +52,7 @@ func evalVideoExpression(ve *ast.VideoExpression, env *object.Environment) objec
 
 	return NULL
 }
-
+*/
 func evalTransformExpression(te *ast.TransformExpression, env *object.Environment) object.Object {
 	env.Set(te.Name.Value, &object.Transform{Name: te.Name, Body: te.Body})
 
