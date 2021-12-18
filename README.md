@@ -3,9 +3,15 @@
 <h3>Visual Novel Engine</h3>
 <h3>In Go</h3>
 </div>
-<br><br><br><br>
+<br><br>
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/e28b0470266e448481331019b7f49aa6)](https://app.codacy.com/gh/RenG-Visual-Novel-Engine/RenG?utm_source=github.com&utm_medium=referral&utm_content=RenG-Visual-Novel-Engine/RenG&utm_campaign=Badge_Grade_Settings)
+
+
+<br><br>
 
 # 추구하는 것
+
 - 빠른 속도
 - 간단한 문법
 - 훌륭한 소리
