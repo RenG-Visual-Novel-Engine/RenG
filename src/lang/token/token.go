@@ -132,7 +132,8 @@ const (
 
 // only style
 const (
-	COLOR = "COLOR"
+	COLOR        = "COLOR"
+	TYPINGEFFECT = "TYPINGEFFECT"
 )
 
 const (
@@ -180,6 +181,7 @@ var keywords = map[string]TokenType{
 	"rotate":      ROTATE,
 	"alpha":       ALPHA,
 	"color":       COLOR,
+	"typing":      TYPINGEFFECT,
 	"play":        PLAY,
 	"stop":        STOP,
 	"who":         WHO,

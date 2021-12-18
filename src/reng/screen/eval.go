@@ -197,8 +197,12 @@ func evalHideExpression(he *ast.HideExpression, env *object.Environment) object.
 
 func evalTextExpression(te *ast.TextExpression, env *object.Environment, name string) object.Object {
 	textObj := ScreenEval(te.Text, env, name)
+	typing := ScreenEval(te.Typing, env, name)
 	if isError(textObj) {
 		return textObj
+	}
+	if isError(typing) {
+		return typing
 	}
 
 	if text, ok := textObj.(*object.String); ok {
@@ -210,10 +214,15 @@ func evalTextExpression(te *ast.TextExpression, env *object.Environment, name st
 			width = uint(config.Width)
 		}
 
+		if typing.(*object.Boolean).Value {
+			typingEffect(te, env, width, name, text.Value)
+			return NULL
+		}
+
 		textTexture := config.MainFont.LoadFromRenderedText(
 			text.Value,
 			config.Renderer,
-			uint(width),
+			width,
 			core.CreateColor(0xFF, 0xFF, 0xFF),
 			255,
 			0,
@@ -324,6 +333,13 @@ func evalTextbuttonExpression(te *ast.TextbuttonExpression, env *object.Environm
 		config.LayerList.Layers[2].AddNewTexture(textTexture)
 		config.LayerMutex.Unlock()
 
+		var i int
+
+		if config.IsNowMenu {
+			i = config.IsNowMenuIndex
+			config.IsNowMenuIndex++
+		}
+
 		go func() {
 			for {
 				event := <-config.MouseDownEventChan
@@ -331,7 +347,11 @@ func evalTextbuttonExpression(te *ast.TextbuttonExpression, env *object.Environm
 					return
 				}
 				if isInTexture(textTexture, event.Mouse.Down.X, event.Mouse.Down.Y) && isFirstPriority(name) {
-					ScreenEval(te.Action, env, name)
+					if config.IsNowMenu {
+						config.SelectMenuIndex <- i
+					} else {
+						ScreenEval(te.Action, env, name)
+					}
 				}
 				if isScreenEnd(name) {
 					return

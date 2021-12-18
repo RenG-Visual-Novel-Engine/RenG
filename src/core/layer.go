@@ -34,9 +34,8 @@ func (l *Layer) DeleteAllTexture() {
 	}
 }
 
-// TODO
 func (l *Layer) ChangeTexture(texture *SDL_Texture, index int) {
-	if l.Images[index] == nil {
+	if len(l.Images) <= index {
 		l.Images = append(l.Images, texture)
 	} else {
 		l.Images[index] = texture

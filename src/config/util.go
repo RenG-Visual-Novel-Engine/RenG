@@ -33,6 +33,14 @@ func AddScreenTextureIndex(texture *core.SDL_Texture) {
 	ScreenIndex++
 }
 
+func ChangeScreenTextureIndex(texture *core.SDL_Texture, index int) {
+	if len(ScreenTextureIndex) <= index {
+		ScreenTextureIndex = append(ScreenTextureIndex, texture)
+	} else {
+		ScreenTextureIndex[index] = texture
+	}
+}
+
 func AddShowTextureIndex(texture *core.SDL_Texture) {
 	ShowTextureIndex = append(ShowTextureIndex, texture)
 	ShowIndex++

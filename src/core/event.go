@@ -115,96 +115,86 @@ func (event *SDL_Event) HandleEvent(eventType int, eventChan chan Event) {
 			}
 		}
 	case SDL_MOUSEMOTION:
-		go func() {
-			var x, y C.int
-			C.SDL_GetMouseState(&x, &y)
-			for {
-				eventChan <- Event{
-					Type: SDL_MOUSEMOTION,
-					Mouse: mouse{
-						Motion: buttonMotion{
-							X: int(x),
-							Y: int(y),
-						},
+		var x, y C.int
+		C.SDL_GetMouseState(&x, &y)
+		for {
+			eventChan <- Event{
+				Type: SDL_MOUSEMOTION,
+				Mouse: mouse{
+					Motion: buttonMotion{
+						X: int(x),
+						Y: int(y),
 					},
-				}
-
-				if len(eventChan) > 0 {
-					<-eventChan
-					break
-				}
+				},
 			}
-		}()
+
+			if len(eventChan) > 0 {
+				<-eventChan
+				break
+			}
+		}
 	case SDL_MOUSEBUTTONDOWN:
-		go func() {
-			var x, y C.int
-			C.SDL_GetMouseState(&x, &y)
-			for {
-				eventChan <- Event{
-					Type: SDL_MOUSEBUTTONDOWN,
-					Mouse: mouse{
-						Down: buttonDown{
-							Button: uint8(C.mouseButtonType((C.SDL_Event)(*event))),
-							X:      int(x),
-							Y:      int(y),
-						},
+		var x, y C.int
+		C.SDL_GetMouseState(&x, &y)
+		for {
+			eventChan <- Event{
+				Type: SDL_MOUSEBUTTONDOWN,
+				Mouse: mouse{
+					Down: buttonDown{
+						Button: uint8(C.mouseButtonType((C.SDL_Event)(*event))),
+						X:      int(x),
+						Y:      int(y),
 					},
-				}
-
-				if len(eventChan) > 0 {
-					<-eventChan
-					break
-				}
+				},
 			}
-			// fmt.Printf("ButtonDown x : %d  y : %d\n", x, y)
-		}()
+
+			if len(eventChan) > 0 {
+				<-eventChan
+				break
+			}
+		}
 	case SDL_MOUSEBUTTONUP:
-		go func() {
-			var x, y C.int
-			C.SDL_GetMouseState(&x, &y)
-			for {
-				eventChan <- Event{
-					Type: SDL_MOUSEBUTTONUP,
-					Mouse: mouse{
-						Up: buttonUp{
-							Button: uint8(C.mouseButtonType((C.SDL_Event)(*event))),
-							X:      int(x),
-							Y:      int(y),
-						},
+		var x, y C.int
+		C.SDL_GetMouseState(&x, &y)
+		for {
+			eventChan <- Event{
+				Type: SDL_MOUSEBUTTONUP,
+				Mouse: mouse{
+					Up: buttonUp{
+						Button: uint8(C.mouseButtonType((C.SDL_Event)(*event))),
+						X:      int(x),
+						Y:      int(y),
 					},
-				}
-
-				if len(eventChan) > 0 {
-					<-eventChan
-					break
-				}
+				},
 			}
-			// fmt.Printf("ButtonUp   x : %d  y : %d\n", x, y)
-		}()
+
+			if len(eventChan) > 0 {
+				<-eventChan
+				break
+			}
+		}
 	case SDL_MOUSEWHEEL:
-		go func() {
-			y := int(C.GetWheelY((C.SDL_Event)(*event)))
-			// 100 이상의 마우스 휠 입력값은 잘못된 입력으로 처리합니다.
-			if y >= 100 {
-				return
-			}
+		y := int(C.GetWheelY((C.SDL_Event)(*event)))
+		// 100 이상의 마우스 휠 입력값은 잘못된 입력으로 처리합니다.
+		if y >= 100 {
+			return
+		}
 
-			for {
-				eventChan <- Event{
-					Type: SDL_MOUSEWHEEL,
-					Mouse: mouse{
-						Wheel: buttonWheel{
-							Y: y,
-						},
+		for {
+			eventChan <- Event{
+				Type: SDL_MOUSEWHEEL,
+				Mouse: mouse{
+					Wheel: buttonWheel{
+						Y: y,
 					},
-				}
-
-				if len(eventChan) > 0 {
-					<-eventChan
-					break
-				}
+				},
 			}
-		}()
+
+			if len(eventChan) > 0 {
+				<-eventChan
+				break
+			}
+		}
 	}
 }
 

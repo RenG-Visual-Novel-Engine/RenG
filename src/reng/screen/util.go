@@ -5,9 +5,12 @@ import (
 	"RenG/src/core"
 	"RenG/src/lang/ast"
 	"RenG/src/lang/object"
+	"RenG/src/reng/style"
+	"RenG/src/reng/transform"
 	"fmt"
 	"strings"
 	"sync"
+	"time"
 )
 
 var (
@@ -19,6 +22,105 @@ var (
 var (
 	ScreenMutex = &sync.RWMutex{}
 )
+
+func typingEffect(te *ast.TextExpression, env *object.Environment, width uint, name, text string) {
+	trans, _ := env.Get(te.Transform.Value)
+	sty, _ := env.Get(te.Style.Value)
+
+	var (
+		textTexture     *core.SDL_Texture
+		textTextureList []*core.SDL_Texture
+	)
+
+	if int(text[0]) > 126 {
+		textTexture = config.MainFont.LoadFromRenderedText(
+			text[0:3],
+			config.Renderer,
+			width,
+			core.CreateColor(0xFF, 0xFF, 0xFF),
+			255,
+			0,
+		)
+	} else {
+		textTexture = config.MainFont.LoadFromRenderedText(
+			text[0:1],
+			config.Renderer,
+			width,
+			core.CreateColor(0xFF, 0xFF, 0xFF),
+			255,
+			0,
+		)
+	}
+
+	if trans != nil {
+		transform.TransformEval(trans.(*object.Transform).Body, textTexture, env)
+	} else {
+		transform.TransformEval(
+			transform.BuiltInsTransform("default", textTexture.TextTexture.Width, textTexture.TextTexture.Height),
+			textTexture, env,
+		)
+	}
+
+	if sty != nil {
+		style.StyleEval(sty.(*object.Style).Body, textTexture, env)
+	}
+
+	textTextureList = append(textTextureList, textTexture)
+
+	config.ScreenAllIndex[name] = config.Screen{
+		First: config.ScreenAllIndex[name].First,
+		Count: config.ScreenAllIndex[name].Count + 1,
+	}
+	config.AddScreenTextureIndex(textTexture)
+	indexScreenTexture := len(config.ScreenTextureIndex) - 1
+
+	config.LayerMutex.Lock()
+	config.LayerList.Layers[2].AddNewTexture(textTexture)
+	indexLayer := len(config.LayerList.Layers[2].Images) - 1
+	config.LayerMutex.Unlock()
+
+	for i := 1; i < len(text)+1; i++ {
+		if int(text[i-1]) > 126 {
+			i += 2
+		}
+
+		// TODO : 생성된 텍스쳐 Detroy 필요
+		textTexture = config.MainFont.LoadFromRenderedText(
+			text[0:i],
+			config.Renderer,
+			width,
+			core.CreateColor(0xFF, 0xFF, 0xFF),
+			255,
+			0,
+		)
+
+		if trans != nil {
+			transform.TransformEval(trans.(*object.Transform).Body, textTexture, env)
+		} else {
+			transform.TransformEval(
+				transform.BuiltInsTransform("default", textTexture.TextTexture.Width, textTexture.TextTexture.Height),
+				textTexture, env,
+			)
+		}
+
+		if sty != nil {
+			style.StyleEval(sty.(*object.Style).Body, textTexture, env)
+		}
+
+		textTextureList = append(textTextureList, textTexture)
+
+		config.LayerMutex.Lock()
+		config.LayerList.Layers[2].ChangeTexture(textTexture, indexLayer)
+		config.ChangeScreenTextureIndex(textTexture, indexScreenTexture)
+		config.LayerMutex.Unlock()
+
+		time.Sleep(time.Millisecond * 10)
+	}
+
+	for i := 0; i < len(textTextureList)-1; i++ {
+		textTextureList[i].DestroyTexture()
+	}
+}
 
 func isInTexture(texture *core.SDL_Texture, x, y int) bool {
 	switch texture.TextureType {

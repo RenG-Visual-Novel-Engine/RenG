@@ -58,6 +58,7 @@ func (f *TTF_Font) LoadFromRenderedText(text string, renderer *SDL_Renderer, lim
 
 func (f *TTF_Font) ChangeTextColor(texture *SDL_Texture, renderer *SDL_Renderer, text string, color SDL_Color) {
 	cText := C.CString(text)
+
 	defer C.free(unsafe.Pointer(cText))
 
 	textSurface := C.TTF_RenderUTF8_Blended_Wrapped((*C.TTF_Font)(f), cText, (C.SDL_Color)(color), C.uint(texture.TextTexture.Width))
@@ -70,7 +71,11 @@ func (f *TTF_Font) ChangeTextColor(texture *SDL_Texture, renderer *SDL_Renderer,
 		return
 	}
 
+	var tempTexture []*C.SDL_Texture
+
+	tempTexture = append(tempTexture, texture.Texture)
 	texture.Texture = t
 
+	C.SDL_DestroyTexture(tempTexture[0])
 	C.SDL_FreeSurface(textSurface)
 }

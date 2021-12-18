@@ -1,8 +1,10 @@
 package parser
 
 import (
+	"RenG/src/config"
 	"RenG/src/lang/ast"
 	"RenG/src/lang/token"
+	"strconv"
 )
 
 func (p *Parser) parseScreenExpression() ast.Expression {
@@ -104,12 +106,22 @@ func (p *Parser) parseTextExpression() ast.Expression {
 	exp.Width = &ast.IntegerLiteral{
 		Token: token.Token{
 			Type:    token.INT,
-			Literal: "1280",
+			Literal: strconv.Itoa(config.Width),
 		},
-		Value: 1280,
+		Value: int64(config.Width),
+	}
+	exp.Typing = &ast.Boolean{
+		Token: token.Token{
+			Type:    token.FALSE,
+			Literal: "false",
+		},
+		Value: false,
 	}
 
-	for p.expectPeek(token.AT) || p.expectPeek(token.AS) || p.expectPeek(token.LIMITWIDTH) {
+	for p.expectPeek(token.AT) ||
+		p.expectPeek(token.AS) ||
+		p.expectPeek(token.LIMITWIDTH) ||
+		p.expectPeek(token.TYPINGEFFECT) {
 		switch p.curToken.Type {
 		case token.AT:
 			p.nextToken()
@@ -120,6 +132,9 @@ func (p *Parser) parseTextExpression() ast.Expression {
 		case token.LIMITWIDTH:
 			p.nextToken()
 			exp.Width = p.parseExpression(LOWEST)
+		case token.TYPINGEFFECT:
+			p.nextToken()
+			exp.Typing = p.parseExpression(LOWEST)
 		}
 	}
 

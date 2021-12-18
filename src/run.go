@@ -7,6 +7,7 @@ import (
 	"RenG/src/lang/object"
 	"RenG/src/lang/token"
 	"RenG/src/reng"
+	"runtime/debug"
 )
 
 func Run() {
@@ -61,6 +62,8 @@ MAIN:
 	}, env)
 
 	<-config.StartChannel
+
+	debug.FreeOSMemory()
 
 	result = reng.RengEval(start.(*object.Label).Body, env)
 

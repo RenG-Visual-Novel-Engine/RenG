@@ -120,6 +120,7 @@ func RengEval(node ast.Node, env *object.Environment) object.Object {
 	return nil
 }
 
+// TODO : Entry Point 재설정
 func evalRengBlockStatements(block *ast.BlockStatement, env *object.Environment) object.Object {
 	var result object.Object
 
@@ -169,8 +170,10 @@ func evalRengBlockStatements(block *ast.BlockStatement, env *object.Environment)
 			}
 		}
 	}
-
-	return result
+	if result.Type() != object.STRING_OBJ {
+		return result
+	}
+	return NULL
 }
 
 func evalCallLabelExpression(cle *ast.CallLabelExpression, env *object.Environment) object.Object {
@@ -191,6 +194,7 @@ func evalMenuExpression(me *ast.MenuExpression, env *object.Environment) object.
 		key  object.Object
 		keys []object.Object
 	)
+	config.IsNowMenu = true
 
 	for i := 0; i < len(me.Key); i++ {
 		key = RengEval(me.Key[i], env)
@@ -219,12 +223,25 @@ func evalMenuExpression(me *ast.MenuExpression, env *object.Environment) object.
 		config.ScreenAllIndex[choiceScreen.Name.Value] = config.Screen{First: config.ScreenIndex, Count: 0}
 		config.ScreenPriority = append(config.ScreenPriority, choiceScreen.Name.Value)
 		screen.ScreenMutex.Unlock()
+
 		screen.ScreenEval(choiceScreen.Body, env, choiceScreen.Name.Value)
 	} else {
 		return newError("choice ident is not screen object")
 	}
 
-	return NULL
+	event := <-config.SelectMenuIndex
+
+	config.IsNowMenu = false
+	config.IsNowMenuIndex = 0
+
+	screen.ScreenMutex.Lock()
+	config.DeleteScreen("choice")
+	if index := screen.FindScreenPriority("choice"); index != -1 {
+		config.ScreenPriority = append(config.ScreenPriority[:index], config.ScreenPriority[index+1:]...)
+	}
+	screen.ScreenMutex.Unlock()
+
+	return RengEval(me.Action[event], env)
 }
 
 func evalShowExpression(se *ast.ShowExpression, env *object.Environment) object.Object {
@@ -285,7 +302,6 @@ func evalHideExpression(he *ast.HideExpression, env *object.Environment) object.
 	} else if screens, ok := env.Get(he.Name.Value); ok {
 		if screenObj, ok := screens.(*object.Screen); ok {
 			screen.ScreenMutex.Lock()
-			config.DeleteScreen(screenObj.Name.Value)
 			config.DeleteScreen(screenObj.Name.Value)
 			if index := screen.FindScreenPriority(screenObj.Name.Value); index != -1 {
 				config.ScreenPriority = append(config.ScreenPriority[:index], config.ScreenPriority[index+1:]...)

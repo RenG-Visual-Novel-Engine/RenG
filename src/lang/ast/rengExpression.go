@@ -23,6 +23,7 @@ type TextExpression struct {
 	Transform *Identifier
 	Style     *Identifier
 	Width     Expression
+	Typing    Expression
 }
 
 func (te *TextExpression) expressionNode()      {}

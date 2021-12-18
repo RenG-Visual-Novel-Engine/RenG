@@ -26,4 +26,7 @@ var (
 	ScreenPriority     = make([]string, 0)
 
 	SelectMenuIndex = make(chan int, 1)
+
+	IsNowMenu      bool = false
+	IsNowMenuIndex int  = 0
 )
