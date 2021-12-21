@@ -117,9 +117,9 @@ func typingEffect(te *ast.TextExpression, env *object.Environment, width uint, n
 		time.Sleep(time.Millisecond * 10)
 	}
 
-	for i := 0; i < len(textTextureList)-1; i++ {
-		textTextureList[i].DestroyTexture()
-	}
+	// for i := 0; i < len(textTextureList)-1; i++ {
+	// textTextureList[i].DestroyTexture()
+	// }
 }
 
 func isInTexture(texture *core.SDL_Texture, x, y int) bool {
