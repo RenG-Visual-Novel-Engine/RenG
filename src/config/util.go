@@ -5,6 +5,7 @@ import (
 )
 
 func DeleteScreen(name string) {
+	//var textureList []*core.SDL_Texture
 	screen := ScreenAllIndex[name]
 
 	LayerMutex.Lock()
@@ -12,6 +13,10 @@ func DeleteScreen(name string) {
 		LayerList.Layers[2].DeleteTexture(screen.First)
 	}
 	LayerMutex.Unlock()
+
+	//for i := 0; i < screen.Count; i++ {
+	//	textureList = append(textureList, ScreenTextureIndex[screen.First+i])
+	//}
 
 	ScreenTextureIndex = append(ScreenTextureIndex[:screen.First], ScreenTextureIndex[screen.First+screen.Count:]...)
 	ScreenIndex -= screen.Count
@@ -26,6 +31,12 @@ func DeleteScreen(name string) {
 			}
 		}
 	}
+
+	//for i := 0; i < len(textureList); i++ {
+	//	if textureList[i].TextureType == core.TEXTTEXTURE {
+	//		textureList[i].DestroyTexture()
+	//	}
+	//}
 }
 
 func AddScreenTextureIndex(texture *core.SDL_Texture) {

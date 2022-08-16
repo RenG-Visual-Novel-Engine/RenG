@@ -189,7 +189,7 @@ func evalIfExpression(ie *ast.IfExpression, env *object.Environment) object.Obje
 	if ie.Alternative != nil {
 		return Eval(ie.Alternative, env)
 	} else {
-		return NULL
+		return object.NULL
 	}
 }
 
@@ -242,7 +242,7 @@ func evalArrayIndexExpression(array, index object.Object) object.Object {
 	idx := index.(*object.Integer).Value
 	max := int64(len(arrayObject.Elements) - 1)
 	if idx < 0 || idx > max {
-		return NULL
+		return object.NULL
 	}
 	return arrayObject.Elements[idx]
 }

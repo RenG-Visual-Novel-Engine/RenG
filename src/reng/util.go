@@ -14,30 +14,25 @@ var (
 	FALSE = &object.Boolean{Value: false}
 )
 
-func playMusic(musicRoot string, loop bool) {
+func playBGMusic(musicRoot string, loop bool) {
 	if !core.PlayingMusic() {
-		loadMusic(musicRoot).PlayMusic(loop)
+		loadBGMusic(musicRoot).PlayMusic(loop)
 	} else {
 		core.StopMusic(-1)
-		loadMusic(musicRoot).PlayMusic(loop)
+		loadBGMusic(musicRoot).PlayMusic(loop)
 	}
 }
 
-func loadMusic(root string) *core.Mix_Music {
+func playSound(soundRoot string, channel int) {
+	loadChunk(soundRoot).PlaySound(channel)
+}
+
+func loadBGMusic(root string) *core.Mix_Music {
 	if music, ok := config.MusicList.Get(root); ok {
 		return music
 	} else {
 		music = config.MusicList.Set(root, core.LoadMUS(root))
 		return music
-	}
-}
-
-func play(soundRoot string, channel int) {
-	if !core.PlayingMusicChannel(channel) {
-		loadChunk(soundRoot).PlaySound(channel)
-	} else {
-		core.StopMusic(channel)
-		loadChunk(soundRoot).PlaySound(channel)
 	}
 }
 

@@ -1,6 +1,6 @@
-gui_title = "Example Game"
+config_title = "RenG"
 
-gui_width = 1280
-gui_height = 720
+config_width = 1280
+config_height = 720
 
-gui_font = "\font\JejuGothic.ttf"
+config_font = "\font\JejuGothic.ttf"

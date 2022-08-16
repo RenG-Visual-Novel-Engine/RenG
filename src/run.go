@@ -7,7 +7,6 @@ import (
 	"RenG/src/lang/object"
 	"RenG/src/lang/token"
 	"RenG/src/reng"
-	"runtime/debug"
 )
 
 func Run() {
@@ -63,14 +62,11 @@ MAIN:
 
 	<-config.StartChannel
 
-	debug.FreeOSMemory()
-
 	result = reng.RengEval(start.(*object.Label).Body, env)
 
 	if result == nil {
 		return
 	} else if _, ok := result.(*object.ReturnValue); ok {
-		config.StopAllChannel()
 		config.DeleteAllLayerTexture()
 		goto MAIN
 	} else if jumpLabel, ok = result.(*object.JumpLabel); !ok {
@@ -85,7 +81,6 @@ MAIN:
 		if result == nil {
 			return
 		} else if _, ok = result.(*object.ReturnValue); ok {
-			config.StopAllChannel()
 			config.DeleteAllLayerTexture()
 			goto MAIN
 		} else if jumpLabel, ok = result.(*object.JumpLabel); !ok {

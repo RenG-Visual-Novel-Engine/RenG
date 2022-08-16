@@ -1,11 +1,8 @@
-image img_bg = "\image\main_menu\bg.png"
-image img_logo = "\image\main_menu\logo.png"
+image img_bg = "image\main_menu\bg.png"
+image img_logo = "image\main_menu\logo.png"
 
-image img_github_icon = "\image\main_menu\github_icon.png"
-image img_discord_icon = "\image\main_menu\discord_icon.png"
+image img_github_icon = "image\main_menu\github_icon.png"
+image img_discord_icon = "image\main_menu\discord_icon.png"
 
-image img_environment_bg = "\image\environment\environment_bg.png"
-image img_exit_button = "\image\exit_button.png"
-# image button = "\image\button.png"
-# image gopher = "\image\Gopher.png"
-# video ball(path = "\video\test.mp4", size = [1280, 720])
+image img_environment_bg = "image\environment\environment_bg.png"
+image img_exit_button = "image\exit_button.png"

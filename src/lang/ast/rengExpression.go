@@ -240,7 +240,7 @@ type XPosExpression struct {
 func (xpe *XPosExpression) expressionNode()      {}
 func (xpe *XPosExpression) TokenLiteral() string { return xpe.Token.Literal }
 func (xpe *XPosExpression) String() string {
-	return xpe.Value.String()
+	return "xpos " + xpe.Value.String()
 }
 
 type YPosExpression struct {
@@ -251,7 +251,7 @@ type YPosExpression struct {
 func (ype *YPosExpression) expressionNode()      {}
 func (ype *YPosExpression) TokenLiteral() string { return ype.Token.Literal }
 func (ype *YPosExpression) String() string {
-	return ype.Value.String()
+	return "ypos " + ype.Value.String()
 }
 
 type XSizeExpression struct {
@@ -262,7 +262,7 @@ type XSizeExpression struct {
 func (xse *XSizeExpression) expressionNode()      {}
 func (xse *XSizeExpression) TokenLiteral() string { return xse.Token.Literal }
 func (xse *XSizeExpression) String() string {
-	return xse.Value.String()
+	return "xsize " + xse.Value.String()
 }
 
 type YSizeExpression struct {
@@ -273,7 +273,7 @@ type YSizeExpression struct {
 func (yse *YSizeExpression) expressionNode()      {}
 func (yse *YSizeExpression) TokenLiteral() string { return yse.Token.Literal }
 func (yse *YSizeExpression) String() string {
-	return yse.Value.String()
+	return "ysize " + yse.Value.String()
 }
 
 type RotateExpression struct {
@@ -284,7 +284,7 @@ type RotateExpression struct {
 func (re *RotateExpression) expressionNode()      {}
 func (re *RotateExpression) TokenLiteral() string { return re.Token.Literal }
 func (re *RotateExpression) String() string {
-	return re.Value.String()
+	return "rotate " + re.Value.String()
 }
 
 type AlphaExpression struct {
@@ -295,7 +295,7 @@ type AlphaExpression struct {
 func (ae *AlphaExpression) expressionNode()      {}
 func (ae *AlphaExpression) TokenLiteral() string { return ae.Token.Literal }
 func (ae *AlphaExpression) String() string {
-	return ae.Value.String()
+	return "alpha " + ae.Value.String()
 }
 
 type ColorExpression struct {

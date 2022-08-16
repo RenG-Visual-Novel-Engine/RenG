@@ -1,0 +1,46 @@
+screen main_menu {
+    show img_mainBG
+
+    textbutton "Start" at tf_StartButton as black action Start()
+}
+
+screen say {
+    show img_say
+    text who at tf_who_pos as blue
+    text what at tf_content_pos limitWidth 880
+}
+
+screen choice {
+    show img_black
+    for (i = 0; i < len(items); ++i) {
+        textbutton items[i] at tf_SelectButton
+    }
+}
+
+transform tf_StartButton {
+    xpos 600
+    ypos 600
+}
+
+transform tf_SelectButton {
+    xpos 500
+    ypos i * 100 + 300
+}
+
+transform tf_who_pos {
+    xpos 200
+    ypos 500
+}
+
+transform tf_content_pos {
+    xpos 200
+    ypos 550
+}
+
+style black {
+    color "#000000"
+}
+
+style blue {
+    color "#93CEFF"
+}

@@ -190,7 +190,9 @@ func (p *Parser) parseTextbuttonExpression() ast.Expression {
 		Value: "defaultStyle",
 	}
 
-	for p.expectPeek(token.AT) || p.expectPeek(token.AS) || p.expectPeek(token.ACTION) {
+	for p.expectPeek(token.AT) ||
+		p.expectPeek(token.AS) ||
+		p.expectPeek(token.ACTION) {
 		switch p.curToken.Type {
 		case token.AT:
 			p.nextToken()

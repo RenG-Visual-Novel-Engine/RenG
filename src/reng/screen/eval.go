@@ -178,7 +178,7 @@ func evalShowExpression(se *ast.ShowExpression, env *object.Environment, name st
 	}
 	*/
 
-	return NULL
+	return object.NULL
 }
 
 func evalHideExpression(he *ast.HideExpression, env *object.Environment) object.Object {
@@ -192,7 +192,7 @@ func evalHideExpression(he *ast.HideExpression, env *object.Environment) object.
 			ScreenMutex.Unlock()
 		}
 	}
-	return NULL
+	return object.NULL
 }
 
 func evalTextExpression(te *ast.TextExpression, env *object.Environment, name string) object.Object {
@@ -216,7 +216,7 @@ func evalTextExpression(te *ast.TextExpression, env *object.Environment, name st
 
 		if typing.(*object.Boolean).Value {
 			typingEffect(te, env, width, name, text.Value)
-			return NULL
+			return object.NULL
 		}
 
 		textTexture := config.MainFont.LoadFromRenderedText(
@@ -252,7 +252,7 @@ func evalTextExpression(te *ast.TextExpression, env *object.Environment, name st
 		config.LayerMutex.Unlock()
 	}
 
-	return NULL
+	return object.NULL
 }
 
 func evalImagebuttonExpression(ie *ast.ImagebuttonExpression, env *object.Environment, name string) object.Object {
@@ -291,7 +291,7 @@ func evalImagebuttonExpression(ie *ast.ImagebuttonExpression, env *object.Enviro
 			}
 		}()
 	}
-	return NULL
+	return object.NULL
 }
 
 func evalTextbuttonExpression(te *ast.TextbuttonExpression, env *object.Environment, name string) object.Object {
@@ -320,7 +320,10 @@ func evalTextbuttonExpression(te *ast.TextbuttonExpression, env *object.Environm
 		}
 
 		if sty, ok := env.Get(te.Style.Value); ok {
-			style.StyleEval(sty.(*object.Style).Body, textTexture, env)
+			err := style.StyleEval(sty.(*object.Style).Body, textTexture, env)
+			if isError(err) {
+				return err
+			}
 		}
 
 		config.ScreenAllIndex[name] = config.Screen{
@@ -360,7 +363,7 @@ func evalTextbuttonExpression(te *ast.TextbuttonExpression, env *object.Environm
 		}()
 	}
 
-	return NULL
+	return object.NULL
 }
 
 func evalKeyExpression(ke *ast.KeyExpression, env *object.Environment, name string) object.Object {
@@ -391,7 +394,7 @@ func evalKeyExpression(ke *ast.KeyExpression, env *object.Environment, name stri
 		}
 	}()
 
-	return NULL
+	return object.NULL
 }
 
 func evalBlockStatements(block *ast.BlockStatement, env *object.Environment, name string) object.Object {
@@ -484,6 +487,14 @@ func evalIndexExpression(left, index object.Object) object.Object {
 	switch {
 	case left.Type() == object.ARRAY_OBJ && index.Type() == object.INTEGER_OBJ:
 		return evalArrayIndexExpression(left, index)
+	case left.Type() == object.STRING_OBJ && index.Type() == object.INTEGER_OBJ:
+		str := left.(*object.String).Value
+		idx := index.(*object.Integer).Value
+		max := int64(len(str) - 1)
+		if idx < 0 || idx > max {
+			return object.NULL
+		}
+		return &object.String{Value: string(str[idx])}
 	default:
 		return newError("index operator not supported : %s", left.Type())
 	}
@@ -494,7 +505,7 @@ func evalArrayIndexExpression(array, index object.Object) object.Object {
 	idx := index.(*object.Integer).Value
 	max := int64(len(arrayObject.Elements) - 1)
 	if idx < 0 || idx > max {
-		return NULL
+		return object.NULL
 	}
 	return arrayObject.Elements[idx]
 }
@@ -524,7 +535,7 @@ func evalIfExpression(ie *ast.IfExpression, env *object.Environment, name string
 	if ie.Alternative != nil {
 		return ScreenEval(ie.Alternative, env, name)
 	} else {
-		return NULL
+		return object.NULL
 	}
 }
 

@@ -1,0 +1,4 @@
+image img_mainBG = "image\main_img.png"
+image img_say = "image\say_img.png"
+image img_black = "image\black.jpg"
+image img_icon = "image\icon.png"

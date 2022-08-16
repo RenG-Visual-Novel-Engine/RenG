@@ -7,12 +7,6 @@ import (
 	"fmt"
 )
 
-var (
-	NULL  = &object.Null{}
-	TRUE  = &object.Boolean{Value: true}
-	FALSE = &object.Boolean{Value: false}
-)
-
 func applyFunction(fn object.Object, texture *core.SDL_Texture, args []object.Object) object.Object {
 	switch fn := fn.(type) {
 	case *object.Function:
@@ -56,11 +50,11 @@ func isCurrentExp(index int, str *ast.StringLiteral) bool {
 
 func isTruthy(obj object.Object) bool {
 	switch obj {
-	case NULL:
+	case object.NULL:
 		return false
-	case TRUE:
+	case object.TRUE:
 		return true
-	case FALSE:
+	case object.FALSE:
 		return false
 	default:
 		return true

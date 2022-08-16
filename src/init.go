@@ -40,6 +40,7 @@ func Init() bool {
 			}
 		} else if file.Name()[len(file.Name())-3:] == "rgo" && file.Name() != "config.rgo" {
 			f, err := ioutil.ReadFile(config.Path + file.Name())
+
 			if err != nil {
 				panic(err)
 			}

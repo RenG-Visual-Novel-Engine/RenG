@@ -32,7 +32,7 @@ var (
 )
 
 var (
-	StartChannel         = make(chan bool)
+	StartChannel         = make(chan bool, 5)
 	Event                core.SDL_Event
 	MouseMotionEventChan = make(chan core.Event, 5)
 	MouseDownEventChan   = make(chan core.Event, 5)

@@ -177,7 +177,7 @@ func evalIntegerInfixExpression(operator string, left, right object.Object) obje
 
 func nativeBoolToBooleanObject(input bool) *object.Boolean {
 	if input {
-		return TRUE
+		return object.TRUE
 	}
-	return FALSE
+	return object.FALSE
 }

@@ -158,6 +158,7 @@ func evalRengBlockStatements(block *ast.BlockStatement, env *object.Environment)
 
 				screen.ScreenEval(say.(*object.Screen).Body, env, "say")
 
+				// TODO : 왼쪽 마우스 클릭만 인식하도록 변경해야 함.
 				<-config.MouseDownEventChan
 
 				config.DeleteScreen("say")
@@ -166,7 +167,7 @@ func evalRengBlockStatements(block *ast.BlockStatement, env *object.Environment)
 				config.What = ""
 			case object.CHARACTER_OBJ:
 				config.Who = result.(*object.Character).Name.Value
-				config.WhoColor = result.(*object.Character).Color.Color
+				config.WhoColor = result.(*object.Character).Color
 			}
 		}
 	}
@@ -320,16 +321,16 @@ func evalPlayExpression(pe *ast.PlayExpression, env *object.Environment) object.
 		case "music":
 			switch pe.Loop.Value {
 			case "loop":
-				go playMusic(config.Path+musicRoot.Value, true)
+				go playBGMusic(config.Path+musicRoot.Value, true)
 			case "noloop":
-				go playMusic(config.Path+musicRoot.Value, false)
+				go playBGMusic(config.Path+musicRoot.Value, false)
 			default:
 				return newError("It is not loop or noloop. got=%s", pe.Loop.Value)
 			}
 		case "sound":
-			go play(config.Path+musicRoot.Value, 0)
+			go playSound(config.Path+musicRoot.Value, 0)
 		case "voice":
-			go play(config.Path+musicRoot.Value, 1)
+			go playSound(config.Path+musicRoot.Value, 1)
 		default:
 			// TODO : 사용자 정의 채널 미구현
 			_, ok := config.ChannelList.GetChannel(pe.Channel.Value)
@@ -415,6 +416,14 @@ func evalIndexExpression(left, index object.Object) object.Object {
 	switch {
 	case left.Type() == object.ARRAY_OBJ && index.Type() == object.INTEGER_OBJ:
 		return evalArrayIndexExpression(left, index)
+	case left.Type() == object.STRING_OBJ && index.Type() == object.INTEGER_OBJ:
+		str := left.(*object.String).Value
+		idx := index.(*object.Integer).Value
+		max := int64(len(str) - 1)
+		if idx < 0 || idx > max {
+			return NULL
+		}
+		return &object.String{Value: string(str[idx])}
 	default:
 		return newError("index operator not supported : %s", left.Type())
 	}

@@ -29,14 +29,14 @@ func evalAssignPrefixExpression(operator string, right *ast.Identifier, env *obj
 
 func evalBangOperatorExpression(right object.Object) object.Object {
 	switch right {
-	case TRUE:
-		return FALSE
-	case FALSE:
-		return TRUE
-	case NULL:
-		return FALSE
+	case object.TRUE:
+		return object.FALSE
+	case object.FALSE:
+		return object.TRUE
+	case object.NULL:
+		return object.FALSE
 	default:
-		return FALSE
+		return object.FALSE
 	}
 }
 

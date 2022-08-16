@@ -256,7 +256,7 @@ func evalBlockStatements(block *ast.BlockStatement, texture *core.SDL_Texture, e
 
 func evalTransformExpression(transform *ast.TransformExpression, texture *core.SDL_Texture, env *object.Environment) object.Object {
 	TransformEval(transform.Body, texture, env)
-	return NULL
+	return object.NULL
 }
 
 func evalExpressions(exps []ast.Expression, texture *core.SDL_Texture, env *object.Environment) []object.Object {
@@ -318,6 +318,14 @@ func evalIndexExpression(left, index object.Object) object.Object {
 	switch {
 	case left.Type() == object.ARRAY_OBJ && index.Type() == object.INTEGER_OBJ:
 		return evalArrayIndexExpression(left, index)
+	case left.Type() == object.STRING_OBJ && index.Type() == object.INTEGER_OBJ:
+		str := left.(*object.String).Value
+		idx := index.(*object.Integer).Value
+		max := int64(len(str) - 1)
+		if idx < 0 || idx > max {
+			return object.NULL
+		}
+		return &object.String{Value: string(str[idx])}
 	default:
 		return newError("index operator not supported : %s", left.Type())
 	}
@@ -328,7 +336,7 @@ func evalArrayIndexExpression(array, index object.Object) object.Object {
 	idx := index.(*object.Integer).Value
 	max := int64(len(arrayObject.Elements) - 1)
 	if idx < 0 || idx > max {
-		return NULL
+		return object.NULL
 	}
 	return arrayObject.Elements[idx]
 }
@@ -358,7 +366,7 @@ func evalIfExpression(ie *ast.IfExpression, texture *core.SDL_Texture, env *obje
 	if ie.Alternative != nil {
 		return TransformEval(ie.Alternative, texture, env)
 	} else {
-		return NULL
+		return object.NULL
 	}
 }
 
@@ -391,7 +399,7 @@ func evalForExpression(node *ast.ForExpression, texture *core.SDL_Texture, env *
 			return condition
 		}
 	}
-	return NULL
+	return object.NULL
 }
 
 func evalWhileExpression(node *ast.WhileExpression, texture *core.SDL_Texture, env *object.Environment) object.Object {
@@ -411,7 +419,7 @@ func evalWhileExpression(node *ast.WhileExpression, texture *core.SDL_Texture, e
 			return condition
 		}
 	}
-	return NULL
+	return object.NULL
 }
 
 func evalIdentifier(node *ast.Identifier, env *object.Environment) object.Object {

@@ -78,6 +78,19 @@ func PlayingMusicChannel(channel int) bool {
 	return int(C.Mix_Playing(C.int(channel))) != 0
 }
 
+func StopMusic(channel int) {
+	switch channel {
+	case -1:
+		C.Mix_HaltMusic()
+	default:
+		C.Mix_HaltChannel(C.int(channel))
+	}
+}
+
+func (chunk *Mix_Chunk) PlaySound(channel int) {
+	C.Mix_PlayChannelTimed(C.int(channel), (*C.Mix_Chunk)(chunk), 0, -1)
+}
+
 /* Set the volume in the range of 0-128 of a specific channel or chunk.
    If the specified channel is -1, set volume for all channels.
    Returns the original volume.
@@ -90,19 +103,6 @@ func SetVolume(channel int, volume int) {
 	default:
 		C.Mix_Volume(C.int(channel), C.int(volume))
 	}
-}
-
-func StopMusic(channel int) {
-	switch channel {
-	case -1:
-		C.Mix_HaltMusic()
-	default:
-		C.Mix_HaltChannel(C.int(channel))
-	}
-}
-
-func (chunk *Mix_Chunk) PlaySound(channel int) {
-	C.Mix_PlayChannelTimed(C.int(channel), (*C.Mix_Chunk)(chunk), 0, -1)
 }
 
 func (music *Mix_Music) FreeMusic() {

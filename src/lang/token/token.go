@@ -103,16 +103,18 @@ const (
 
 	CHARACTER = "CHARACTER"
 
-	TRANSFORM = "TRANSFORM"
-	STYLE     = "STYLE"
+	TRANSFORM  = "TRANSFORM"
+	TRANSITION = "TRANSITION"
+	STYLE      = "STYLE"
 
 	SCENE = "SCENE"
 
 	SHOW = "SHOW"
 	HIDE = "HIDE"
 
-	AT = "AT"
-	AS = "AS"
+	AT   = "AT"
+	AS   = "AS"
+	WITH = "WITH"
 
 	PLAY = "PLAY"
 	STOP = "STOP"
@@ -168,12 +170,14 @@ var keywords = map[string]TokenType{
 	"video":       VIDEO,
 	"character":   CHARACTER,
 	"transform":   TRANSFORM,
+	"transition":  TRANSITION,
 	"style":       STYLE,
 	"scene":       SCENE,
 	"show":        SHOW,
 	"hide":        HIDE,
 	"at":          AT,
 	"as":          AS,
+	"with":        WITH,
 	"xpos":        XPOS,
 	"ypos":        YPOS,
 	"xsize":       XSIZE,

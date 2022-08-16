@@ -14,13 +14,8 @@ import (
 )
 
 var (
-	NULL  = &object.Null{}
-	TRUE  = &object.Boolean{Value: true}
-	FALSE = &object.Boolean{Value: false}
-)
-
-var (
-	ScreenMutex = &sync.RWMutex{}
+	ScreenMutex         = &sync.RWMutex{}
+	ScreenAllIndexMutex = &sync.RWMutex{}
 )
 
 func typingEffect(te *ast.TextExpression, env *object.Environment, width uint, name, text string) {
@@ -28,8 +23,8 @@ func typingEffect(te *ast.TextExpression, env *object.Environment, width uint, n
 	sty, _ := env.Get(te.Style.Value)
 
 	var (
-		textTexture     *core.SDL_Texture
-		textTextureList []*core.SDL_Texture
+		textTexture *core.SDL_Texture
+		//textTextureList []*core.SDL_Texture
 	)
 
 	if int(text[0]) > 126 {
@@ -65,7 +60,7 @@ func typingEffect(te *ast.TextExpression, env *object.Environment, width uint, n
 		style.StyleEval(sty.(*object.Style).Body, textTexture, env)
 	}
 
-	textTextureList = append(textTextureList, textTexture)
+	//textTextureList = append(textTextureList, textTexture)
 
 	config.ScreenAllIndex[name] = config.Screen{
 		First: config.ScreenAllIndex[name].First,
@@ -107,7 +102,7 @@ func typingEffect(te *ast.TextExpression, env *object.Environment, width uint, n
 			style.StyleEval(sty.(*object.Style).Body, textTexture, env)
 		}
 
-		textTextureList = append(textTextureList, textTexture)
+		//textTextureList = append(textTextureList, textTexture)
 
 		config.LayerMutex.Lock()
 		config.LayerList.Layers[2].ChangeTexture(textTexture, indexLayer)
@@ -156,7 +151,9 @@ func FindScreenPriority(name string) int {
 }
 
 func isScreenEnd(name string) bool {
+	ScreenAllIndexMutex.Lock()
 	_, ok := config.ScreenAllIndex[name]
+	ScreenAllIndexMutex.Unlock()
 	return !ok
 }
 
@@ -233,53 +230,53 @@ func isKeyWant(keyName string, inputKey uint8) bool {
 	case "z":
 		return inputKey == uint8(core.SDLK_z)
 	case "f1":
-		return uint32(inputKey) == uint32(core.SDLK_F1)
+		return inputKey == uint8(core.SDLK_F1)
 	case "f2":
-		return uint32(inputKey) == uint32(core.SDLK_F2)
+		return inputKey == uint8(core.SDLK_F2)
 	case "f3":
-		return uint32(inputKey) == uint32(core.SDLK_F3)
+		return inputKey == uint8(core.SDLK_F3)
 	case "f4":
-		return uint32(inputKey) == uint32(core.SDLK_F4)
+		return inputKey == uint8(core.SDLK_F4)
 	case "f5":
-		return uint32(inputKey) == uint32(core.SDLK_F5)
+		return inputKey == uint8(core.SDLK_F5)
 	case "f6":
-		return uint32(inputKey) == uint32(core.SDLK_F6)
+		return inputKey == uint8(core.SDLK_F6)
 	case "f7":
-		return uint32(inputKey) == uint32(core.SDLK_F7)
+		return inputKey == uint8(core.SDLK_F7)
 	case "f8":
-		return uint32(inputKey) == uint32(core.SDLK_F8)
+		return inputKey == uint8(core.SDLK_F8)
 	case "f9":
-		return uint32(inputKey) == uint32(core.SDLK_F9)
+		return inputKey == uint8(core.SDLK_F9)
 	case "f10":
-		return uint32(inputKey) == uint32(core.SDLK_F10)
+		return inputKey == uint8(core.SDLK_F10)
 	case "f11":
-		return uint32(inputKey) == uint32(core.SDLK_F11)
+		return inputKey == uint8(core.SDLK_F11)
 	case "f12":
-		return uint32(inputKey) == uint32(core.SDLK_F12)
-	case "f13":
-		return uint32(inputKey) == uint32(core.SDLK_F13)
-	case "f14":
-		return uint32(inputKey) == uint32(core.SDLK_F14)
-	case "f15":
-		return uint32(inputKey) == uint32(core.SDLK_F15)
-	case "f16":
-		return uint32(inputKey) == uint32(core.SDLK_F16)
-	case "f17":
-		return uint32(inputKey) == uint32(core.SDLK_F17)
-	case "f18":
-		return uint32(inputKey) == uint32(core.SDLK_F18)
-	case "f19":
-		return uint32(inputKey) == uint32(core.SDLK_F19)
-	case "f20":
-		return uint32(inputKey) == uint32(core.SDLK_F20)
-	case "f21":
-		return uint32(inputKey) == uint32(core.SDLK_F21)
-	case "f22":
-		return uint32(inputKey) == uint32(core.SDLK_F22)
-	case "f23":
-		return uint32(inputKey) == uint32(core.SDLK_F23)
-	case "f24":
-		return uint32(inputKey) == uint32(core.SDLK_F24)
+		return inputKey == uint8(core.SDLK_F12)
+	case "home":
+		return inputKey == uint8(core.SDLK_HOME)
+	case "end":
+		return inputKey == uint8(core.SDLK_END)
+	case "delete":
+		return inputKey == uint8(core.SDLK_DELETE)
+	case "rshift":
+		return inputKey == uint8(core.SDLK_RSHIFT)
+	case "lshift":
+		return inputKey == uint8(core.SDLK_LSHIFT)
+	case "right":
+		return inputKey == uint8(core.SDLK_RIGHT)
+	case "left":
+		return inputKey == uint8(core.SDLK_LEFT)
+	case "down":
+		return inputKey == uint8(core.SDLK_DOWN)
+	case "up":
+		return inputKey == uint8(core.SDLK_UP)
+	case "tab":
+		return inputKey == uint8(core.SDLK_TAB)
+	case "capslock":
+		return inputKey == uint8(core.SDLK_CAPSLOCK)
+	case "space":
+		return inputKey == uint8(core.SDLK_SPACE)
 	default:
 		return false
 	}
@@ -327,15 +324,16 @@ func isCurrentExp(index int, str *ast.StringLiteral) bool {
 }
 
 func isTruthy(obj object.Object) bool {
+
 	switch obj {
-	case NULL:
+	case object.NULL:
 		return false
-	case TRUE:
+	case object.TRUE:
 		return true
-	case FALSE:
+	case object.FALSE:
 		return false
 	default:
-		return true
+		return false
 	}
 }
 

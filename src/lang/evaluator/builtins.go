@@ -5,6 +5,8 @@ import (
 	"RenG/src/core"
 	"RenG/src/lang/object"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"os/exec"
 	"os/user"
 	"runtime"
@@ -67,7 +69,7 @@ var FunctionBuiltins = map[string]*object.Builtin{
 				return newError("argument to pause must be INTEGER or FLOAT, got %s", args[0].Type())
 			}
 
-			return NULL
+			return object.NULL
 		},
 	},
 	"Start": {
@@ -76,7 +78,7 @@ var FunctionBuiltins = map[string]*object.Builtin{
 
 			config.StartChannel <- true
 
-			return NULL
+			return object.NULL
 		},
 	},
 	/*------------os------------*/
@@ -104,6 +106,48 @@ var FunctionBuiltins = map[string]*object.Builtin{
 				}
 			default:
 				return newError("OSusername support only windows, your OS = %s", runtime.GOOS)
+			}
+		},
+	},
+	"OSname": {
+		Fn: func(args ...object.Object) object.Object {
+			user, err := user.Current()
+			if err != nil {
+				return newError("Not find OS user, got=%s", err)
+			}
+
+			switch username := user.Name; runtime.GOOS {
+			case "windows":
+				return &object.String{Value: username}
+			default:
+				return newError("OSname support only windows, your OS = %s", runtime.GOOS)
+			}
+		},
+	},
+	"OSFileNames": {
+		Fn: func(args ...object.Object) object.Object {
+			if len(args) != 1 {
+				return newError("OSFile func has 0 args, got=%d", len(args))
+			}
+
+			path, ok := args[0].(*object.String)
+			if !ok {
+				return newError("OSFileNames func args is not string")
+			}
+
+			files, err := ioutil.ReadDir(path.Value)
+			if err != nil {
+				return newError("Golang ioutil.ReadDir Error\n\n%v", err)
+			}
+
+			var arr []object.Object
+
+			for _, file := range files {
+				arr = append(arr, &object.String{Value: file.Name()})
+			}
+
+			return &object.Array{
+				Elements: arr,
 			}
 		},
 	},
@@ -178,7 +222,7 @@ var FunctionBuiltins = map[string]*object.Builtin{
 				)
 			}
 
-			return NULL
+			return object.NULL
 		},
 	},
 	/*-----------win32----------*/
@@ -209,7 +253,55 @@ var FunctionBuiltins = map[string]*object.Builtin{
 				0,
 			)
 
-			return NULL
+			return object.NULL
+		},
+	},
+	/*-----------Data System----------*/
+	"IsExistDataStore": {
+		Fn: func(args ...object.Object) object.Object {
+			if len(args) != 1 {
+				return newError("ExistDataStore func has 1 args, got=%d", len(args))
+			}
+
+			storeName, ok := args[0].(*object.String)
+			if !ok {
+				return newError("ExistDataStore func storeName args is not string")
+			}
+
+			if _, err := os.Stat(config.Path + "data\\" + storeName.Value); os.IsNotExist(err) {
+				return object.FALSE
+			}
+			return object.TRUE
+		},
+	},
+	"MakeDataStore": {
+		Fn: func(args ...object.Object) object.Object {
+			if len(args) != 1 {
+				return newError("MakeDataStore func has 1 args, got=%d", len(args))
+			}
+
+			storeName, ok := args[0].(*object.String)
+			if !ok {
+				return newError("MakeDataStore func storeName args is not string")
+			}
+
+			if _, err := ioutil.ReadDir(config.Path + "data"); err != nil {
+				err := os.Mkdir(config.Path+"data", 0755)
+				if err != nil {
+					return newError("Golang os.Mkdir Error\n\n%v", err)
+				}
+
+				_, err = os.Create(config.Path + "data\\" + storeName.Value)
+				if err != nil {
+					return newError("Golang os.Create Error\n\n%v", err)
+				}
+			} else {
+				_, err := os.Create(config.Path + "data\\" + storeName.Value)
+				if err != nil {
+					return newError("Golang os.Create Error\n\n%v", err)
+				}
+			}
+			return object.NULL
 		},
 	},
 	/*-----------util-----------*/
@@ -243,20 +335,49 @@ var FunctionBuiltins = map[string]*object.Builtin{
 				Name: &object.String{
 					Value: name.Value,
 				},
-				Color: &object.Color{
-					Color: core.CreateColor(int(hex[0]), int(hex[1]), int(hex[2])),
-				},
+				Color: core.CreateColor(int(hex[0]), int(hex[1]), int(hex[2])),
 			}
 		},
 	},
-	"GoSite": {
+	"Link": {
 		Fn: func(args ...object.Object) object.Object {
 			if runtime.GOOS == "windows" {
 				cmd := exec.Command("cmd", "/C", "start", "/max", args[0].(*object.String).Value)
 				cmd.Run()
 			}
 
-			return NULL
+			return object.NULL
+		},
+	},
+	"SetVolume": {
+		Fn: func(args ...object.Object) object.Object {
+			if len(args) != 2 {
+				return newError("SetVolume func has 1 args, got = %d", len(args))
+			}
+
+			channel, ok := args[0].(*object.String)
+			if !ok {
+				return newError("SetVolume func channel args is not string")
+			}
+
+			value, ok := args[1].(*object.Integer)
+			if !ok {
+				return newError("SetVolume func value args is not integer")
+			}
+
+			switch channel.Value {
+			case "music":
+				core.SetVolume(-1, int(value.Value))
+			case "sound":
+				core.SetVolume(0, int(value.Value))
+			case "voice":
+				core.SetVolume(1, int(value.Value))
+			default:
+				// TODO
+				return newError("channel index over")
+			}
+
+			return object.NULL
 		},
 	},
 	"print": { // 테스트 용으로 제작된 임시 출력 함수
@@ -265,7 +386,7 @@ var FunctionBuiltins = map[string]*object.Builtin{
 				fmt.Println(arg.Inspect())
 			}
 
-			return NULL
+			return object.NULL
 		},
 	},
 }

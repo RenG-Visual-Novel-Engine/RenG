@@ -1,0 +1,59 @@
+ch_Gopher = Character("Gopher", "#FFFFFF")
+
+label start {
+
+    show img_icon 
+
+    play music "music\TrackTribe.mp3"
+
+    ch_Gopher "안녕하세요." 
+    ch_Gopher "전 RenG 엔진을 상징하는 Gopher라고 합니다."
+    ch_Gopher "제가 좋아하는 노래를 깔아봤는데... 어떠신가요?"
+    
+    menu {
+        "음... 뭐 나쁘지 않네" {
+            ch_Gopher "감사합니다!"
+        }
+        "노래 꺼줘" {
+            ch_Gopher "네..."
+            stop music
+        }
+    }
+
+    ch_Gopher "그럼 한 가지 질문만 해도 괜찮을까요?"
+
+    menu {
+        "그래" {
+            ch_Gopher "감사합니다."
+        }
+        "아니" {
+            jump End1
+        }
+    }
+
+    ch_Gopher "그럼 질문입니다."
+    ch_Gopher "당신은 이 엔진으로 무엇을 하실건가요?"
+
+    menu {
+        "미연시 개발" {
+            ch_Gopher "개발되면... 저도 해보고 싶어요!"
+        }
+        "그냥... 재미?" {
+            ch_Gopher "꼭 이 엔진이 재미가 있었으면 좋겠네요"
+        }
+    }
+
+    ch_Gopher "그럼... 앞으로 쭉 볼 수 있기를..."
+
+    stop music
+    
+    return
+}
+
+label End1 {
+    ch_Gopher "죄송합니다."
+
+    stop music
+    
+    return
+}

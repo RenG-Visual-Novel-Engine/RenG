@@ -25,6 +25,13 @@ func (t *SDL_Texture) Render(renderer *SDL_Renderer, w, h, cw, ch int) {
 		t.SetAlpha(t.TextTexture.Alpha)
 		C.SDL_RenderCopyEx((*C.SDL_Renderer)(renderer), t.Texture, nil, &renderQuad, C.double(t.TextTexture.Degree), nil, SDL_FLIP_NONE)
 	case IMAGETEXTURE:
+		/*
+			fmt.Println(t.ImageTexture.Xpos)
+			fmt.Println(t.ImageTexture.Ypos)
+			fmt.Println(t.ImageTexture.Width)
+			fmt.Println(t.ImageTexture.Height)
+			fmt.Println("end")
+		*/
 		renderQuad := CreateRect(ResizeInt(w, cw, t.ImageTexture.Xpos), ResizeInt(h, ch, t.ImageTexture.Ypos), ResizeInt(w, cw, t.ImageTexture.Width), ResizeInt(w, cw, t.ImageTexture.Height))
 		t.SetAlpha(t.ImageTexture.Alpha)
 		C.SDL_RenderCopyEx((*C.SDL_Renderer)(renderer), t.Texture, nil, &renderQuad, C.double(t.ImageTexture.Degree), nil, SDL_FLIP_NONE)
