@@ -12,10 +12,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
-	"syscall"
 	"time"
-	"unicode/utf16"
-	"unsafe"
 )
 
 var FunctionBuiltins = map[string]*object.Builtin{
@@ -151,111 +148,112 @@ var FunctionBuiltins = map[string]*object.Builtin{
 			}
 		},
 	},
-	"OSbgChange": {
-		Fn: func(args ...object.Object) object.Object {
-			if runtime.GOOS != "windows" {
-				return newError("OSbgChange func supports only windows")
-			}
+	/*
+			"OSbgChange": {
+				Fn: func(args ...object.Object) object.Object {
+					if runtime.GOOS != "windows" {
+						return newError("OSbgChange func supports only windows")
+					}
 
-			if len(args) != 1 {
-				return newError("OSbgChange func has 1 args, got=%d", len(args))
-			}
+					if len(args) != 1 {
+						return newError("OSbgChange func has 1 args, got=%d", len(args))
+					}
 
-			changePath := syscall.StringToUTF16Ptr(config.Path + args[0].(*object.String).Value)
-			currentPath := make([]uint16, syscall.MAX_PATH)
+					changePath := syscall.StringToUTF16Ptr(config.Path + args[0].(*object.String).Value)
+					currentPath := make([]uint16, syscall.MAX_PATH)
 
-			proc := syscall.NewLazyDLL("user32.dll").NewProc("SystemParametersInfoW")
+					proc := syscall.NewLazyDLL("user32.dll").NewProc("SystemParametersInfoW")
 
-			proc.Call(
-				0x0073, // SPI_GETDESKWALLPAPER
-				syscall.MAX_PATH,
-				uintptr(unsafe.Pointer(&currentPath[0])),
-				0,
-			)
+					proc.Call(
+						0x0073, // SPI_GETDESKWALLPAPER
+						syscall.MAX_PATH,
+						uintptr(unsafe.Pointer(&currentPath[0])),
+						0,
+					)
 
-			proc.Call(
-				20, // SPI_SETDESKWALLPAPER
-				0,
-				uintptr(unsafe.Pointer(changePath)),
-				0x01,
-			)
+					proc.Call(
+						20, // SPI_SETDESKWALLPAPER
+						0,
+						uintptr(unsafe.Pointer(changePath)),
+						0x01,
+					)
 
-			var n int
-			for n = 0; n < len(currentPath) && currentPath[n] != 0; n++ {
-			}
+					var n int
+					for n = 0; n < len(currentPath) && currentPath[n] != 0; n++ {
+					}
 
-			return &object.String{Value: string(utf16.Decode(currentPath[:n]))}
-		},
-	},
-	"OSbgReturn": {
-		Fn: func(args ...object.Object) object.Object {
-			if runtime.GOOS != "windows" {
-				return newError("OSbgReturn func supports only windows")
-			}
+					return &object.String{Value: string(utf16.Decode(currentPath[:n]))}
+				},
+			},
+			"OSbgReturn": {
+				Fn: func(args ...object.Object) object.Object {
+					if runtime.GOOS != "windows" {
+						return newError("OSbgReturn func supports only windows")
+					}
 
-			if len(args) != 1 {
-				return newError("OSbgChange func has 1 args, got=%d", len(args))
-			}
+					if len(args) != 1 {
+						return newError("OSbgChange func has 1 args, got=%d", len(args))
+					}
 
-			proc := syscall.NewLazyDLL("user32.dll").NewProc("SystemParametersInfoW")
+					proc := syscall.NewLazyDLL("user32.dll").NewProc("SystemParametersInfoW")
 
-			changePath := syscall.StringToUTF16Ptr(args[0].(*object.String).Value)
-			currentPath := make([]uint16, syscall.MAX_PATH)
+					changePath := syscall.StringToUTF16Ptr(args[0].(*object.String).Value)
+					currentPath := make([]uint16, syscall.MAX_PATH)
 
-			proc.Call(
-				0x0073, // SPI_GETDESKWALLPAPER
-				syscall.MAX_PATH,
-				uintptr(unsafe.Pointer(&currentPath[0])),
-				0,
-			)
+					proc.Call(
+						0x0073, // SPI_GETDESKWALLPAPER
+						syscall.MAX_PATH,
+						uintptr(unsafe.Pointer(&currentPath[0])),
+						0,
+					)
 
-			var n int
-			for n = 0; n < len(currentPath) && currentPath[n] != 0; n++ {
-			}
+					var n int
+					for n = 0; n < len(currentPath) && currentPath[n] != 0; n++ {
+					}
 
-			if string(utf16.Decode(currentPath[:n])) != args[0].(*object.String).Value {
-				proc.Call(
-					20, // SPI_SETDESKWALLPAPER
+					if string(utf16.Decode(currentPath[:n])) != args[0].(*object.String).Value {
+						proc.Call(
+							20, // SPI_SETDESKWALLPAPER
+							0,
+							uintptr(unsafe.Pointer(changePath)),
+							0x01,
+						)
+					}
+
+					return object.NULL
+				},
+			},
+		"MessageBox": {
+			Fn: func(args ...object.Object) object.Object {
+				if runtime.GOOS != "windows" {
+					return newError("MessageBox func supports only windows")
+				}
+
+				if len(args) != 2 {
+					return newError("MessageBox func has 2 args, got=%d", len(args))
+				}
+
+				title, ok := args[0].(*object.String)
+				if !ok {
+					return newError("MessageBox func Title args is not string")
+				}
+
+				contents, ok := args[1].(*object.String)
+				if !ok {
+					return newError("MessageBox func Contents args is not string")
+				}
+
+				syscall.NewLazyDLL("user32.dll").NewProc("MessageBoxW").Call(
 					0,
-					uintptr(unsafe.Pointer(changePath)),
-					0x01,
+					uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(contents.Value))),
+					uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(title.Value))),
+					0,
 				)
-			}
 
-			return object.NULL
+				return object.NULL
+			},
 		},
-	},
-	/*-----------win32----------*/
-	"MessageBox": {
-		Fn: func(args ...object.Object) object.Object {
-			if runtime.GOOS != "windows" {
-				return newError("MessageBox func supports only windows")
-			}
-
-			if len(args) != 2 {
-				return newError("MessageBox func has 2 args, got=%d", len(args))
-			}
-
-			title, ok := args[0].(*object.String)
-			if !ok {
-				return newError("MessageBox func Title args is not string")
-			}
-
-			contents, ok := args[1].(*object.String)
-			if !ok {
-				return newError("MessageBox func Contents args is not string")
-			}
-
-			syscall.NewLazyDLL("user32.dll").NewProc("MessageBoxW").Call(
-				0,
-				uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(contents.Value))),
-				uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(title.Value))),
-				0,
-			)
-
-			return object.NULL
-		},
-	},
+	*/
 	/*-----------Data System----------*/
 	"IsExistDataStore": {
 		Fn: func(args ...object.Object) object.Object {
