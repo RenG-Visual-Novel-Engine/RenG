@@ -11,6 +11,7 @@ type Opcode byte
 
 const (
 	OpConstant Opcode = iota
+	OpAdd
 )
 
 type Definition struct {
@@ -20,6 +21,7 @@ type Definition struct {
 
 var definitions = map[Opcode]*Definition{
 	OpConstant: {"OpConstant", []int{4}},
+	OpAdd:      {"OpAdd", []int{}},
 }
 
 func Lookup(op byte) (*Definition, error) {
@@ -56,4 +58,28 @@ func Make(op Opcode, operands ...int) []byte {
 	}
 
 	return instruction
+}
+
+func ReadOperands(def *Definition, ins Instructions) ([]int, int) {
+	operands := make([]int, len(def.OperandWidths))
+	offset := 0
+
+	for i, width := range def.OperandWidths {
+		switch width {
+		case 4:
+			operands[i] = int(ReadUint32(ins[offset:]))
+		}
+
+		offset += width
+	}
+
+	return operands, offset
+}
+
+func ReadUint32(ins Instructions) uint32 {
+	return binary.BigEndian.Uint32(ins)
+}
+
+func (ins Instructions) String() string {
+	return ""
 }
