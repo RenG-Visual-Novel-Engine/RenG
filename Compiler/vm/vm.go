@@ -50,7 +50,24 @@ func (vm *VM) Run() error {
 			right := vm.pop().(*object.Integer).Value
 			left := vm.pop().(*object.Integer).Value
 
-			vm.push(&object.Integer{Value: right + left})
+			vm.push(&object.Integer{Value: left + right})
+		case code.OpSub:
+			right := vm.pop().(*object.Integer).Value
+			left := vm.pop().(*object.Integer).Value
+
+			vm.push(&object.Integer{Value: left - right})
+		case code.OpMul:
+			right := vm.pop().(*object.Integer).Value
+			left := vm.pop().(*object.Integer).Value
+
+			vm.push(&object.Integer{Value: left * right})
+		case code.OpDiv:
+			right := vm.pop().(*object.Integer).Value
+			left := vm.pop().(*object.Integer).Value
+
+			vm.push(&object.Integer{Value: left / right})
+		case code.OpPop:
+			vm.pop()
 		}
 	}
 
@@ -72,4 +89,8 @@ func (vm *VM) pop() object.Object {
 	o := vm.stack[vm.sp-1]
 	vm.sp--
 	return o
+}
+
+func (vm *VM) LastPoppedStackElem() object.Object {
+	return vm.stack[vm.sp]
 }
