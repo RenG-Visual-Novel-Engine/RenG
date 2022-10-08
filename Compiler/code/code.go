@@ -9,6 +9,20 @@ type Instructions []byte
 
 type Opcode byte
 
+/*
+OpConstant
+OpPop
+OpAdd         +
+OpSub         -
+OpMul         *
+OpSub         /
+OpTrue        true
+OpFalse       false
+OpEqual       ==
+OpNotEqual    !=
+OpMinus       -
+OpBamg        !
+*/
 const (
 	OpConstant Opcode = iota
 	OpPop
@@ -16,6 +30,12 @@ const (
 	OpSub
 	OpMul
 	OpDiv
+	OpTrue
+	OpFalse
+	OpEqual
+	OpNotEqual
+	OpMinus
+	OpBang
 )
 
 type Definition struct {
@@ -30,6 +50,12 @@ var definitions = map[Opcode]*Definition{
 	OpSub:      {"OpSub", []int{}},
 	OpMul:      {"OpMul", []int{}},
 	OpDiv:      {"OpDiv", []int{}},
+	OpTrue:     {"OpTrue", []int{}},
+	OpFalse:    {"OpFalse", []int{}},
+	OpEqual:    {"OpEqual", []int{}},
+	OpNotEqual: {"OpNotEqual", []int{}},
+	OpMinus:    {"OpMinus", []int{}},
+	OpBang:     {"OpBang", []int{}},
 }
 
 func Lookup(op byte) (*Definition, error) {
@@ -86,8 +112,4 @@ func ReadOperands(def *Definition, ins Instructions) ([]int, int) {
 
 func ReadUint32(ins Instructions) uint32 {
 	return binary.BigEndian.Uint32(ins)
-}
-
-func (ins Instructions) String() string {
-	return ""
 }

@@ -79,7 +79,7 @@ func (f *File) WriteFileBytes(bs []byte) {
 	util.ErrorCheck(err)
 }
 
-func (f *File) ReadConstant() []byte {
+func (f *File) Read() []byte {
 	content, _ := ioutil.ReadFile(f.path)
 	return content
 }

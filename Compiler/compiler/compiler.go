@@ -19,6 +19,11 @@ func New() *Compiler {
 	}
 }
 
+func (c *Compiler) Set(ins code.Instructions, con []object.Object) {
+	c.instructions = append(c.instructions, ins...)
+	c.constants = append(c.constants, con...)
+}
+
 func (c *Compiler) Compile(node ast.Node) error {
 	switch node := node.(type) {
 	case *ast.Program:
@@ -34,6 +39,20 @@ func (c *Compiler) Compile(node ast.Node) error {
 			return err
 		}
 		c.emit(code.OpPop)
+	case *ast.PrefixExpression:
+		err := c.Compile(node.Right)
+		if err != nil {
+			return err
+		}
+
+		switch node.Operator {
+		case "-":
+			c.emit(code.OpMinus)
+		case "!":
+			c.emit(code.OpBang)
+		default:
+			return fmt.Errorf("")
+		}
 	case *ast.InfixExpression:
 		err := c.Compile(node.Left)
 		if err != nil {
@@ -54,12 +73,22 @@ func (c *Compiler) Compile(node ast.Node) error {
 			c.emit(code.OpMul)
 		case "/":
 			c.emit(code.OpDiv)
+		case "==":
+			c.emit(code.OpEqual)
+		case "!=":
+			c.emit(code.OpNotEqual)
 		default:
 			return fmt.Errorf("unknown operator %s", node.Operator)
 		}
 	case *ast.IntegerLiteral:
 		integer := &object.Integer{Value: node.Value}
 		c.emit(code.OpConstant, c.addConstant(integer))
+	case *ast.Boolean:
+		if node.Value {
+			c.emit(code.OpTrue)
+		} else {
+			c.emit(code.OpFalse)
+		}
 	}
 	return nil
 }

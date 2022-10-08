@@ -9,6 +9,9 @@ import (
 
 const StackSize = 10240
 
+var True = &object.Boolean{Value: true}
+var False = &object.Boolean{Value: false}
+
 type VM struct {
 	constants    []object.Object
 	instructions code.Instructions
@@ -68,6 +71,51 @@ func (vm *VM) Run() error {
 			vm.push(&object.Integer{Value: left / right})
 		case code.OpPop:
 			vm.pop()
+		case code.OpTrue:
+			err := vm.push(True)
+			if err != nil {
+				return err
+			}
+		case code.OpFalse:
+			err := vm.push(False)
+			if err != nil {
+				return err
+			}
+		case code.OpEqual, code.OpNotEqual:
+			right := vm.pop()
+			left := vm.pop()
+
+			if left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ {
+				switch op {
+				case code.OpEqual:
+					if right.(*object.Integer).Value == left.(*object.Integer).Value {
+						vm.push(True)
+					} else {
+						vm.push(False)
+					}
+				case code.OpNotEqual:
+					if right.(*object.Integer).Value != left.(*object.Integer).Value {
+						vm.push(True)
+					} else {
+						vm.push(False)
+					}
+				}
+			} else if left.Type() == object.BOOLEAN_OBJ && right.Type() == object.BOOLEAN_OBJ {
+				switch op {
+				case code.OpEqual:
+					if right.(*object.Boolean).Value == left.(*object.Boolean).Value {
+						vm.push(True)
+					} else {
+						vm.push(False)
+					}
+				case code.OpNotEqual:
+					if right.(*object.Boolean).Value != left.(*object.Boolean).Value {
+						vm.push(True)
+					} else {
+						vm.push(False)
+					}
+				}
+			}
 		}
 	}
 
