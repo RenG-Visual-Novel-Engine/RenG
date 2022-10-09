@@ -11,6 +11,7 @@ const StackSize = 10240
 
 var True = &object.Boolean{Value: true}
 var False = &object.Boolean{Value: false}
+var Null = &object.Null{}
 
 type VM struct {
 	constants    []object.Object
@@ -81,6 +82,11 @@ func (vm *VM) Run() error {
 			if err != nil {
 				return err
 			}
+		case code.OpNull:
+			err := vm.push(Null)
+			if err != nil {
+				return err
+			}
 		case code.OpEqual, code.OpNotEqual:
 			right := vm.pop()
 			left := vm.pop()
@@ -124,6 +130,8 @@ func (vm *VM) Run() error {
 				vm.push(False)
 			case False:
 				vm.push(True)
+			case Null:
+				vm.push(Null)
 			default:
 				vm.push(False)
 			}
@@ -175,6 +183,8 @@ func isTruthy(obj object.Object) bool {
 	switch obj := obj.(type) {
 	case *object.Boolean:
 		return obj.Value
+	case *object.Null:
+		return false
 	default:
 		return true
 	}

@@ -34,10 +34,13 @@ const (
 	OpDiv
 	OpTrue
 	OpFalse
+	OpNull
 	OpEqual
 	OpNotEqual
 	OpMinus
 	OpBang
+	OpGetGlobal
+	OpSetGlobal
 )
 
 type Definition struct {
@@ -56,10 +59,13 @@ var definitions = map[Opcode]*Definition{
 	OpDiv:           {"OpDiv", []int{}},
 	OpTrue:          {"OpTrue", []int{}},
 	OpFalse:         {"OpFalse", []int{}},
+	OpNull:          {"OpNull", []int{}},
 	OpEqual:         {"OpEqual", []int{}},
 	OpNotEqual:      {"OpNotEqual", []int{}},
 	OpMinus:         {"OpMinus", []int{}},
 	OpBang:          {"OpBang", []int{}},
+	OpGetGlobal:     {"OpGetGlobal", []int{4}},
+	OpSetGlobal:     {"OpSetGlobal", []int{4}},
 }
 
 func Lookup(op byte) (*Definition, error) {

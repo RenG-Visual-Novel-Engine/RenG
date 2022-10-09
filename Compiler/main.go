@@ -65,13 +65,14 @@ func main() {
 		//fmt.Println(program.String())
 		if len(p.Errors()) != 0 {
 			for _, err := range p.Errors() {
-				io.WriteString(os.Stdout, err)
+				io.WriteString(os.Stdout, err+"\n\n")
 			}
 			continue
 		}
 
 		comp := compiler.New()
 		err := comp.Compile(program)
+		fmt.Println(comp)
 		if err != nil {
 			fmt.Fprintf(os.Stdout, "Compile failed:\n %s\n\n", err)
 			continue

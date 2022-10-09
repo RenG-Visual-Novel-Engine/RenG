@@ -58,6 +58,8 @@ func (c *Compiler) Compile(node ast.Node) error {
 		}
 		c.emit(code.OpPop)
 	case *ast.IfStatement:
+		var jmpPos []int
+
 		err := c.Compile(node.Condition)
 		if err != nil {
 			return err
@@ -74,15 +76,41 @@ func (c *Compiler) Compile(node ast.Node) error {
 			c.removeLastPop()
 		}
 
-		if node.Else == nil {
+		if len(node.Elif) == 0 && node.Else == nil {
 			afterConsequencePos := len(c.instructions)
 			c.changeOperand(jumpNotTruthyPos, afterConsequencePos)
-		} else {
-			jumpPos := c.emit(code.OpJump, 9999)
+		} else if len(node.Elif) != 0 {
 
-			afterConsequencePos := len(c.instructions)
-			c.changeOperand(jumpNotTruthyPos, afterConsequencePos)
+			for _, elif := range node.Elif {
+				jmpPos = append(jmpPos, c.emit(code.OpJump, 9999))
 
+				afterConsequencePos := len(c.instructions)
+				c.changeOperand(jumpNotTruthyPos, afterConsequencePos)
+
+				err := c.Compile(elif.Condition)
+				if err != nil {
+					return err
+				}
+
+				jumpNotTruthyPos = c.emit(code.OpJumpNotTruthy, 9999)
+
+				err = c.Compile(elif.Consequence)
+				if err != nil {
+					return err
+				}
+
+				if c.lastInsructionIsPop() {
+					c.removeLastPop()
+				}
+			}
+		}
+
+		jmpPos = append(jmpPos, c.emit(code.OpJump, 9999))
+
+		afterConsequencePos := len(c.instructions)
+		c.changeOperand(jumpNotTruthyPos, afterConsequencePos)
+
+		if node.Else != nil {
 			err := c.Compile(node.Else)
 			if err != nil {
 				return err
@@ -91,9 +119,14 @@ func (c *Compiler) Compile(node ast.Node) error {
 			if c.lastInsructionIsPop() {
 				c.removeLastPop()
 			}
+		} else {
+			c.emit(code.OpNull)
+			c.emit(code.OpPop)
+		}
 
-			afterElsePos := len(c.instructions)
-			c.changeOperand(jumpPos, afterElsePos)
+		afterElsePos := len(c.instructions)
+		for _, jmp := range jmpPos {
+			c.changeOperand(jmp, afterElsePos)
 		}
 
 	case *ast.PrefixExpression:
