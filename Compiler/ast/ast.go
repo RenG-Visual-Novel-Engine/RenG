@@ -58,6 +58,77 @@ func (es *ExpressionStatement) String() string {
 	return ""
 }
 
+type BlockStatement struct {
+	Token      token.Token
+	Statements []Statement
+}
+
+func (bs *BlockStatement) statementNode()       {}
+func (bs *BlockStatement) TokenLiteral() string { return bs.Token.Literal }
+func (bs *BlockStatement) String() string {
+	var out bytes.Buffer
+
+	for _, s := range bs.Statements {
+		out.WriteString(s.String())
+	}
+
+	return out.String()
+}
+
+type IfStatement struct {
+	Token       token.Token
+	Condition   Expression
+	Consequence *BlockStatement
+	Elif        []*IfStatement
+	Else        *BlockStatement
+}
+
+func (is *IfStatement) statementNode() {}
+func (is *IfStatement) TokenLiteral() string {
+	var out bytes.Buffer
+
+	out.WriteString("if " + is.Condition.String())
+	out.WriteString(" { " + is.Consequence.String() + " }")
+
+	for _, ee := range is.Elif {
+		if ee != nil {
+			out.WriteString(" elif ")
+			out.WriteString(ee.Condition.String())
+			out.WriteString(" ")
+			out.WriteString(is.Consequence.String())
+		}
+	}
+
+	if is.Else != nil {
+		out.WriteString("else ")
+		out.WriteString(is.Else.String())
+	}
+
+	return out.String()
+}
+func (is *IfStatement) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("if " + is.Condition.String())
+	out.WriteString(" { " + is.Consequence.String() + " }")
+
+	for _, ee := range is.Elif {
+		if ee != nil {
+			out.WriteString(" elif ")
+			out.WriteString(ee.Condition.String())
+			out.WriteString(" ")
+			out.WriteString(is.Consequence.String())
+		}
+	}
+
+	if is.Elif != nil {
+		out.WriteString("else ")
+		out.WriteString(is.Else.String())
+	}
+
+	return out.String()
+}
+
 /*
 Expression
 

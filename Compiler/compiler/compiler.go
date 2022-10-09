@@ -10,12 +10,22 @@ import (
 type Compiler struct {
 	instructions code.Instructions
 	constants    []object.Object
+
+	lastInsruction      EmittedInstruction
+	PreviousInstruction EmittedInstruction
+}
+
+type EmittedInstruction struct {
+	OpCode   code.Opcode
+	Position int
 }
 
 func New() *Compiler {
 	return &Compiler{
-		instructions: code.Instructions{},
-		constants:    []object.Object{},
+		instructions:        code.Instructions{},
+		constants:           []object.Object{},
+		lastInsruction:      EmittedInstruction{},
+		PreviousInstruction: EmittedInstruction{},
 	}
 }
 
@@ -39,6 +49,53 @@ func (c *Compiler) Compile(node ast.Node) error {
 			return err
 		}
 		c.emit(code.OpPop)
+	case *ast.BlockStatement:
+		for _, s := range node.Statements {
+			err := c.Compile(s)
+			if err != nil {
+				return err
+			}
+		}
+		c.emit(code.OpPop)
+	case *ast.IfStatement:
+		err := c.Compile(node.Condition)
+		if err != nil {
+			return err
+		}
+
+		jumpNotTruthyPos := c.emit(code.OpJumpNotTruthy, 9999)
+
+		err = c.Compile(node.Consequence)
+		if err != nil {
+			return err
+		}
+
+		if c.lastInsructionIsPop() {
+			c.removeLastPop()
+		}
+
+		if node.Else == nil {
+			afterConsequencePos := len(c.instructions)
+			c.changeOperand(jumpNotTruthyPos, afterConsequencePos)
+		} else {
+			jumpPos := c.emit(code.OpJump, 9999)
+
+			afterConsequencePos := len(c.instructions)
+			c.changeOperand(jumpNotTruthyPos, afterConsequencePos)
+
+			err := c.Compile(node.Else)
+			if err != nil {
+				return err
+			}
+
+			if c.lastInsructionIsPop() {
+				c.removeLastPop()
+			}
+
+			afterElsePos := len(c.instructions)
+			c.changeOperand(jumpPos, afterElsePos)
+		}
+
 	case *ast.PrefixExpression:
 		err := c.Compile(node.Right)
 		if err != nil {
@@ -51,7 +108,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 		case "!":
 			c.emit(code.OpBang)
 		default:
-			return fmt.Errorf("")
+			return fmt.Errorf("unknown operator")
 		}
 	case *ast.InfixExpression:
 		err := c.Compile(node.Left)
@@ -108,6 +165,9 @@ func (c *Compiler) Bytecode() *Bytecode {
 func (c *Compiler) emit(op code.Opcode, operands ...int) int {
 	ins := code.Make(op, operands...)
 	pos := c.addInstruction(ins)
+
+	c.setLastInstruction(op, pos)
+
 	return pos
 }
 
@@ -120,4 +180,34 @@ func (c *Compiler) addInstruction(ins []byte) int {
 	posNewInstruction := len(c.instructions)
 	c.instructions = append(c.instructions, ins...)
 	return posNewInstruction
+}
+
+func (c *Compiler) setLastInstruction(op code.Opcode, pos int) {
+	previous := c.lastInsruction
+	last := EmittedInstruction{OpCode: op, Position: pos}
+
+	c.PreviousInstruction = previous
+	c.lastInsruction = last
+}
+
+func (c *Compiler) lastInsructionIsPop() bool {
+	return c.lastInsruction.OpCode == code.OpPop
+}
+
+func (c *Compiler) removeLastPop() {
+	c.instructions = c.instructions[:c.lastInsruction.Position]
+	c.lastInsruction = c.PreviousInstruction
+}
+
+func (c *Compiler) replaceInstruction(pos int, newInstruction []byte) {
+	for i := 0; i < len(newInstruction); i++ {
+		c.instructions[pos+i] = newInstruction[i]
+	}
+}
+
+func (c *Compiler) changeOperand(opPos int, operand int) {
+	op := code.Opcode(c.instructions[opPos])
+	newInstruction := code.Make(op, operand)
+
+	c.replaceInstruction(opPos, newInstruction)
 }

@@ -26,6 +26,8 @@ OpBamg        !
 const (
 	OpConstant Opcode = iota
 	OpPop
+	OpJumpNotTruthy
+	OpJump
 	OpAdd
 	OpSub
 	OpMul
@@ -44,18 +46,20 @@ type Definition struct {
 }
 
 var definitions = map[Opcode]*Definition{
-	OpConstant: {"OpConstant", []int{4}},
-	OpPop:      {"OpPop", []int{}},
-	OpAdd:      {"OpAdd", []int{}},
-	OpSub:      {"OpSub", []int{}},
-	OpMul:      {"OpMul", []int{}},
-	OpDiv:      {"OpDiv", []int{}},
-	OpTrue:     {"OpTrue", []int{}},
-	OpFalse:    {"OpFalse", []int{}},
-	OpEqual:    {"OpEqual", []int{}},
-	OpNotEqual: {"OpNotEqual", []int{}},
-	OpMinus:    {"OpMinus", []int{}},
-	OpBang:     {"OpBang", []int{}},
+	OpConstant:      {"OpConstant", []int{4}},
+	OpPop:           {"OpPop", []int{}},
+	OpJumpNotTruthy: {"OpJumpNotTruthy", []int{2}},
+	OpJump:          {"OpJump", []int{2}},
+	OpAdd:           {"OpAdd", []int{}},
+	OpSub:           {"OpSub", []int{}},
+	OpMul:           {"OpMul", []int{}},
+	OpDiv:           {"OpDiv", []int{}},
+	OpTrue:          {"OpTrue", []int{}},
+	OpFalse:         {"OpFalse", []int{}},
+	OpEqual:         {"OpEqual", []int{}},
+	OpNotEqual:      {"OpNotEqual", []int{}},
+	OpMinus:         {"OpMinus", []int{}},
+	OpBang:          {"OpBang", []int{}},
 }
 
 func Lookup(op byte) (*Definition, error) {
@@ -85,6 +89,8 @@ func Make(op Opcode, operands ...int) []byte {
 	for i, o := range operands {
 		width := def.OperandWidths[i]
 		switch width {
+		case 2:
+			binary.BigEndian.PutUint16(instruction[offset:], uint16(o))
 		case 4:
 			binary.BigEndian.PutUint32(instruction[offset:], uint32(o))
 		}
@@ -108,6 +114,10 @@ func ReadOperands(def *Definition, ins Instructions) ([]int, int) {
 	}
 
 	return operands, offset
+}
+
+func ReadUint16(ins Instructions) uint16 {
+	return binary.BigEndian.Uint16(ins)
 }
 
 func ReadUint32(ins Instructions) uint32 {

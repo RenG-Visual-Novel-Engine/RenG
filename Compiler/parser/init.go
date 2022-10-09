@@ -154,7 +154,12 @@ func (p *Parser) ParseProgram() *ast.Program {
 }
 
 func (p *Parser) parseStatement() ast.Statement {
-	return p.parseExpressionStatement()
+	switch p.curToken.Type {
+	case token.IF:
+		return p.parseIfStatement()
+	default:
+		return p.parseExpressionStatement()
+	}
 }
 
 func (p *Parser) parseExpression(precedence int) ast.Expression {

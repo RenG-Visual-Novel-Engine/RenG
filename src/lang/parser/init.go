@@ -112,7 +112,6 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.CALL, p.parseCallLabelExpression)
 	p.registerPrefix(token.JUMP, p.parseJumpLabelExpression)
 	p.registerPrefix(token.IMAGE, p.parseImageExpression)
-	p.registerPrefix(token.VIDEO, p.parseVideoExpression)
 	p.registerPrefix(token.SHOW, p.parseShowExpression)
 	p.registerPrefix(token.HIDE, p.parseHideExpression)
 	p.registerPrefix(token.TRANSFORM, p.parseTranformExpression)
@@ -126,9 +125,6 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.COLOR, p.parseColorExpression)
 	p.registerPrefix(token.PLAY, p.parsePlayExpression)
 	p.registerPrefix(token.STOP, p.parseStopExpression)
-	p.registerPrefix(token.WHO, p.parseWhoExpression)
-	p.registerPrefix(token.WHAT, p.parseWhatExpression)
-	p.registerPrefix(token.ITEMS, p.parseItemsExpression)
 
 	p.infixParseFns = make(map[token.TokenType]infixParseFn)
 	p.registerInfix(token.PLUS, p.parseInfixExpression)

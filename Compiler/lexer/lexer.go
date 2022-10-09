@@ -144,6 +144,7 @@ func (l *Lexer) NextToken() token.Token {
 		tok = newToken(token.LPAREN, string(l.ch))
 	case ')':
 		tok = newToken(token.RPAREN, string(l.ch))
+		l.skipWhiteSpace()
 	case '{':
 		tok = newToken(token.LBRACE, string(l.ch))
 		l.skipWhiteSpace()

@@ -52,3 +52,10 @@ func Init(title string, width, height int) *System {
 
 	return system
 }
+
+func (s *System) Close() {
+	C.SDL_DestroyWindow(s.window)
+	C.SDL_DestroyRenderer(s.renderer)
+
+	C.SDL_Quit()
+}
