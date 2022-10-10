@@ -8,10 +8,17 @@ package system
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 #include <SDL_mixer.h>
+
+Uint32 eventType(SDL_Event event)
+{
+	return event.type;
+}
+
 */
 import "C"
 import (
 	"RenG/RVM/src/core/st"
+	"fmt"
 	"unsafe"
 )
 
@@ -54,8 +61,42 @@ func Init(title string, width, height int) *System {
 }
 
 func (s *System) Close() {
-	C.SDL_DestroyWindow(s.window)
-	C.SDL_DestroyRenderer(s.renderer)
+	C.SDL_DestroyWindow((*C.SDL_Window)(s.window))
+	C.SDL_DestroyRenderer((*C.SDL_Renderer)(s.renderer))
 
 	C.SDL_Quit()
+}
+
+// 임시
+func (s *System) Render() {
+	var quit bool = false
+	st := C.SDL_GetTicks()
+	en := C.SDL_GetTicks()
+	de := 15
+
+	for !quit {
+		for int(C.SDL_PollEvent((*C.SDL_Event)(&s.event))) != 0 {
+			switch int(C.eventType((C.SDL_Event)(s.event))) {
+			case 256:
+				quit = true
+			}
+		}
+
+		C.SDL_RenderClear((*C.SDL_Renderer)(s.renderer))
+		C.SDL_SetRenderDrawColor((*C.SDL_Renderer)(s.renderer), C.uchar(0), C.uchar(0), C.uchar(0), C.uchar(255))
+		C.SDL_RenderPresent((*C.SDL_Renderer)(s.renderer))
+
+		en = C.SDL_GetTicks()
+
+		C.SDL_Delay(C.uint(de))
+
+		if en-st > 0 {
+			fmt.Println(1000 / (en - st))
+		}
+
+		if 1000/60-int(C.SDL_GetTicks()-st) >= 0 {
+			de = 1000/60 - int(C.SDL_GetTicks()-st)
+		}
+		st = en
+	}
 }

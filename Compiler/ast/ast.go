@@ -37,6 +37,9 @@ func (p *Program) String() string {
 Statement
 
 - ExpressionStatement
+- BlockStatements
+- IfStatements
+- ReturnStatements
 */
 
 type Statement interface {
@@ -129,12 +132,35 @@ func (is *IfStatement) String() string {
 	return out.String()
 }
 
+type ReturnStatement struct {
+	Token       token.Token
+	ReturnValue Expression
+}
+
+func (rs *ReturnStatement) statementNode()       {}
+func (rs *ReturnStatement) TokenLiteral() string { return rs.Token.Literal }
+func (rs *ReturnStatement) String() string {
+	var out bytes.Buffer
+
+	out.WriteString(rs.TokenLiteral() + " ")
+
+	if rs.ReturnValue != nil {
+		out.WriteString(rs.ReturnValue.String())
+	}
+
+	out.WriteString("\n")
+
+	return out.String()
+}
+
 /*
 Expression
 
 -PrefixExpression
 -InfixExpression
 -PostfixExpression
+-IndexExpression
+-CallFunctionExpression
 */
 
 type Expression interface {
@@ -201,6 +227,49 @@ func (pe *PostfixExpression) String() string {
 	return out.String()
 }
 
+type IndexExpression struct {
+	Token token.Token
+	Left  Expression
+	Index Expression
+}
+
+func (ie *IndexExpression) expressionNode()      {}
+func (ie *IndexExpression) TokenLiteral() string { return ie.Token.Literal }
+func (ie *IndexExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString(ie.Left.String())
+	out.WriteString("[")
+	out.WriteString(ie.Index.String())
+	out.WriteString("] ")
+
+	return out.String()
+}
+
+type CallFunctionExpression struct {
+	Token     token.Token
+	Function  Expression
+	Arguments []Expression
+}
+
+func (cfe *CallFunctionExpression) expressionNode()      {}
+func (cfe *CallFunctionExpression) TokenLiteral() string { return cfe.Token.Literal }
+func (cfe *CallFunctionExpression) String() string {
+	var out bytes.Buffer
+
+	args := []string{}
+	for _, a := range cfe.Arguments {
+		args = append(args, a.String())
+	}
+
+	out.WriteString(cfe.Function.String())
+	out.WriteString("(")
+	out.WriteString(strings.Join(args, ","))
+	out.WriteString(")")
+
+	return out.String()
+}
+
 /*
 literal
 
@@ -210,6 +279,7 @@ literal
 -FloatLiteral
 -StringLiteral
 -ArrayLiteral
+-FunctionLiteral
 */
 
 type Identifier struct {
@@ -275,6 +345,34 @@ func (al *ArrayLiteral) String() string {
 	out.WriteString("[")
 	out.WriteString(strings.Join(elements, ", "))
 	out.WriteString("]")
+
+	return out.String()
+}
+
+type FunctionLiteral struct {
+	Token      token.Token
+	Name       *Identifier
+	Parameters []*Identifier
+	Body       *BlockStatement
+}
+
+func (fl *FunctionLiteral) expressionNode()      {}
+func (fl *FunctionLiteral) TokenLiteral() string { return fl.Token.Literal }
+func (fl *FunctionLiteral) String() string {
+	var out bytes.Buffer
+
+	params := []string{}
+	for _, p := range fl.Parameters {
+		params = append(params, p.String())
+	}
+
+	out.WriteString(fl.TokenLiteral() + " ")
+	out.WriteString(fl.Name.String())
+	out.WriteString("(")
+	out.WriteString(strings.Join(params, ","))
+	out.WriteString(") {\n")
+	// out.WriteString(fl.Body.String())
+	out.WriteString("\n}")
 
 	return out.String()
 }

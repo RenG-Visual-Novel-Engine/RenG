@@ -2,10 +2,10 @@ package main
 
 import (
 	"RenG/Compiler/compiler"
+	"RenG/Compiler/file"
 	"RenG/Compiler/lexer"
 	"RenG/Compiler/parser"
 	"RenG/Compiler/vm"
-	"bufio"
 	"fmt"
 	"io"
 	"os"
@@ -49,44 +49,37 @@ import (
 */
 
 func main() {
-	scanner := bufio.NewScanner(os.Stdin)
 
-	for {
-		scanned := scanner.Scan()
-		if !scanned {
-			return
+	f := file.CreateFile("D:\\program\\Go\\src\\RenG\\test\\Test2\\main.rgo")
+	line := f.Read()
+	l := lexer.New(line)
+	p := parser.New(l)
+
+	program := p.ParseProgram()
+	// fmt.Println(program.String())
+	if len(p.Errors()) != 0 {
+		for _, err := range p.Errors() {
+			io.WriteString(os.Stdout, err+"\n\n")
 		}
-
-		line := scanner.Text()
-		l := lexer.New(line)
-		p := parser.New(l)
-
-		program := p.ParseProgram()
-		//fmt.Println(program.String())
-		if len(p.Errors()) != 0 {
-			for _, err := range p.Errors() {
-				io.WriteString(os.Stdout, err+"\n\n")
-			}
-			continue
-		}
-
-		comp := compiler.New()
-		err := comp.Compile(program)
-		fmt.Println(comp)
-		if err != nil {
-			fmt.Fprintf(os.Stdout, "Compile failed:\n %s\n\n", err)
-			continue
-		}
-
-		machine := vm.New(comp.Bytecode())
-		err = machine.Run()
-		if err != nil {
-			fmt.Fprintf(os.Stdout, "Executiong bytecode failed:\n %s\n\n", err)
-			continue
-		}
-
-		stackTop := machine.LastPoppedStackElem()
-		io.WriteString(os.Stdout, stackTop.Inspect())
-		io.WriteString(os.Stdout, "\n\n")
+		return
 	}
+
+	comp := compiler.New()
+	err := comp.Compile(program)
+	if err != nil {
+		fmt.Fprintf(os.Stdout, "Compile failed:\n %s\n\n", err)
+		return
+	}
+	fmt.Println(comp)
+
+	machine := vm.New(comp.Bytecode())
+	err = machine.Run()
+	if err != nil {
+		fmt.Fprintf(os.Stdout, "Executiong bytecode failed:\n %s\n\n", err)
+		return
+	}
+
+	stackTop := machine.LastPoppedStackElem()
+	io.WriteString(os.Stdout, stackTop.Inspect())
+	io.WriteString(os.Stdout, "\n")
 }

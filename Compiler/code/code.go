@@ -37,10 +37,17 @@ const (
 	OpNull
 	OpEqual
 	OpNotEqual
+	OpGreaterThan
+	OpGreaterThanOrEquel
 	OpMinus
 	OpBang
 	OpGetGlobal
 	OpSetGlobal
+	OpArray
+	OpIndex
+	OpCall
+	OpReturn
+	OpReturnValue
 )
 
 type Definition struct {
@@ -49,23 +56,30 @@ type Definition struct {
 }
 
 var definitions = map[Opcode]*Definition{
-	OpConstant:      {"OpConstant", []int{4}},
-	OpPop:           {"OpPop", []int{}},
-	OpJumpNotTruthy: {"OpJumpNotTruthy", []int{2}},
-	OpJump:          {"OpJump", []int{2}},
-	OpAdd:           {"OpAdd", []int{}},
-	OpSub:           {"OpSub", []int{}},
-	OpMul:           {"OpMul", []int{}},
-	OpDiv:           {"OpDiv", []int{}},
-	OpTrue:          {"OpTrue", []int{}},
-	OpFalse:         {"OpFalse", []int{}},
-	OpNull:          {"OpNull", []int{}},
-	OpEqual:         {"OpEqual", []int{}},
-	OpNotEqual:      {"OpNotEqual", []int{}},
-	OpMinus:         {"OpMinus", []int{}},
-	OpBang:          {"OpBang", []int{}},
-	OpGetGlobal:     {"OpGetGlobal", []int{4}},
-	OpSetGlobal:     {"OpSetGlobal", []int{4}},
+	OpConstant:           {"OpConstant", []int{4}},
+	OpPop:                {"OpPop", []int{}},
+	OpJumpNotTruthy:      {"OpJumpNotTruthy", []int{2}},
+	OpJump:               {"OpJump", []int{2}},
+	OpAdd:                {"OpAdd", []int{}},
+	OpSub:                {"OpSub", []int{}},
+	OpMul:                {"OpMul", []int{}},
+	OpDiv:                {"OpDiv", []int{}},
+	OpTrue:               {"OpTrue", []int{}},
+	OpFalse:              {"OpFalse", []int{}},
+	OpNull:               {"OpNull", []int{}},
+	OpEqual:              {"OpEqual", []int{}},
+	OpNotEqual:           {"OpNotEqual", []int{}},
+	OpGreaterThan:        {"OpGreaterThan", []int{}},
+	OpGreaterThanOrEquel: {"OpGreaterThanOrEquel", []int{}},
+	OpMinus:              {"OpMinus", []int{}},
+	OpBang:               {"OpBang", []int{}},
+	OpGetGlobal:          {"OpGetGlobal", []int{4}},
+	OpSetGlobal:          {"OpSetGlobal", []int{4}},
+	OpArray:              {"OpArray", []int{4}},
+	OpIndex:              {"OpIndex", []int{}},
+	OpCall:               {"OpCall", []int{}},
+	OpReturn:             {"OpReturn", []int{}},
+	OpReturnValue:        {"OpReturnValue", []int{}},
 }
 
 func Lookup(op byte) (*Definition, error) {

@@ -1,6 +1,8 @@
 package lexer
 
-import "RenG/Compiler/token"
+import (
+	"RenG/Compiler/token"
+)
 
 type Lexer struct {
 	input        string
@@ -199,6 +201,7 @@ func (l *Lexer) readChar() {
 		l.readPosition += 1
 	} else {
 		r, size := readByteUTF8(l.input, l.readPosition)
+		// fmt.Println(string(r))
 		l.ch = r
 		l.position = l.readPosition
 		l.readPosition += size
@@ -225,7 +228,7 @@ func (l *Lexer) readIdentifier() string {
 func (l *Lexer) readString() string {
 	position := l.readPosition
 
-	for l.peekChar() != '"' || l.peekChar() != 0 {
+	for l.peekChar() != '"' && l.peekChar() != 0 {
 		l.readChar()
 	}
 	l.readChar()

@@ -14,21 +14,41 @@ var False = &object.Boolean{Value: false}
 var Null = &object.Null{}
 
 type VM struct {
-	constants    []object.Object
-	instructions code.Instructions
+	constants []object.Object
 
 	stack []object.Object
 	sp    int // 항상 다음 스택을 가리킴
+
+	globals []object.Object
+
+	frames      []*Frame
+	framesIndex int
 }
 
 func New(bytecode *compiler.Bytecode) *VM {
+	mainFn := &object.CompiledFunction{Instructions: bytecode.Instructions}
+	mainFrame := NewFrmae(mainFn)
+
+	frames := make([]*Frame, 1024)
+	frames[0] = mainFrame
+
 	return &VM{
-		instructions: bytecode.Instructions,
-		constants:    bytecode.Constants,
+		constants: bytecode.Constants,
 
 		stack: make([]object.Object, StackSize),
 		sp:    0,
+
+		globals: make([]object.Object, 65536),
+
+		frames:      frames,
+		framesIndex: 1,
 	}
+}
+
+func NewWithGlobalStore(bytecode *compiler.Bytecode, s []object.Object) *VM {
+	vm := New(bytecode)
+	vm.globals = s
+	return vm
 }
 
 func (vm *VM) StackTop() object.Object {
@@ -39,22 +59,35 @@ func (vm *VM) StackTop() object.Object {
 }
 
 func (vm *VM) Run() error {
-	for ip := 0; ip < len(vm.instructions); ip++ {
-		op := code.Opcode(vm.instructions[ip])
+	var ip int
+	var ins code.Instructions
+	var op code.Opcode
+
+	for vm.currentFrame().ip < len(vm.currentFrame().Instructions())-1 {
+		vm.currentFrame().ip++
+
+		ip = vm.currentFrame().ip
+		ins = vm.currentFrame().Instructions()
+		op = code.Opcode(ins[ip])
 
 		switch op {
 		case code.OpConstant:
-			constIndex := code.ReadUint32(vm.instructions[ip+1:])
-			ip += 4
+			constIndex := code.ReadUint32(ins[ip+1:])
+			vm.currentFrame().ip += 4
+
 			err := vm.push(vm.constants[constIndex])
 			if err != nil {
 				return nil
 			}
 		case code.OpAdd:
-			right := vm.pop().(*object.Integer).Value
-			left := vm.pop().(*object.Integer).Value
+			right := vm.pop()
+			left := vm.pop()
 
-			vm.push(&object.Integer{Value: left + right})
+			if right.Type() == object.INTEGER_OBJ && left.Type() == object.INTEGER_OBJ {
+				vm.push(&object.Integer{Value: left.(*object.Integer).Value + right.(*object.Integer).Value})
+			} else if right.Type() == object.STRING_OBJ && left.Type() == object.STRING_OBJ {
+				vm.push(&object.String{Value: left.(*object.String).Value + right.(*object.String).Value})
+			}
 		case code.OpSub:
 			right := vm.pop().(*object.Integer).Value
 			left := vm.pop().(*object.Integer).Value
@@ -87,7 +120,7 @@ func (vm *VM) Run() error {
 			if err != nil {
 				return err
 			}
-		case code.OpEqual, code.OpNotEqual:
+		case code.OpEqual, code.OpNotEqual, code.OpGreaterThan, code.OpGreaterThanOrEquel:
 			right := vm.pop()
 			left := vm.pop()
 
@@ -105,6 +138,18 @@ func (vm *VM) Run() error {
 					} else {
 						vm.push(False)
 					}
+				case code.OpGreaterThan:
+					if left.(*object.Integer).Value > right.(*object.Integer).Value {
+						vm.push(True)
+					} else {
+						vm.push(False)
+					}
+				case code.OpGreaterThanOrEquel:
+					if left.(*object.Integer).Value >= right.(*object.Integer).Value {
+						vm.push(True)
+					} else {
+						vm.push(False)
+					}
 				}
 			} else if left.Type() == object.BOOLEAN_OBJ && right.Type() == object.BOOLEAN_OBJ {
 				switch op {
@@ -116,6 +161,21 @@ func (vm *VM) Run() error {
 					}
 				case code.OpNotEqual:
 					if right.(*object.Boolean).Value != left.(*object.Boolean).Value {
+						vm.push(True)
+					} else {
+						vm.push(False)
+					}
+				}
+			} else if left.Type() == object.STRING_OBJ && right.Type() == object.STRING_OBJ {
+				switch op {
+				case code.OpEqual:
+					if right.(*object.String).Value == left.(*object.String).Value {
+						vm.push(True)
+					} else {
+						vm.push(False)
+					}
+				case code.OpNotEqual:
+					if right.(*object.String).Value != left.(*object.String).Value {
 						vm.push(True)
 					} else {
 						vm.push(False)
@@ -141,17 +201,99 @@ func (vm *VM) Run() error {
 			vm.push(&object.Integer{Value: -operand.(*object.Integer).Value})
 
 		case code.OpJump:
-			pos := int(code.ReadUint16(vm.instructions[ip+1:]))
-			ip = pos - 1
+			pos := int(code.ReadUint16(ins[ip+1:]))
+			vm.currentFrame().ip = pos - 1
 		case code.OpJumpNotTruthy:
-			pos := int(code.ReadUint16(vm.instructions[ip+1:]))
-			ip += 2
+			pos := int(code.ReadUint16(ins[ip+1:]))
+			vm.currentFrame().ip += 2
 
 			condition := vm.pop()
 			if !isTruthy(condition) {
-				ip = pos - 1
+				vm.currentFrame().ip = pos - 1
+			}
+		case code.OpSetGlobal:
+			globalIndex := code.ReadUint32(ins[ip+1:])
+			vm.currentFrame().ip += 4
+
+			vm.globals[globalIndex] = vm.pop()
+		case code.OpGetGlobal:
+			globalIndex := code.ReadUint32(ins[ip+1:])
+			vm.currentFrame().ip += 4
+
+			err := vm.push(vm.globals[globalIndex])
+			if err != nil {
+				return err
+			}
+		case code.OpArray:
+			numElement := int(code.ReadUint32(ins[ip+1:]))
+			vm.currentFrame().ip += 4
+
+			elements := make([]object.Object, vm.sp-(vm.sp-numElement))
+
+			for i := vm.sp - numElement; i < vm.sp; i++ {
+				elements[i-(vm.sp-numElement)] = vm.stack[i]
 			}
 
+			array := &object.Array{Elements: elements}
+			vm.sp = vm.sp - numElement
+
+			err := vm.push(array)
+			if err != nil {
+				return err
+			}
+		case code.OpIndex:
+			index := vm.pop()
+			left := vm.pop()
+
+			switch left.Type() {
+			case object.ARRAY_OBJ:
+				array := left.(*object.Array)
+				i := index.(*object.Integer).Value
+				max := int64(len(array.Elements) - 1)
+
+				if i < 0 || i > max {
+					vm.push(Null)
+					return nil
+				}
+
+				vm.push(array.Elements[i])
+			case object.STRING_OBJ:
+				str := left.(*object.String)
+				i := index.(*object.Integer).Value
+				max := int64(len(str.Value) - 1)
+
+				if i < 0 || i > max {
+					vm.push(Null)
+					return nil
+				}
+
+				vm.push(&object.String{Value: string([]rune(str.Value)[i])})
+			}
+		case code.OpCall:
+			fn, ok := vm.stack[vm.sp-1].(*object.CompiledFunction)
+			if !ok {
+				return fmt.Errorf("calling non-function")
+			}
+			frame := NewFrmae(fn)
+			vm.pushFrame(frame)
+		case code.OpReturnValue:
+			returnValue := vm.pop()
+
+			vm.popFrame()
+			vm.pop()
+
+			err := vm.push(returnValue)
+			if err != nil {
+				return err
+			}
+		case code.OpReturn:
+			vm.popFrame()
+			vm.pop()
+
+			err := vm.push(Null)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -188,4 +330,18 @@ func isTruthy(obj object.Object) bool {
 	default:
 		return true
 	}
+}
+
+func (vm *VM) currentFrame() *Frame {
+	return vm.frames[vm.framesIndex-1]
+}
+
+func (vm *VM) pushFrame(f *Frame) {
+	vm.frames[vm.framesIndex] = f
+	vm.framesIndex++
+}
+
+func (vm *VM) popFrame() *Frame {
+	vm.framesIndex--
+	return vm.frames[vm.framesIndex]
 }

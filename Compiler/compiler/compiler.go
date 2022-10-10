@@ -11,8 +11,10 @@ type Compiler struct {
 	instructions code.Instructions
 	constants    []object.Object
 
-	lastInsruction      EmittedInstruction
-	PreviousInstruction EmittedInstruction
+	symbolTable *SymbolTable
+
+	scopes     []CompilationScope
+	scopeIndex int
 }
 
 type EmittedInstruction struct {
@@ -20,13 +22,32 @@ type EmittedInstruction struct {
 	Position int
 }
 
+type CompilationScope struct {
+	instructions        code.Instructions
+	lastInstruction     EmittedInstruction
+	previousInstruction EmittedInstruction
+}
+
 func New() *Compiler {
-	return &Compiler{
+	mainScope := CompilationScope{
 		instructions:        code.Instructions{},
-		constants:           []object.Object{},
-		lastInsruction:      EmittedInstruction{},
-		PreviousInstruction: EmittedInstruction{},
+		lastInstruction:     EmittedInstruction{},
+		previousInstruction: EmittedInstruction{},
 	}
+	return &Compiler{
+		instructions: code.Instructions{},
+		constants:    []object.Object{},
+		symbolTable:  NewSymbolTable(),
+		scopes:       []CompilationScope{mainScope},
+		scopeIndex:   0,
+	}
+}
+
+func NewWithState(s *SymbolTable, constants []object.Object) *Compiler {
+	Compiler := New()
+	Compiler.symbolTable = s
+	Compiler.constants = constants
+	return Compiler
 }
 
 func (c *Compiler) Set(ins code.Instructions, con []object.Object) {
@@ -48,7 +69,9 @@ func (c *Compiler) Compile(node ast.Node) error {
 		if err != nil {
 			return err
 		}
-		c.emit(code.OpPop)
+		if !c.lastInsructionIs(code.OpSetGlobal) {
+			c.emit(code.OpPop)
+		}
 	case *ast.BlockStatement:
 		for _, s := range node.Statements {
 			err := c.Compile(s)
@@ -56,7 +79,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 				return err
 			}
 		}
-		c.emit(code.OpPop)
+		// c.emit(code.OpPop)
 	case *ast.IfStatement:
 		var jmpPos []int
 
@@ -72,19 +95,19 @@ func (c *Compiler) Compile(node ast.Node) error {
 			return err
 		}
 
-		if c.lastInsructionIsPop() {
+		if c.lastInsructionIs(code.OpPop) {
 			c.removeLastPop()
 		}
 
 		if len(node.Elif) == 0 && node.Else == nil {
-			afterConsequencePos := len(c.instructions)
+			afterConsequencePos := len(c.currentInstructions())
 			c.changeOperand(jumpNotTruthyPos, afterConsequencePos)
 		} else if len(node.Elif) != 0 {
 
 			for _, elif := range node.Elif {
 				jmpPos = append(jmpPos, c.emit(code.OpJump, 9999))
 
-				afterConsequencePos := len(c.instructions)
+				afterConsequencePos := len(c.currentInstructions())
 				c.changeOperand(jumpNotTruthyPos, afterConsequencePos)
 
 				err := c.Compile(elif.Condition)
@@ -99,7 +122,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 					return err
 				}
 
-				if c.lastInsructionIsPop() {
+				if c.lastInsructionIs(code.OpPop) {
 					c.removeLastPop()
 				}
 			}
@@ -107,7 +130,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 
 		jmpPos = append(jmpPos, c.emit(code.OpJump, 9999))
 
-		afterConsequencePos := len(c.instructions)
+		afterConsequencePos := len(c.currentInstructions())
 		c.changeOperand(jumpNotTruthyPos, afterConsequencePos)
 
 		if node.Else != nil {
@@ -116,7 +139,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 				return err
 			}
 
-			if c.lastInsructionIsPop() {
+			if c.lastInsructionIs(code.OpPop) {
 				c.removeLastPop()
 			}
 		} else {
@@ -124,10 +147,17 @@ func (c *Compiler) Compile(node ast.Node) error {
 			c.emit(code.OpPop)
 		}
 
-		afterElsePos := len(c.instructions)
+		afterElsePos := len(c.currentInstructions())
 		for _, jmp := range jmpPos {
 			c.changeOperand(jmp, afterElsePos)
 		}
+	case *ast.ReturnStatement:
+		err := c.Compile(node.ReturnValue)
+		if err != nil {
+			return err
+		}
+
+		c.emit(code.OpReturnValue)
 
 	case *ast.PrefixExpression:
 		err := c.Compile(node.Right)
@@ -144,31 +174,73 @@ func (c *Compiler) Compile(node ast.Node) error {
 			return fmt.Errorf("unknown operator")
 		}
 	case *ast.InfixExpression:
-		err := c.Compile(node.Left)
-		if err != nil {
-			return err
-		}
-
-		err = c.Compile(node.Right)
-		if err != nil {
-			return err
-		}
-
 		switch node.Operator {
-		case "+":
-			c.emit(code.OpAdd)
-		case "-":
-			c.emit(code.OpSub)
-		case "*":
-			c.emit(code.OpMul)
-		case "/":
-			c.emit(code.OpDiv)
-		case "==":
-			c.emit(code.OpEqual)
-		case "!=":
-			c.emit(code.OpNotEqual)
+		case "=":
+			err := c.Compile(node.Right)
+			if err != nil {
+				return err
+			}
+
+			symbol := c.symbolTable.Define(node.Left.TokenLiteral())
+			c.emit(code.OpSetGlobal, symbol.Index)
+			return nil
+		case "<":
+			err := c.Compile(node.Right)
+			if err != nil {
+				return err
+			}
+
+			err = c.Compile(node.Left)
+			if err != nil {
+				return err
+			}
+
+			c.emit(code.OpGreaterThan)
+			return nil
+		case "<=":
+			err := c.Compile(node.Right)
+			if err != nil {
+				return err
+			}
+
+			err = c.Compile(node.Left)
+			if err != nil {
+				return err
+			}
+
+			c.emit(code.OpGreaterThanOrEquel)
+			return nil
 		default:
-			return fmt.Errorf("unknown operator %s", node.Operator)
+			err := c.Compile(node.Left)
+			if err != nil {
+				return err
+			}
+
+			err = c.Compile(node.Right)
+			if err != nil {
+				return err
+			}
+
+			switch node.Operator {
+			case "+":
+				c.emit(code.OpAdd)
+			case "-":
+				c.emit(code.OpSub)
+			case "*":
+				c.emit(code.OpMul)
+			case "/":
+				c.emit(code.OpDiv)
+			case ">":
+				c.emit(code.OpGreaterThan)
+			case ">=":
+				c.emit(code.OpGreaterThanOrEquel)
+			case "==":
+				c.emit(code.OpEqual)
+			case "!=":
+				c.emit(code.OpNotEqual)
+			default:
+				return fmt.Errorf("unknown operator %s", node.Operator)
+			}
 		}
 	case *ast.IntegerLiteral:
 		integer := &object.Integer{Value: node.Value}
@@ -179,6 +251,69 @@ func (c *Compiler) Compile(node ast.Node) error {
 		} else {
 			c.emit(code.OpFalse)
 		}
+	case *ast.Identifier:
+		symbol, ok := c.symbolTable.Resolve(node.Value)
+		if !ok {
+			return fmt.Errorf("undefined variable %s", node.Value)
+		}
+
+		c.emit(code.OpGetGlobal, symbol.Index)
+	case *ast.StringLiteral:
+		str := &object.String{Value: node.Value}
+		c.emit(code.OpConstant, c.addConstant(str))
+	case *ast.ArrayLiteral:
+		for _, el := range node.Elements {
+			err := c.Compile(el)
+			if err != nil {
+				return err
+			}
+		}
+
+		c.emit(code.OpArray, len(node.Elements))
+	case *ast.IndexExpression:
+		err := c.Compile(node.Left)
+		if err != nil {
+			return err
+		}
+
+		err = c.Compile(node.Index)
+		if err != nil {
+			return err
+		}
+
+		c.emit(code.OpIndex)
+	case *ast.FunctionLiteral:
+		c.enterScope()
+
+		err := c.Compile(node.Body)
+		if err != nil {
+			fmt.Println("h")
+			return err
+		}
+
+		if c.lastInsructionIs(code.OpPop) {
+			c.replaceLastPopWithReturn()
+		}
+
+		if !c.lastInsructionIs(code.OpReturnValue) {
+			c.emit(code.OpReturn)
+		}
+
+		instructions := c.leaveScope()
+
+		compiledFn := &object.CompiledFunction{Instructions: instructions}
+		c.emit(code.OpConstant, c.addConstant(compiledFn))
+
+		symbol := c.symbolTable.Define(node.Name.Value)
+		c.emit(code.OpSetGlobal, symbol.Index)
+		return nil
+	case *ast.CallFunctionExpression:
+		err := c.Compile(node.Function)
+		if err != nil {
+			return err
+		}
+
+		c.emit(code.OpCall)
 	}
 	return nil
 }
@@ -190,7 +325,7 @@ type Bytecode struct {
 
 func (c *Compiler) Bytecode() *Bytecode {
 	return &Bytecode{
-		Instructions: c.instructions,
+		Instructions: c.currentInstructions(),
 		Constants:    c.constants,
 	}
 }
@@ -210,37 +345,83 @@ func (c *Compiler) addConstant(obj object.Object) int {
 }
 
 func (c *Compiler) addInstruction(ins []byte) int {
-	posNewInstruction := len(c.instructions)
-	c.instructions = append(c.instructions, ins...)
+	posNewInstruction := len(c.currentInstructions())
+	updatedInstructions := append(c.currentInstructions(), ins...)
+
+	c.scopes[c.scopeIndex].instructions = updatedInstructions
+
 	return posNewInstruction
 }
 
 func (c *Compiler) setLastInstruction(op code.Opcode, pos int) {
-	previous := c.lastInsruction
+	previous := c.scopes[c.scopeIndex].lastInstruction
 	last := EmittedInstruction{OpCode: op, Position: pos}
 
-	c.PreviousInstruction = previous
-	c.lastInsruction = last
+	c.scopes[c.scopeIndex].previousInstruction = previous
+	c.scopes[c.scopeIndex].lastInstruction = last
 }
 
-func (c *Compiler) lastInsructionIsPop() bool {
-	return c.lastInsruction.OpCode == code.OpPop
+func (c *Compiler) lastInsructionIs(op code.Opcode) bool {
+	if len(c.currentInstructions()) == 0 {
+		return false
+	}
+
+	return c.scopes[c.scopeIndex].lastInstruction.OpCode == op
 }
 
 func (c *Compiler) removeLastPop() {
-	c.instructions = c.instructions[:c.lastInsruction.Position]
-	c.lastInsruction = c.PreviousInstruction
+	last := c.scopes[c.scopeIndex].lastInstruction
+	previous := c.scopes[c.scopeIndex].previousInstruction
+
+	old := c.currentInstructions()
+	new := old[:last.Position]
+
+	c.scopes[c.scopeIndex].instructions = new
+	c.scopes[c.scopeIndex].lastInstruction = previous
 }
 
 func (c *Compiler) replaceInstruction(pos int, newInstruction []byte) {
+	ins := c.currentInstructions()
+
 	for i := 0; i < len(newInstruction); i++ {
-		c.instructions[pos+i] = newInstruction[i]
+		ins[pos+i] = newInstruction[i]
 	}
 }
 
 func (c *Compiler) changeOperand(opPos int, operand int) {
-	op := code.Opcode(c.instructions[opPos])
+	op := code.Opcode(c.currentInstructions()[opPos])
 	newInstruction := code.Make(op, operand)
 
 	c.replaceInstruction(opPos, newInstruction)
+}
+
+func (c *Compiler) currentInstructions() code.Instructions {
+	return c.scopes[c.scopeIndex].instructions
+}
+
+func (c *Compiler) enterScope() {
+	scope := CompilationScope{
+		instructions:        code.Instructions{},
+		lastInstruction:     EmittedInstruction{},
+		previousInstruction: EmittedInstruction{},
+	}
+
+	c.scopes = append(c.scopes, scope)
+	c.scopeIndex++
+}
+
+func (c *Compiler) leaveScope() code.Instructions {
+	instructions := c.currentInstructions()
+
+	c.scopes = c.scopes[:len(c.scopes)-1]
+	c.scopeIndex--
+
+	return instructions
+}
+
+func (c *Compiler) replaceLastPopWithReturn() {
+	lastPos := c.scopes[c.scopeIndex].lastInstruction.Position
+	c.replaceInstruction(lastPos, code.Make(code.OpReturnValue))
+
+	c.scopes[c.scopeIndex].lastInstruction.OpCode = code.OpReturnValue
 }

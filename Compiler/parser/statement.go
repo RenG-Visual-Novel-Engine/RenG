@@ -6,6 +6,11 @@ import (
 )
 
 func (p *Parser) parseBlockStatement() *ast.BlockStatement {
+	if p.peekTokenIs(token.RBRACE) {
+		p.nextToken()
+		return &ast.BlockStatement{}
+	}
+
 	block := &ast.BlockStatement{Token: p.curToken}
 	block.Statements = []ast.Statement{}
 
@@ -14,8 +19,12 @@ func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 	for !p.curTokenIs(token.RBRACE) && !p.curTokenIs(token.EOF) {
 		stmt := p.parseStatement()
 		block.Statements = append(block.Statements, stmt)
-		p.nextToken()
+
+		if p.curTokenIs(token.ENDSENTENCE) {
+			p.nextToken()
+		}
 	}
+
 	return block
 }
 
@@ -76,7 +85,25 @@ func (p *Parser) parseIfStatement() ast.Statement {
 		stmt.Else = p.parseBlockStatement()
 	}
 
-	//	fmt.Println(stmt.Else.String())
+	return stmt
+}
+
+func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
+	stmt := &ast.ReturnStatement{Token: p.curToken}
+
+	p.nextToken()
+
+	if p.curToken.Type == token.ENDSENTENCE {
+		return stmt
+	}
+
+	stmt.ReturnValue = p.parseExpression(LOWEST)
+
+	for !(p.curTokenIs(token.ENDSENTENCE) || p.curTokenIs(token.RBRACE)) {
+		p.nextToken()
+	}
+
+	p.nextToken()
 
 	return stmt
 }

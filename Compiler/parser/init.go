@@ -103,7 +103,9 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.FALSE, p.parseBoolean)
 	p.registerPrefix(token.INT, p.parseIntegerLiteral)
 	p.registerPrefix(token.FLOAT, p.parseFloatLiteral)
+	p.registerPrefix(token.STRING, p.parseStringLiteral)
 	p.registerPrefix(token.LBRACKET, p.parseArrayLiteral)
+	p.registerPrefix(token.FUNCTION, p.parseFunctionExpression)
 
 	p.infixParseFns = make(map[token.TokenType]infixParseFn)
 
@@ -118,8 +120,6 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerInfix(token.GT, p.parseInfixExpression)
 	p.registerInfix(token.LT_EQ, p.parseInfixExpression)
 	p.registerInfix(token.GT_EQ, p.parseInfixExpression)
-	// p.registerInfix(token.LPAREN, p.parseCallFunctionExpression)
-	// p.registerInfix(token.LBRACKET, p.parseIndexExpression)
 	p.registerInfix(token.AND_BOOL, p.parseInfixExpression)
 	p.registerInfix(token.OR_BOOL, p.parseInfixExpression)
 	p.registerInfix(token.OR, p.parseInfixExpression)
@@ -131,6 +131,8 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerInfix(token.ASTERISK_ASSIGN, p.parseInfixExpression)
 	p.registerInfix(token.SLASH_ASSIGN, p.parseInfixExpression)
 	p.registerInfix(token.REMAINDER_ASSIGN, p.parseInfixExpression)
+	p.registerInfix(token.LBRACKET, p.parseIndexExpression)
+	p.registerInfix(token.LPAREN, p.parseCallFunctionExpression)
 
 	p.postfixParseFns = make(map[token.TokenType]postfixParseFn)
 
@@ -146,6 +148,7 @@ func (p *Parser) ParseProgram() *ast.Program {
 
 	for p.curToken.Type != token.EOF {
 		stmt := p.parseStatement()
+		// fmt.Println(stmt)
 		program.Statements = append(program.Statements, stmt)
 		p.nextToken()
 	}
@@ -157,6 +160,8 @@ func (p *Parser) parseStatement() ast.Statement {
 	switch p.curToken.Type {
 	case token.IF:
 		return p.parseIfStatement()
+	case token.RETURN:
+		return p.parseReturnStatement()
 	default:
 		return p.parseExpressionStatement()
 	}
