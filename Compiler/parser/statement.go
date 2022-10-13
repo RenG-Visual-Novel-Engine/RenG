@@ -85,6 +85,10 @@ func (p *Parser) parseIfStatement() ast.Statement {
 		stmt.Else = p.parseBlockStatement()
 	}
 
+	if p.curTokenIs(token.RBRACE) {
+		p.nextToken()
+	}
+
 	return stmt
 }
 
@@ -99,11 +103,9 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 
 	stmt.ReturnValue = p.parseExpression(LOWEST)
 
-	for !(p.curTokenIs(token.ENDSENTENCE) || p.curTokenIs(token.RBRACE)) {
+	for p.peekTokenIs(token.ENDSENTENCE) || p.curTokenIs(token.ENDSENTENCE) {
 		p.nextToken()
 	}
-
-	p.nextToken()
 
 	return stmt
 }

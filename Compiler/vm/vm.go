@@ -273,17 +273,30 @@ func (vm *VM) Run() error {
 			numArgs := code.ReadUint16(ins[ip+1:])
 			vm.currentFrame().ip += 2
 
-			fn, ok := vm.stack[vm.sp-1-int(numArgs)].(*object.CompiledFunction)
-			if !ok {
-				return fmt.Errorf("calling non-function")
-			}
+			callee := vm.stack[vm.sp-1-int(numArgs)]
+			switch callee := callee.(type) {
+			case *object.CompiledFunction:
+				if int(numArgs) != callee.NumParameters {
+					return fmt.Errorf("error")
+				}
 
-			if int(numArgs) != fn.NumParameters {
-				return fmt.Errorf("wrong number of arguments: want=%d, got=%d", fn.NumParameters, int(numArgs))
+				frame := NewFrmae(callee, vm.sp-int(numArgs))
+				vm.pushFrame(frame)
+
+				vm.sp = frame.basePointer + callee.NumLocals
+			case *object.Builtin:
+				args := vm.stack[vm.sp-int(numArgs) : vm.sp]
+				result := callee.Fn(args...)
+				vm.sp = vm.sp - int(numArgs) - 1
+
+				if result != nil {
+					vm.push(result)
+				} else {
+					vm.push(Null)
+				}
+			default:
+				return fmt.Errorf("error")
 			}
-			frame := NewFrmae(fn, vm.sp-int(numArgs))
-			vm.pushFrame(frame)
-			vm.sp = frame.basePointer + fn.NumLocals
 		case code.OpReturnValue:
 			returnValue := vm.pop()
 
@@ -319,6 +332,16 @@ func (vm *VM) Run() error {
 			if err != nil {
 				return err
 			}
+		case code.OpGetBuiltin:
+			builtinIndex := code.ReadUint16(ins[ip+1:])
+			vm.currentFrame().ip += 2
+
+			definition := object.FunctionBuiltins[builtinIndex]
+
+			err := vm.push(definition.Builtin)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -330,6 +353,8 @@ func (vm *VM) push(o object.Object) error {
 		return fmt.Errorf("stack overflow")
 	}
 
+	// fmt.Printf("push %s\n", o.Inspect())
+
 	vm.stack[vm.sp] = o
 	vm.sp++
 
@@ -338,6 +363,7 @@ func (vm *VM) push(o object.Object) error {
 
 func (vm *VM) pop() object.Object {
 	o := vm.stack[vm.sp-1]
+	// fmt.Printf("pop %s\n", o.Inspect())
 	vm.sp--
 	return o
 }

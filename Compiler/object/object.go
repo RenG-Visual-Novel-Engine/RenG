@@ -17,6 +17,9 @@ const (
 	ARRAY_OBJ   = "ARRAY"
 
 	COMPILED_FUNCTION_OBJ = "COMPILED_FUNCTION_OBJ"
+	BUILTIN_OBJ           = "BUILTIN_OBJ"
+
+	ERROR_OBJ = "ERROR_OBJ"
 )
 
 type ObjectType string
@@ -89,3 +92,19 @@ func (cf *CompiledFunction) Type() ObjectType { return COMPILED_FUNCTION_OBJ }
 func (cf *CompiledFunction) Inspect() string {
 	return fmt.Sprintf("CompiledFunction[%p]", cf)
 }
+
+type BuiltinFunction func(args ...Object) Object
+
+type Builtin struct {
+	Fn BuiltinFunction
+}
+
+func (b *Builtin) Type() ObjectType { return BUILTIN_OBJ }
+func (b *Builtin) Inspect() string  { return "builtin function" }
+
+type Error struct {
+	Message string
+}
+
+func (e *Error) Type() ObjectType { return ERROR_OBJ }
+func (e *Error) Inspect() string  { return "ERROR: " + e.Message }

@@ -34,10 +34,17 @@ func New() *Compiler {
 		lastInstruction:     EmittedInstruction{},
 		previousInstruction: EmittedInstruction{},
 	}
+
+	symbolTable := NewSymbolTable()
+
+	for i, v := range object.FunctionBuiltins {
+		symbolTable.DefineBuiltin(i, v.Name)
+	}
+
 	return &Compiler{
 		instructions: code.Instructions{},
 		constants:    []object.Object{},
-		symbolTable:  NewSymbolTable(),
+		symbolTable:  symbolTable,
 		scopes:       []CompilationScope{mainScope},
 		scopeIndex:   0,
 	}
@@ -176,12 +183,11 @@ func (c *Compiler) Compile(node ast.Node) error {
 	case *ast.InfixExpression:
 		switch node.Operator {
 		case "=":
+			symbol := c.symbolTable.Define(node.Left.TokenLiteral())
 			err := c.Compile(node.Right)
 			if err != nil {
 				return err
 			}
-
-			symbol := c.symbolTable.Define(node.Left.TokenLiteral())
 			if symbol.Scope == GlobalScope {
 				c.emit(code.OpSetGlobal, symbol.Index)
 			} else {
@@ -261,11 +267,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 			return fmt.Errorf("undefined variable %s", node.Value)
 		}
 
-		if symbol.Scope == GlobalScope {
-			c.emit(code.OpGetGlobal, symbol.Index)
-		} else {
-			c.emit(code.OpGetLocal, symbol.Index)
-		}
+		c.loadSymbol(symbol)
 
 	case *ast.StringLiteral:
 		str := &object.String{Value: node.Value}
@@ -292,6 +294,8 @@ func (c *Compiler) Compile(node ast.Node) error {
 
 		c.emit(code.OpIndex)
 	case *ast.FunctionLiteral:
+		symbol := c.symbolTable.Define(node.Name.Value)
+
 		c.enterScope()
 
 		for _, p := range node.Parameters {
@@ -319,9 +323,8 @@ func (c *Compiler) Compile(node ast.Node) error {
 			NumLocals:     numLocals,
 			NumParameters: len(node.Parameters),
 		}
-		c.emit(code.OpConstant, c.addConstant(compiledFn))
 
-		symbol := c.symbolTable.Define(node.Name.Value)
+		c.emit(code.OpConstant, c.addConstant(compiledFn))
 		c.emit(code.OpSetGlobal, symbol.Index)
 		return nil
 	case *ast.CallFunctionExpression:
@@ -450,4 +453,15 @@ func (c *Compiler) replaceLastPopWithReturn() {
 	c.replaceInstruction(lastPos, code.Make(code.OpReturnValue))
 
 	c.scopes[c.scopeIndex].lastInstruction.OpCode = code.OpReturnValue
+}
+
+func (c *Compiler) loadSymbol(s Symbol) {
+	switch s.Scope {
+	case GlobalScope:
+		c.emit(code.OpGetGlobal, s.Index)
+	case LocalScope:
+		c.emit(code.OpGetLocal, s.Index)
+	case BuiltinScope:
+		c.emit(code.OpGetBuiltin, s.Index)
+	}
 }

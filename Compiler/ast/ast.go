@@ -120,11 +120,13 @@ func (is *IfStatement) String() string {
 			out.WriteString(" elif ")
 			out.WriteString(ee.Condition.String())
 			out.WriteString(" ")
+			out.WriteString("{ ")
 			out.WriteString(is.Consequence.String())
+			out.WriteString(" }")
 		}
 	}
 
-	if is.Elif != nil {
+	if is.Else != nil {
 		out.WriteString("else ")
 		out.WriteString(is.Else.String())
 	}
@@ -142,13 +144,13 @@ func (rs *ReturnStatement) TokenLiteral() string { return rs.Token.Literal }
 func (rs *ReturnStatement) String() string {
 	var out bytes.Buffer
 
+	out.WriteString(" ")
+
 	out.WriteString(rs.TokenLiteral() + " ")
 
 	if rs.ReturnValue != nil {
 		out.WriteString(rs.ReturnValue.String())
 	}
-
-	out.WriteString("\n")
 
 	return out.String()
 }
@@ -370,9 +372,9 @@ func (fl *FunctionLiteral) String() string {
 	out.WriteString(fl.Name.String())
 	out.WriteString("(")
 	out.WriteString(strings.Join(params, ","))
-	out.WriteString(") {\n")
-	// out.WriteString(fl.Body.String())
-	out.WriteString("\n}")
+	out.WriteString(") {")
+	out.WriteString(fl.Body.String())
+	out.WriteString(" }")
 
 	return out.String()
 }

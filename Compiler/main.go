@@ -63,14 +63,13 @@ func main() {
 		}
 		return
 	}
-
 	comp := compiler.New()
 	err := comp.Compile(program)
 	if err != nil {
 		fmt.Fprintf(os.Stdout, "Compile failed:\n %s\n\n", err)
 		return
 	}
-	fmt.Println(comp)
+	// fmt.Println(comp)
 
 	machine := vm.New(comp.Bytecode())
 	err = machine.Run()
@@ -78,8 +77,4 @@ func main() {
 		fmt.Fprintf(os.Stdout, "Executiong bytecode failed:\n %s\n\n", err)
 		return
 	}
-
-	stackTop := machine.LastPoppedStackElem()
-	io.WriteString(os.Stdout, stackTop.Inspect())
-	io.WriteString(os.Stdout, "\n")
 }

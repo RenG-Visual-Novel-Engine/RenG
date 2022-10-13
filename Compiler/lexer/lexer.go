@@ -159,7 +159,7 @@ func (l *Lexer) NextToken() token.Token {
 	case ';':
 		tok = newToken(token.ENDSENTENCE, string(l.ch))
 	case '#':
-		for !(l.peekChar() == '\n') {
+		for !(l.peekChar() == '\n' || l.peekChar() == 0) {
 			l.readChar()
 		}
 		l.skipWhiteSpace()
