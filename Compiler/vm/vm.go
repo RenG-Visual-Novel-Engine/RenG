@@ -83,6 +83,8 @@ func (vm *VM) Run() error {
 			right := vm.pop()
 			left := vm.pop()
 
+			// fmt.Println(left)
+
 			if right.Type() == object.INTEGER_OBJ && left.Type() == object.INTEGER_OBJ {
 				vm.push(&object.Integer{Value: left.(*object.Integer).Value + right.(*object.Integer).Value})
 			} else if right.Type() == object.STRING_OBJ && left.Type() == object.STRING_OBJ {
@@ -103,6 +105,11 @@ func (vm *VM) Run() error {
 			left := vm.pop().(*object.Integer).Value
 
 			vm.push(&object.Integer{Value: left / right})
+		case code.OpRem:
+			right := vm.pop().(*object.Integer).Value
+			left := vm.pop().(*object.Integer).Value
+
+			vm.push(&object.Integer{Value: left % right})
 		case code.OpPop:
 			vm.pop()
 		case code.OpTrue:
@@ -221,6 +228,7 @@ func (vm *VM) Run() error {
 			vm.currentFrame().ip += 4
 
 			err := vm.push(vm.globals[globalIndex])
+			// fmt.Println(globalIndex)
 			if err != nil {
 				return err
 			}

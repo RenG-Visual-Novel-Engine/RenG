@@ -159,6 +159,8 @@ func (p *Parser) parseStatement() ast.Statement {
 	switch p.curToken.Type {
 	case token.IF:
 		return p.parseIfStatement()
+	case token.FOR:
+		return p.parseForStatement()
 	case token.RETURN:
 		return p.parseReturnStatement()
 	default:
@@ -180,7 +182,7 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 		leftExp = postfix(leftExp)
 	}
 
-	for !p.peekTokenIs(token.ENDSENTENCE) && precedence < p.peekPrecedence() {
+	for !p.peekTokenIs(token.ENDSENTENCE) && !p.peekTokenIs(token.RPAREN) && precedence < p.peekPrecedence() {
 		infix := p.infixParseFns[p.peekToken.Type]
 		if infix == nil {
 			return leftExp

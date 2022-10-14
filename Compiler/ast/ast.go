@@ -134,6 +134,44 @@ func (is *IfStatement) String() string {
 	return out.String()
 }
 
+type ForStatement struct {
+	Token          token.Token
+	Initialization Expression
+	Condition      Expression
+	Increment      Expression
+	Loop           *BlockStatement
+}
+
+func (fs *ForStatement) statementNode()       {}
+func (fs *ForStatement) TokenLiteral() string { return fs.Token.Literal }
+func (fs *ForStatement) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("if ( ")
+
+	if fs.Initialization != nil {
+		out.WriteString(fs.Initialization.String() + "; ")
+	} else {
+		out.WriteString("; ")
+	}
+
+	if fs.Condition != nil {
+		out.WriteString(fs.Condition.String() + "; ")
+	} else {
+		out.WriteString("; ")
+	}
+
+	if fs.Increment != nil {
+		out.WriteString(fs.Increment.String() + ") ")
+	} else {
+		out.WriteString(") ")
+	}
+
+	out.WriteString("{ " + fs.Loop.String() + " }")
+
+	return out.String()
+}
+
 type ReturnStatement struct {
 	Token       token.Token
 	ReturnValue Expression

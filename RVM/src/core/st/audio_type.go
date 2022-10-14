@@ -11,6 +11,9 @@ package st
 */
 import "C"
 
+type Mix_Music C.Mix_Music
+type Mix_Chunk C.Mix_Chunk
+
 const (
 	MIX_DEFAULT_FORMAT = C.MIX_DEFAULT_FORMAT
 )

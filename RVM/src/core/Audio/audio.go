@@ -11,16 +11,28 @@ import "C"
 import "RenG/RVM/src/core/st"
 
 type Audio struct {
+	Channels map[string]*Channel
+	Musics   map[string]*st.Mix_Music
+	Chuncks  map[string]*st.Mix_Chunk
 }
 
 func Init() *Audio {
 	// (frequency, format, channels. chuncksize, device, allowed_changes)
-	if C.Mix_OpenAudioDevice(44100, st.MIX_DEFAULT_FORMAT, 2, nil, st.SDL_AUDIO_ALLOW_FREQUENCY_CHANGE|st.SDL_AUDIO_ALLOW_CHANNELS_CHANGE) < 0 {
+	if C.Mix_OpenAudioDevice(44100, st.MIX_DEFAULT_FORMAT, 2, 2048, nil,
+		st.SDL_AUDIO_ALLOW_FREQUENCY_CHANGE|st.SDL_AUDIO_ALLOW_CHANNELS_CHANGE) < 0 {
 		return nil
 	}
-	return &Audio{}
+	return &Audio{
+		Channels: map[string]*Channel{
+			"music": NewChannel(),
+			"sound": NewChannel(),
+			"voice": NewChannel(),
+		},
+		Musics:  make(map[string]*st.Mix_Music),
+		Chuncks: make(map[string]*st.Mix_Chunk),
+	}
 }
 
 func (a *Audio) Close() {
-	C.Mix_CloseDevice()
+	C.Mix_CloseAudio()
 }

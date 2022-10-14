@@ -158,6 +158,45 @@ func (c *Compiler) Compile(node ast.Node) error {
 		for _, jmp := range jmpPos {
 			c.changeOperand(jmp, afterElsePos)
 		}
+	case *ast.ForStatement:
+		var jmpNotTruthyPos, jmpPos int = -1, -1
+
+		if node.Initialization != nil {
+			err := c.Compile(node.Initialization)
+			if err != nil {
+				return err
+			}
+		}
+
+		jmpPos = len(c.currentInstructions())
+
+		if node.Condition != nil {
+			err := c.Compile(node.Condition)
+			if err != nil {
+				return err
+			}
+
+			jmpNotTruthyPos = c.emit(code.OpJumpNotTruthy, 9999)
+		}
+
+		err := c.Compile(node.Loop)
+		if err != nil {
+			return err
+		}
+
+		if node.Increment != nil {
+			err := c.Compile(node.Increment)
+			if err != nil {
+				return err
+			}
+		}
+
+		c.emit(code.OpJump, jmpPos)
+
+		if jmpNotTruthyPos != -1 {
+			c.changeOperand(jmpNotTruthyPos, len(c.currentInstructions()))
+		}
+
 	case *ast.ReturnStatement:
 		err := c.Compile(node.ReturnValue)
 		if err != nil {
@@ -183,7 +222,11 @@ func (c *Compiler) Compile(node ast.Node) error {
 	case *ast.InfixExpression:
 		switch node.Operator {
 		case "=":
-			symbol := c.symbolTable.Define(node.Left.TokenLiteral())
+			symbol, ok := c.symbolTable.Resolve(node.Left.TokenLiteral())
+			if !ok {
+				symbol = c.symbolTable.Define(node.Left.TokenLiteral())
+			}
+
 			err := c.Compile(node.Right)
 			if err != nil {
 				return err
@@ -240,6 +283,8 @@ func (c *Compiler) Compile(node ast.Node) error {
 				c.emit(code.OpMul)
 			case "/":
 				c.emit(code.OpDiv)
+			case "%":
+				c.emit(code.OpRem)
 			case ">":
 				c.emit(code.OpGreaterThan)
 			case ">=":

@@ -24,6 +24,17 @@ func (p *Parser) nextToken() {
 	p.peekToken = p.l.NextToken()
 }
 
+func (p *Parser) ENDSENTENCETokenSkip() {
+	if p.peekTokenIs(token.ENDSENTENCE) {
+		p.nextToken()
+		p.nextToken()
+		return
+	} else if p.curTokenIs(token.ENDSENTENCE) {
+		p.nextToken()
+		return
+	}
+}
+
 func (p *Parser) curTokenIs(t token.TokenType) bool {
 	return p.curToken.Type == t
 }

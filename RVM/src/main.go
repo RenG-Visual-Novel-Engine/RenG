@@ -1,6 +1,7 @@
 package main
 
 import (
+	audio "RenG/RVM/src/core/Audio"
 	system "RenG/RVM/src/core/System"
 	"runtime"
 )
@@ -21,6 +22,9 @@ func main() {
 
 	s := system.Init("테스트 용도", 1280, 720)
 	defer s.Close()
+
+	a := audio.Init()
+	defer a.Close()
 
 	s.Render()
 

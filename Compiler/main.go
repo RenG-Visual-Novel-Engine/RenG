@@ -63,6 +63,7 @@ func main() {
 		}
 		return
 	}
+
 	comp := compiler.New()
 	err := comp.Compile(program)
 	if err != nil {

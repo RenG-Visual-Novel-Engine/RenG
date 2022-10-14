@@ -1,6 +1,9 @@
 package object
 
-import "fmt"
+import (
+	"bytes"
+	"fmt"
+)
 
 var FunctionBuiltins = []struct {
 	Name    string
@@ -29,9 +32,12 @@ var FunctionBuiltins = []struct {
 		"print",
 		&Builtin{
 			Fn: func(args ...Object) Object {
+				var str bytes.Buffer
 				for _, arg := range args {
-					fmt.Println(arg.Inspect())
+					str.WriteString(arg.Inspect())
 				}
+
+				fmt.Println(str.String())
 
 				return nil
 			},

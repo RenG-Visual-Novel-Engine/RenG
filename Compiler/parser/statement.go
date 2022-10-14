@@ -92,6 +92,54 @@ func (p *Parser) parseIfStatement() ast.Statement {
 	return stmt
 }
 
+func (p *Parser) parseForStatement() *ast.ForStatement {
+	stmt := &ast.ForStatement{Token: p.curToken}
+
+	if !p.expectPeek(token.LPAREN) {
+		return nil
+	}
+
+	p.nextToken()
+
+	if p.curTokenIs(token.ENDSENTENCE) {
+		stmt.Initialization = nil
+		p.ENDSENTENCETokenSkip()
+	} else {
+		p.ENDSENTENCETokenSkip()
+		stmt.Initialization = p.parseExpression(LOWEST)
+		p.ENDSENTENCETokenSkip()
+	}
+
+	if p.curTokenIs(token.ENDSENTENCE) {
+		stmt.Condition = nil
+		p.ENDSENTENCETokenSkip()
+	} else {
+		p.ENDSENTENCETokenSkip()
+		stmt.Condition = p.parseExpression(LOWEST)
+		p.ENDSENTENCETokenSkip()
+	}
+
+	if p.curTokenIs(token.RPAREN) {
+		stmt.Increment = nil
+	} else {
+		p.ENDSENTENCETokenSkip()
+		stmt.Increment = p.parseExpression(LOWEST)
+		p.nextToken()
+	}
+
+	if !p.expectPeek(token.LBRACE) {
+		return nil
+	}
+
+	stmt.Loop = p.parseBlockStatement()
+
+	if p.curTokenIs(token.RBRACE) {
+		p.nextToken()
+	}
+
+	return stmt
+}
+
 func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	stmt := &ast.ReturnStatement{Token: p.curToken}
 
