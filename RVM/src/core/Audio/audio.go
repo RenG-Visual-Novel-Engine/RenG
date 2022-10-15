@@ -8,18 +8,18 @@ package audio
 #include <SDL_mixer.h>
 */
 import "C"
-import "RenG/RVM/src/core/st"
+import "RenG/RVM/src/core/t"
 
 type Audio struct {
 	Channels map[string]*Channel
-	Musics   map[string]*st.Mix_Music
-	Chuncks  map[string]*st.Mix_Chunk
+	Musics   map[string]*t.Mix_Music
+	Chuncks  map[string]*t.Mix_Chunk
 }
 
 func Init() *Audio {
 	// (frequency, format, channels. chuncksize, device, allowed_changes)
-	if C.Mix_OpenAudioDevice(44100, st.MIX_DEFAULT_FORMAT, 2, 2048, nil,
-		st.SDL_AUDIO_ALLOW_FREQUENCY_CHANGE|st.SDL_AUDIO_ALLOW_CHANNELS_CHANGE) < 0 {
+	if C.Mix_OpenAudioDevice(44100, t.MIX_DEFAULT_FORMAT, 2, 2048, nil,
+		t.SDL_AUDIO_ALLOW_FREQUENCY_CHANGE|t.SDL_AUDIO_ALLOW_CHANNELS_CHANGE) < 0 {
 		return nil
 	}
 	return &Audio{
@@ -28,8 +28,8 @@ func Init() *Audio {
 			"sound": NewChannel(),
 			"voice": NewChannel(),
 		},
-		Musics:  make(map[string]*st.Mix_Music),
-		Chuncks: make(map[string]*st.Mix_Chunk),
+		Musics:  make(map[string]*t.Mix_Music),
+		Chuncks: make(map[string]*t.Mix_Chunk),
 	}
 }
 

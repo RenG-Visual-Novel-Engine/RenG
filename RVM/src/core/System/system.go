@@ -17,21 +17,23 @@ Uint32 eventType(SDL_Event event)
 */
 import "C"
 import (
-	"RenG/RVM/src/core/st"
+	"RenG/RVM/src/core/System/vm"
+	"RenG/RVM/src/core/t"
 	"fmt"
 	"unsafe"
 )
 
 type System struct {
-	window   *st.SDL_Window
-	renderer *st.SDL_Renderer
-	event    st.SDL_Event
+	window   *t.SDL_Window
+	renderer *t.SDL_Renderer
+	event    t.SDL_Event
+	vm       *vm.VM
 }
 
 func Init(title string, width, height int) *System {
 	system := &System{}
 
-	if C.SDL_Init(st.SDL_INIT_EVERYTHING) < 0 {
+	if C.SDL_Init(t.SDL_INIT_EVERYTHING) < 0 {
 		return nil
 	}
 
@@ -39,23 +41,23 @@ func Init(title string, width, height int) *System {
 	defer C.free(unsafe.Pointer(Ctitle))
 
 	window := C.SDL_CreateWindow(
-		Ctitle, st.SDL_WINDOWPOS_CENTERED, st.SDL_WINDOWPOS_CENTERED,
+		Ctitle, t.SDL_WINDOWPOS_CENTERED, t.SDL_WINDOWPOS_CENTERED,
 		C.int(width), C.int(height),
-		st.SDL_WINDOW_SHOWN|st.SDL_WINDOW_RESIZABLE|st.SDL_WINDOW_INPUT_FOCUS|st.SDL_WINDOW_MOUSE_FOCUS,
+		t.SDL_WINDOW_SHOWN|t.SDL_WINDOW_RESIZABLE|t.SDL_WINDOW_INPUT_FOCUS|t.SDL_WINDOW_MOUSE_FOCUS,
 	)
 	if window == nil {
 		return nil
 	}
 
 	renderer := C.SDL_CreateRenderer(window, -1,
-		st.SDL_RENDERER_ACCELERATED|st.SDL_RENDERER_PRESENTVSYNC|st.SDL_RENDERER_TARGETTEXTURE,
+		t.SDL_RENDERER_ACCELERATED|t.SDL_RENDERER_PRESENTVSYNC|t.SDL_RENDERER_TARGETTEXTURE,
 	)
 	if renderer == nil {
 		return nil
 	}
 
-	system.window = (*st.SDL_Window)(window)
-	system.renderer = (*st.SDL_Renderer)(renderer)
+	system.window = (*t.SDL_Window)(window)
+	system.renderer = (*t.SDL_Renderer)(renderer)
 
 	return system
 }

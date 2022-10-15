@@ -1,4 +1,4 @@
-package st
+package t
 
 /*
 #cgo CFLAGS: -I./../sdl/include
