@@ -45,19 +45,6 @@ func New(bytecode *compiler.Bytecode) *VM {
 	}
 }
 
-func NewWithGlobalStore(bytecode *compiler.Bytecode, s []object.Object) *VM {
-	vm := New(bytecode)
-	vm.globals = s
-	return vm
-}
-
-func (vm *VM) StackTop() object.Object {
-	if vm.sp == 0 {
-		return nil
-	}
-	return vm.stack[vm.sp-1]
-}
-
 func (vm *VM) Run() error {
 	var ip int
 	var ins code.Instructions
@@ -77,7 +64,7 @@ func (vm *VM) Run() error {
 
 			err := vm.push(vm.constants[constIndex])
 			if err != nil {
-				return nil
+				return err
 			}
 		case code.OpAdd:
 			right := vm.pop()
@@ -282,6 +269,7 @@ func (vm *VM) Run() error {
 			vm.currentFrame().ip += 2
 
 			callee := vm.stack[vm.sp-1-int(numArgs)]
+			// fmt.Println(numArgs)
 			switch callee := callee.(type) {
 			case *object.CompiledFunction:
 				if int(numArgs) != callee.NumParameters {
@@ -303,6 +291,7 @@ func (vm *VM) Run() error {
 					vm.push(Null)
 				}
 			default:
+				// fmt.Println("s")
 				return fmt.Errorf("error")
 			}
 		case code.OpReturnValue:

@@ -11,7 +11,12 @@ type Compiler struct {
 	instructions code.Instructions
 	constants    []object.Object
 
-	symbolTable *SymbolTable
+	symbolTable       *SymbolTable
+	reservationSymbol []struct {
+		pos              int
+		ReplaceFuncIndex int
+		symbol           string
+	} // scopeIndex : pos,
 
 	scopes     []CompilationScope
 	scopeIndex int
@@ -45,8 +50,13 @@ func New() *Compiler {
 		instructions: code.Instructions{},
 		constants:    []object.Object{},
 		symbolTable:  symbolTable,
-		scopes:       []CompilationScope{mainScope},
-		scopeIndex:   0,
+		reservationSymbol: []struct {
+			pos              int
+			ReplaceFuncIndex int
+			symbol           string
+		}{},
+		scopes:     []CompilationScope{mainScope},
+		scopeIndex: 0,
 	}
 }
 
@@ -309,7 +319,18 @@ func (c *Compiler) Compile(node ast.Node) error {
 	case *ast.Identifier:
 		symbol, ok := c.symbolTable.Resolve(node.Value)
 		if !ok {
-			return fmt.Errorf("undefined variable %s", node.Value)
+			// TODO
+			c.emit(code.OpGetGlobal, 9999)
+			c.reservationSymbol = append(c.reservationSymbol, struct {
+				pos              int
+				ReplaceFuncIndex int
+				symbol           string
+			}{
+				len(c.currentInstructions()) - 5,
+				len(c.constants),
+				node.Value,
+			})
+			return nil
 		}
 
 		c.loadSymbol(symbol)
@@ -509,4 +530,29 @@ func (c *Compiler) loadSymbol(s Symbol) {
 	case BuiltinScope:
 		c.emit(code.OpGetBuiltin, s.Index)
 	}
+}
+
+func (c *Compiler) ReplaceSymbol() error {
+	for _, inform := range c.reservationSymbol {
+
+		fn := c.constants[inform.ReplaceFuncIndex]
+		fnObj, ok := fn.(*object.CompiledFunction)
+		if !ok {
+			return fmt.Errorf("")
+		}
+
+		s, ok := c.symbolTable.Resolve(inform.symbol)
+		if !ok {
+			return fmt.Errorf("")
+		}
+
+		op := code.Make(code.OpGetGlobal, s.Index)
+
+		for n := 0; n < len(op); n++ {
+			fnObj.Instructions[inform.pos+n] = op[n]
+		}
+		c.constants[inform.ReplaceFuncIndex] = fnObj
+	}
+
+	return nil
 }

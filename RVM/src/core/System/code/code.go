@@ -1,5 +1,7 @@
 package code
 
+import "encoding/binary"
+
 type Instructions []byte
 
 type Opcode byte
@@ -34,3 +36,11 @@ const (
 	OpSetLocal
 	OpGetBuiltin
 )
+
+func ReadUint16(ins Instructions) uint16 {
+	return binary.BigEndian.Uint16(ins)
+}
+
+func ReadUint32(ins Instructions) uint32 {
+	return binary.BigEndian.Uint32(ins)
+}

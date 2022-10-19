@@ -7,6 +7,9 @@ import (
 
 type Frame interface {
 	Instructions() code.Instructions
+	GetIp() int
+	SetIp(int)
+	GetBasePointer() int
 }
 
 func NewFrmae(obj object.Object, basePointer int) Frame {
@@ -28,6 +31,7 @@ type FunctionFrame struct {
 	basePointer int
 }
 
-func (ff *FunctionFrame) Instructions() code.Instructions {
-	return ff.fn.Instructions
-}
+func (ff *FunctionFrame) Instructions() code.Instructions { return ff.fn.Instructions }
+func (ff *FunctionFrame) GetIp() int                      { return ff.ip }
+func (ff *FunctionFrame) SetIp(ip int)                    { ff.ip = ip }
+func (ff *FunctionFrame) GetBasePointer() int             { return ff.basePointer }

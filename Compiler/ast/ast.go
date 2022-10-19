@@ -147,7 +147,7 @@ func (fs *ForStatement) TokenLiteral() string { return fs.Token.Literal }
 func (fs *ForStatement) String() string {
 	var out bytes.Buffer
 
-	out.WriteString("if ( ")
+	out.WriteString("for ( ")
 
 	if fs.Initialization != nil {
 		out.WriteString(fs.Initialization.String() + "; ")

@@ -256,3 +256,44 @@ func (l *Lexer) skipWhiteSpace() {
 		l.readChar()
 	}
 }
+
+func (l *Lexer) DefineTokenMove() {
+	ch := l.ch
+	p := l.position
+	r := l.readPosition
+
+	for {
+		for l.NextToken().Type != token.FUNCTION {
+		}
+		FunctionStart := l.position - 3
+
+		i := 1
+
+		for l.NextToken().Type != token.LBRACE {
+		}
+
+		for {
+			tok := l.NextToken().Type
+			if tok == token.LBRACE {
+				i++
+			} else if tok == token.RBRACE {
+				i--
+			}
+			if i == 0 {
+				break
+			}
+		}
+
+		fn := l.input[FunctionStart:l.position]
+
+		l.input = fn + l.input[0:FunctionStart] + l.input[l.position:]
+
+		if l.peekChar() == 0 {
+			break
+		}
+	}
+
+	l.ch = ch
+	l.position = p
+	l.readPosition = r - 1
+}

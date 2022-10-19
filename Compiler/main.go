@@ -52,9 +52,11 @@ func main() {
 
 	f := file.CreateFile("D:\\program\\Go\\src\\RenG\\test\\Test2\\main.rgo")
 	line := f.Read()
-	l := lexer.New(line)
-	p := parser.New(l)
 
+	l := lexer.New(line)
+	l.DefineTokenMove()
+
+	p := parser.New(l)
 	program := p.ParseProgram()
 	// fmt.Println(program.String())
 	if len(p.Errors()) != 0 {
@@ -70,7 +72,11 @@ func main() {
 		fmt.Fprintf(os.Stdout, "Compile failed:\n %s\n\n", err)
 		return
 	}
-	// fmt.Println(comp)
+	err = comp.ReplaceSymbol()
+	if err != nil {
+		fmt.Println("err")
+		return
+	}
 
 	machine := vm.New(comp.Bytecode())
 	err = machine.Run()
