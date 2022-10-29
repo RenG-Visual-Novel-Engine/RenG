@@ -1,8 +1,8 @@
 package parser
 
 import (
-	"RenG/Compiler/ast"
-	"RenG/Compiler/token"
+	"RenG/Compiler/core/ast"
+	"RenG/Compiler/core/token"
 )
 
 func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {

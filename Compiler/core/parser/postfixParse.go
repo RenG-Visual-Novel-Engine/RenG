@@ -1,6 +1,6 @@
 package parser
 
-import "RenG/Compiler/ast"
+import "RenG/Compiler/core/ast"
 
 func (p *Parser) parsePostfixExpression(left ast.Expression) ast.Expression {
 	return &ast.PostfixExpression{

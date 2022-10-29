@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"RenG/Compiler/token"
+	"RenG/Compiler/core/token"
 	"fmt"
 )
 

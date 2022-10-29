@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "swresample.h": "c",
+        "swscale.h": "c",
+        "pixfmt.h": "c",
+        "sdl.h": "c"
+    },
+    "C_Cpp.errorSquiggles": "Disabled"
+}

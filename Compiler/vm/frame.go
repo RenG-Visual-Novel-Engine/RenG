@@ -1,8 +1,8 @@
 package vm
 
 import (
-	"RenG/Compiler/code"
-	"RenG/Compiler/object"
+	"RenG/Compiler/core/code"
+	"RenG/Compiler/core/object"
 )
 
 type Frame struct {

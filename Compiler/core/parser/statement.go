@@ -1,8 +1,8 @@
 package parser
 
 import (
-	"RenG/Compiler/ast"
-	"RenG/Compiler/token"
+	"RenG/Compiler/core/ast"
+	"RenG/Compiler/core/token"
 )
 
 func (p *Parser) parseBlockStatement() *ast.BlockStatement {
@@ -26,6 +26,55 @@ func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 	}
 
 	return block
+}
+
+func (p *Parser) parseFunctionStatement() ast.Statement {
+	stmt := &ast.FunctionStatement{Token: p.curToken}
+
+	p.nextToken()
+
+	stmt.Name = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+
+	if !p.expectPeek(token.LPAREN) {
+		return nil
+	}
+
+	stmt.Parameters = p.parseFunctionParameters()
+
+	if !p.expectPeek(token.LBRACE) {
+		return nil
+	}
+
+	stmt.Body = p.parseBlockStatement()
+
+	return stmt
+}
+
+func (p *Parser) parseFunctionParameters() []*ast.Identifier {
+	identifiers := []*ast.Identifier{}
+
+	if p.peekTokenIs(token.RPAREN) {
+		p.nextToken()
+		return identifiers
+	}
+
+	p.nextToken()
+
+	ident := &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+	identifiers = append(identifiers, ident)
+
+	for p.peekTokenIs(token.COMMA) {
+		p.nextToken()
+		p.nextToken()
+		ident := &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+		identifiers = append(identifiers, ident)
+	}
+
+	if !p.expectPeek(token.RPAREN) {
+		return nil
+	}
+
+	return identifiers
 }
 
 func (p *Parser) parseIfStatement() ast.Statement {
@@ -154,6 +203,22 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	for p.peekTokenIs(token.ENDSENTENCE) || p.curTokenIs(token.ENDSENTENCE) {
 		p.nextToken()
 	}
+
+	return stmt
+}
+
+func (p *Parser) parseScreenStatement() *ast.ScreenStatement {
+	stmt := &ast.ScreenStatement{Token: p.curToken}
+
+	p.nextToken()
+
+	stmt.Name = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+
+	if !p.expectPeek(token.LBRACE) {
+		return nil
+	}
+
+	stmt.Body = p.parseBlockStatement()
 
 	return stmt
 }

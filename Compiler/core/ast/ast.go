@@ -1,7 +1,7 @@
 package ast
 
 import (
-	"RenG/Compiler/token"
+	"RenG/Compiler/core/token"
 	"bytes"
 	"strings"
 )
@@ -37,9 +37,10 @@ func (p *Program) String() string {
 Statement
 
 - ExpressionStatement
-- BlockStatements
-- IfStatements
-- ReturnStatements
+- BlockStatement
+- IfStatement
+- ForStatement
+- ReturnStatement
 */
 
 type Statement interface {
@@ -74,6 +75,34 @@ func (bs *BlockStatement) String() string {
 	for _, s := range bs.Statements {
 		out.WriteString(s.String())
 	}
+
+	return out.String()
+}
+
+type FunctionStatement struct {
+	Token      token.Token
+	Name       *Identifier
+	Parameters []*Identifier
+	Body       *BlockStatement
+}
+
+func (fs *FunctionStatement) statementNode()       {}
+func (fs *FunctionStatement) TokenLiteral() string { return fs.Token.Literal }
+func (fs *FunctionStatement) String() string {
+	var out bytes.Buffer
+
+	params := []string{}
+	for _, p := range fs.Parameters {
+		params = append(params, p.String())
+	}
+
+	out.WriteString(fs.TokenLiteral() + " ")
+	out.WriteString(fs.Name.String())
+	out.WriteString("(")
+	out.WriteString(strings.Join(params, ","))
+	out.WriteString(") {")
+	out.WriteString(fs.Body.String())
+	out.WriteString(" }")
 
 	return out.String()
 }
@@ -189,6 +218,46 @@ func (rs *ReturnStatement) String() string {
 	if rs.ReturnValue != nil {
 		out.WriteString(rs.ReturnValue.String())
 	}
+
+	return out.String()
+}
+
+type LabelStatement struct {
+	Token token.Token
+	Name  *Identifier
+	Body  *BlockStatement
+}
+
+func (ls *LabelStatement) statementNode()       {}
+func (ls *LabelStatement) TokenLiteral() string { return ls.Token.Literal }
+func (ls *LabelStatement) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("label ")
+	out.WriteString(ls.Name.String())
+	out.WriteString(" { ")
+	out.WriteString(ls.Body.String())
+	out.WriteString(" } ")
+
+	return out.String()
+}
+
+type ScreenStatement struct {
+	Token token.Token
+	Name  *Identifier
+	Body  *BlockStatement
+}
+
+func (ss *ScreenStatement) statementNode()       {}
+func (ss *ScreenStatement) TokenLiteral() string { return ss.Token.Literal }
+func (ss *ScreenStatement) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("screen ")
+	out.WriteString(ss.Name.String())
+	out.WriteString(" { ")
+	out.WriteString(ss.Body.String())
+	out.WriteString(" } ")
 
 	return out.String()
 }
@@ -319,7 +388,6 @@ literal
 -FloatLiteral
 -StringLiteral
 -ArrayLiteral
--FunctionLiteral
 */
 
 type Identifier struct {
@@ -385,34 +453,6 @@ func (al *ArrayLiteral) String() string {
 	out.WriteString("[")
 	out.WriteString(strings.Join(elements, ", "))
 	out.WriteString("]")
-
-	return out.String()
-}
-
-type FunctionLiteral struct {
-	Token      token.Token
-	Name       *Identifier
-	Parameters []*Identifier
-	Body       *BlockStatement
-}
-
-func (fl *FunctionLiteral) expressionNode()      {}
-func (fl *FunctionLiteral) TokenLiteral() string { return fl.Token.Literal }
-func (fl *FunctionLiteral) String() string {
-	var out bytes.Buffer
-
-	params := []string{}
-	for _, p := range fl.Parameters {
-		params = append(params, p.String())
-	}
-
-	out.WriteString(fl.TokenLiteral() + " ")
-	out.WriteString(fl.Name.String())
-	out.WriteString("(")
-	out.WriteString(strings.Join(params, ","))
-	out.WriteString(") {")
-	out.WriteString(fl.Body.String())
-	out.WriteString(" }")
 
 	return out.String()
 }

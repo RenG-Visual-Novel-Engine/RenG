@@ -1,9 +1,9 @@
 package compiler
 
 import (
-	"RenG/Compiler/ast"
-	"RenG/Compiler/code"
-	"RenG/Compiler/object"
+	"RenG/Compiler/core/ast"
+	"RenG/Compiler/core/code"
+	"RenG/Compiler/core/object"
 	"fmt"
 )
 
@@ -16,7 +16,7 @@ type Compiler struct {
 		pos              int
 		ReplaceFuncIndex int
 		symbol           string
-	} // scopeIndex : pos,
+	}
 
 	scopes     []CompilationScope
 	scopeIndex int
@@ -97,6 +97,40 @@ func (c *Compiler) Compile(node ast.Node) error {
 			}
 		}
 		// c.emit(code.OpPop)
+	case *ast.FunctionStatement:
+		symbol := c.symbolTable.Define(node.Name.Value)
+
+		c.enterScope()
+
+		for _, p := range node.Parameters {
+			c.symbolTable.Define(p.Value)
+		}
+
+		err := c.Compile(node.Body)
+		if err != nil {
+			return err
+		}
+
+		if c.lastInsructionIs(code.OpPop) {
+			c.replaceLastPopWithReturn()
+		}
+
+		if !c.lastInsructionIs(code.OpReturnValue) {
+			c.emit(code.OpReturn)
+		}
+
+		numLocals := c.symbolTable.numDefinitions
+		instructions := c.leaveScope()
+
+		compiledFn := &object.CompiledFunction{
+			Instructions:  instructions,
+			NumLocals:     numLocals,
+			NumParameters: len(node.Parameters),
+		}
+
+		c.emit(code.OpConstant, c.addConstant(compiledFn))
+		c.emit(code.OpSetGlobal, symbol.Index)
+		return nil
 	case *ast.IfStatement:
 		var jmpPos []int
 
@@ -359,40 +393,6 @@ func (c *Compiler) Compile(node ast.Node) error {
 		}
 
 		c.emit(code.OpIndex)
-	case *ast.FunctionLiteral:
-		symbol := c.symbolTable.Define(node.Name.Value)
-
-		c.enterScope()
-
-		for _, p := range node.Parameters {
-			c.symbolTable.Define(p.Value)
-		}
-
-		err := c.Compile(node.Body)
-		if err != nil {
-			return err
-		}
-
-		if c.lastInsructionIs(code.OpPop) {
-			c.replaceLastPopWithReturn()
-		}
-
-		if !c.lastInsructionIs(code.OpReturnValue) {
-			c.emit(code.OpReturn)
-		}
-
-		numLocals := c.symbolTable.numDefinitions
-		instructions := c.leaveScope()
-
-		compiledFn := &object.CompiledFunction{
-			Instructions:  instructions,
-			NumLocals:     numLocals,
-			NumParameters: len(node.Parameters),
-		}
-
-		c.emit(code.OpConstant, c.addConstant(compiledFn))
-		c.emit(code.OpSetGlobal, symbol.Index)
-		return nil
 	case *ast.CallFunctionExpression:
 		err := c.Compile(node.Function)
 		if err != nil {

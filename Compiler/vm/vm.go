@@ -1,9 +1,9 @@
 package vm
 
 import (
-	"RenG/Compiler/code"
-	"RenG/Compiler/compiler"
-	"RenG/Compiler/object"
+	"RenG/Compiler/core/code"
+	"RenG/Compiler/core/compiler"
+	"RenG/Compiler/core/object"
 	"fmt"
 )
 

@@ -1,7 +1,7 @@
 package object
 
 import (
-	"RenG/Compiler/code"
+	"RenG/Compiler/core/code"
 	"bytes"
 	"fmt"
 	"strings"

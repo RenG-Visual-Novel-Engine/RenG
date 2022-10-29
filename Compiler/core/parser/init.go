@@ -1,9 +1,9 @@
 package parser
 
 import (
-	"RenG/Compiler/ast"
-	"RenG/Compiler/lexer"
-	"RenG/Compiler/token"
+	"RenG/Compiler/core/ast"
+	"RenG/Compiler/core/lexer"
+	"RenG/Compiler/core/token"
 )
 
 const (
@@ -105,7 +105,6 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.FLOAT, p.parseFloatLiteral)
 	p.registerPrefix(token.STRING, p.parseStringLiteral)
 	p.registerPrefix(token.LBRACKET, p.parseArrayLiteral)
-	p.registerPrefix(token.FUNCTION, p.parseFunctionExpression)
 
 	p.infixParseFns = make(map[token.TokenType]infixParseFn)
 
@@ -157,12 +156,18 @@ func (p *Parser) ParseProgram() *ast.Program {
 
 func (p *Parser) parseStatement() ast.Statement {
 	switch p.curToken.Type {
+	case token.FUNCTION:
+		return p.parseFunctionStatement()
 	case token.IF:
 		return p.parseIfStatement()
 	case token.FOR:
 		return p.parseForStatement()
 	case token.RETURN:
 		return p.parseReturnStatement()
+	case token.LABEL:
+		return nil
+	case token.SCREEN:
+		return p.parseScreenStatement()
 	default:
 		return p.parseExpressionStatement()
 	}

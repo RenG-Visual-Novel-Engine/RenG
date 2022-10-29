@@ -1,10 +1,10 @@
 package main
 
 import (
-	"RenG/Compiler/compiler"
+	"RenG/Compiler/core/compiler"
+	"RenG/Compiler/core/lexer"
+	"RenG/Compiler/core/parser"
 	"RenG/Compiler/file"
-	"RenG/Compiler/lexer"
-	"RenG/Compiler/parser"
 	"RenG/Compiler/vm"
 	"fmt"
 	"io"
