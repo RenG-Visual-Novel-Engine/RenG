@@ -14,6 +14,10 @@ func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 	block := &ast.BlockStatement{Token: p.curToken}
 	block.Statements = []ast.Statement{}
 
+	if p.peekTokenIs(token.ENDSENTENCE) {
+		p.nextToken()
+	}
+
 	p.nextToken()
 
 	for !p.curTokenIs(token.RBRACE) && !p.curTokenIs(token.EOF) {
@@ -23,6 +27,10 @@ func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 		if p.curTokenIs(token.ENDSENTENCE) {
 			p.nextToken()
 		}
+	}
+
+	for p.peekTokenIs(token.ENDSENTENCE) {
+		p.nextToken()
 	}
 
 	return block
@@ -200,7 +208,7 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 
 	stmt.ReturnValue = p.parseExpression(LOWEST)
 
-	for p.peekTokenIs(token.ENDSENTENCE) || p.curTokenIs(token.ENDSENTENCE) {
+	for p.peekTokenIs(token.ENDSENTENCE) {
 		p.nextToken()
 	}
 

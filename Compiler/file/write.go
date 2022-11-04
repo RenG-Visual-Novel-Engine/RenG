@@ -1,9 +1,9 @@
 package file
 
 import (
-	"RenG/Compiler//util"
 	"RenG/Compiler/core/code"
 	"RenG/Compiler/core/object"
+	"RenG/Compiler/util"
 	"strconv"
 )
 

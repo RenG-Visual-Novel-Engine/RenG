@@ -4,6 +4,8 @@ import (
 	"RenG/Compiler/core/token"
 )
 
+type InputType string
+
 type Lexer struct {
 	input        string
 	position     int
@@ -12,18 +14,15 @@ type Lexer struct {
 }
 
 func New(input string) *Lexer {
-	l := &Lexer{input: input}
+	l := &Lexer{
+		input: input,
+	}
 	l.readChar()
 	return l
 }
 
 func (l *Lexer) NextToken() token.Token {
 	var tok token.Token
-
-	if l.ch == '\n' {
-		l.skipWhiteSpace()
-		return newToken(token.ENDSENTENCE, "ENDSENTENCE")
-	}
 
 	l.skipWhiteSpace()
 
@@ -146,10 +145,8 @@ func (l *Lexer) NextToken() token.Token {
 		tok = newToken(token.LPAREN, string(l.ch))
 	case ')':
 		tok = newToken(token.RPAREN, string(l.ch))
-		l.skipWhiteSpace()
 	case '{':
 		tok = newToken(token.LBRACE, string(l.ch))
-		l.skipWhiteSpace()
 	case '}':
 		tok = newToken(token.RBRACE, string(l.ch))
 	case '[':
@@ -158,11 +155,18 @@ func (l *Lexer) NextToken() token.Token {
 		tok = newToken(token.RBRACKET, string(l.ch))
 	case ';':
 		tok = newToken(token.ENDSENTENCE, string(l.ch))
+		l.skipNextSentence()
+		return tok
+	case '\n':
+		tok = newToken(token.ENDSENTENCE, string(l.ch))
+		l.skipNextSentence()
+		return tok
 	case '#':
 		for !(l.peekChar() == '\n' || l.peekChar() == 0) {
 			l.readChar()
 		}
-		l.skipWhiteSpace()
+		l.skipNextSentence()
+		return tok
 	case 0:
 		tok.Literal = ""
 		tok.Type = token.EOF
@@ -201,7 +205,6 @@ func (l *Lexer) readChar() {
 		l.readPosition += 1
 	} else {
 		r, size := readByteUTF8(l.input, l.readPosition)
-		// fmt.Println(string(r))
 		l.ch = r
 		l.position = l.readPosition
 		l.readPosition += size
@@ -252,48 +255,13 @@ func (l *Lexer) readNumberAndIsInt() (string, bool) {
 }
 
 func (l *Lexer) skipWhiteSpace() {
-	for l.ch == ' ' || l.ch == '\t' || l.ch == '\r' || l.ch == '\n' {
+	for l.ch == ' ' || l.ch == '\t' || l.ch == '\r' {
 		l.readChar()
 	}
 }
 
-func (l *Lexer) DefineTokenMove() {
-	ch := l.ch
-	p := l.position
-	r := l.readPosition
-
-	for {
-		for l.NextToken().Type != token.FUNCTION {
-		}
-		FunctionStart := l.position - 3
-
-		i := 1
-
-		for l.NextToken().Type != token.LBRACE {
-		}
-
-		for {
-			tok := l.NextToken().Type
-			if tok == token.LBRACE {
-				i++
-			} else if tok == token.RBRACE {
-				i--
-			}
-			if i == 0 {
-				break
-			}
-		}
-
-		fn := l.input[FunctionStart:l.position]
-
-		l.input = fn + l.input[0:FunctionStart] + l.input[l.position:]
-
-		if l.peekChar() == 0 {
-			break
-		}
+func (l *Lexer) skipNextSentence() {
+	for l.ch == ';' || l.ch == '\n' {
+		l.readChar()
 	}
-
-	l.ch = ch
-	l.position = p
-	l.readPosition = r - 1
 }

@@ -5,7 +5,7 @@ import (
 	"RenG/Compiler/core/lexer"
 	"RenG/Compiler/core/parser"
 	"RenG/Compiler/file"
-	"RenG/Compiler/vm"
+	"RenG/Compiler/str"
 	"fmt"
 	"io"
 	"os"
@@ -53,12 +53,36 @@ func main() {
 	f := file.CreateFile("D:\\program\\Go\\src\\RenG\\test\\Test2\\main.rgo")
 	line := f.Read()
 
-	l := lexer.New(line)
-	l.DefineTokenMove()
+	comp := compiler.New()
 
+	objectTokens := []string{"def", "label"}
+
+	for _, t := range objectTokens {
+		oc := str.SliceToken(line, t)
+		if oc == "" {
+			continue
+		}
+		l := lexer.New(oc)
+		p := parser.New(l)
+		pro := p.ParseProgram()
+		if len(p.Errors()) != 0 {
+			for _, err := range p.Errors() {
+				io.WriteString(os.Stdout, err+"\n\n")
+			}
+			return
+		}
+		err := comp.Compile(pro)
+		if err != nil {
+			fmt.Fprintf(os.Stdout, "Compile failed:\n %s\n\n", err)
+			return
+		}
+	}
+}
+
+/*
 	p := parser.New(l)
 	program := p.ParseProgram()
-	// fmt.Println(program.String())
+	fmt.Println(program.String())
 	if len(p.Errors()) != 0 {
 		for _, err := range p.Errors() {
 			io.WriteString(os.Stdout, err+"\n\n")
@@ -85,3 +109,4 @@ func main() {
 		return
 	}
 }
+*/
