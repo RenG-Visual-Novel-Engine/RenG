@@ -2,6 +2,17 @@ package compiler
 
 import "RenG/Compiler/core/code"
 
+type CompilationScope struct {
+	instructions        code.Instructions
+	lastInstruction     EmittedInstruction
+	previousInstruction EmittedInstruction
+}
+
+type EmittedInstruction struct {
+	OpCode   code.Opcode
+	Position int
+}
+
 func (c *Compiler) enterScope() {
 	scope := CompilationScope{
 		instructions:        code.Instructions{},

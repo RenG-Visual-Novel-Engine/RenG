@@ -317,25 +317,6 @@ func (ie *InfixExpression) String() string {
 	return out.String()
 }
 
-type PostfixExpression struct {
-	Token    token.Token
-	Left     Expression
-	Operator string
-}
-
-func (pe *PostfixExpression) expressionNode()      {}
-func (pe *PostfixExpression) TokenLiteral() string { return pe.Token.Literal }
-func (pe *PostfixExpression) String() string {
-	var out bytes.Buffer
-
-	out.WriteString("(")
-	out.WriteString(pe.Left.String())
-	out.WriteString(pe.Operator)
-	out.WriteString(")")
-
-	return out.String()
-}
-
 type IndexExpression struct {
 	Token token.Token
 	Left  Expression
@@ -399,14 +380,14 @@ func (i *Identifier) expressionNode()      {}
 func (i *Identifier) TokenLiteral() string { return i.Token.Literal }
 func (i *Identifier) String() string       { return i.Value }
 
-type Boolean struct {
+type BooleanLiteral struct {
 	Token token.Token
 	Value bool
 }
 
-func (b *Boolean) expressionNode()      {}
-func (b *Boolean) TokenLiteral() string { return b.Token.Literal }
-func (b *Boolean) String() string       { return b.Token.Literal }
+func (bl *BooleanLiteral) expressionNode()      {}
+func (bl *BooleanLiteral) TokenLiteral() string { return bl.Token.Literal }
+func (bl *BooleanLiteral) String() string       { return bl.Token.Literal }
 
 type IntegerLiteral struct {
 	Token token.Token

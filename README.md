@@ -2,24 +2,14 @@
 <h1>Ren'G</h1>
 <h3>Visual Novel Engine</h3>
 <h3>In Go</h3>
+<br><br>
+<a href="https://discord.gg/JkkvP6U9qk" terget="_blank">
+<img src="https://img.shields.io/badge/-Discord-5865F2?logo=Discord&logoColor=white&style=flat"/>
+</a>
 </div>
 <br><br>
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/e28b0470266e448481331019b7f49aa6)](https://app.codacy.com/gh/RenG-Visual-Novel-Engine/RenG?utm_source=github.com&utm_medium=referral&utm_content=RenG-Visual-Novel-Engine/RenG&utm_campaign=Badge_Grade_Settings)
-
-
-<br><br>
-
-# 추구하는 것
-
-- 빠른 속도
-- 간단한 문법
-- 훌륭한 소리
-- 아름답고 간편한 디자인
-
-<br><br>
-
-# 라이선스
+# License
 
 ## RenG
 MIT License
@@ -50,53 +40,14 @@ SOFTWARE.
 
 |Language|Version|License|
 |--------|-------|-------|
-|Go|1.17|Creative Commons 3.0 Attributions license|
+|RenG|0.0|MIT License|
+|Go|1.19.2|Creative Commons 3.0 Attributions license|
+
+<br>
 
 ## Libraries
 
 |Name|Part|License|
 |----|----|-------|
-|SDL2|메인 그래픽 출력|zlib License|
-|FFmpeg|동영상 인코딩, 디코딩|GNU Lesser General Public License|
-
-## Font
-- 본 저작물에서 사용한 제주고딕체는 공공누리 제1유형에 의거하여 [해당](https://www.jeju.go.kr/jeju/symbol/font/gothic.htm) 부분을 클릭하여 다운로드 받을 수 있음을 알려드립니다.
-
-<br><br>
-
-# 디스코드
-<a href="https://discord.gg/JkkvP6U9qk" terget="_blank">
-<img src="https://img.shields.io/badge/-Discord-5865F2?logo=Discord&logoColor=white&style=flat"/>
-</a>
-
-<br><br>
-
-# 개발 참가 전 알아야 할 사항들
-
-- Ren'G 엔진은 cgo를 이용하므로 gcc 혹은 clang 등의 C언어 컴파일 환경이 필요합니다. 윈도우 유저시라면 mingw-w64를 사용할 것을 권장합니다.
-- 각각 파일에 존재하는 ~ _test.go 파일들은 테스트를 위해 만들어 둔 파일입니다.
-- 1회 이상 엔진 개발에 기여할시 RenG-Visual-Novel-Engine 팀에 초대됩니다.
-
-<br><br>
-
-- ## 엔진의 전체적인 구조입니다.
-
-<br><br>
-
-<img src="https://user-images.githubusercontent.com/77112874/131224110-d66b9175-ca1d-406f-b331-2da5f58d605a.jpg"></img>
-
-<br>
-
-# 시작
-
-```
-git clone "https://github.com/RenG-Visual-Novel-Engine/RenG"
-```
-
-- 파일 위치는 "{GOPATH}/src/RenG"에 해두는 것이 가장 좋습니다.
-
-# 커밋 규칙
-
-```
-git commit -m "<본인의 계정 이름> : <수정 내용>"
-```
+|SDL2|Graphic, Audio|zlib License|
+|FFmpeg|Video|GNU Lesser General Public License|

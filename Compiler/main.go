@@ -71,12 +71,16 @@ func main() {
 			}
 			return
 		}
-		err := comp.Compile(pro)
+		err := comp.CompileObject(pro)
 		if err != nil {
 			fmt.Fprintf(os.Stdout, "Compile failed:\n %s\n\n", err)
 			return
 		}
 	}
+
+	comp.ReplaceSymbol()
+
+	fmt.Println(comp)
 }
 
 /*
