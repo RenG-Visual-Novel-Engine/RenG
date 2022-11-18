@@ -11,20 +11,13 @@ func init() {
 }
 
 func main() {
-	// if len(os.Args) < 2 {
-	// 	return
-	//}
-
-	// _, err := file.ReadRGOCDir(os.Args[1])
-	//if err != nil {
-	//	panic(err)
-	//}
-
 	s := system.Init("테스트 용도", 1280, 720)
 	defer s.Close()
 
 	a := audio.Init()
 	defer a.Close()
+
+	a.PlayMusic("D:\\program\\Go\\src\\RenG\\game\\music\\TrackTribe.mp3", true)
 
 	s.Render()
 

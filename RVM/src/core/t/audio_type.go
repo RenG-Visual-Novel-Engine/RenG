@@ -5,14 +5,9 @@ package t
 #cgo LDFLAGS: -L./../sdl/lib -lSDL2 -lSDL2main -lSDL2_image -lSDL2_ttf -lSDL2_mixer
 
 #include <SDL.h>
-#include <SDL_image.h>
-#include <SDL_ttf.h>
 #include <SDL_mixer.h>
 */
 import "C"
-
-type Mix_Music C.Mix_Music
-type Mix_Chunk C.Mix_Chunk
 
 const (
 	MIX_DEFAULT_FORMAT = C.MIX_DEFAULT_FORMAT
