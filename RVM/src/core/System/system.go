@@ -17,9 +17,9 @@ Uint32 eventType(SDL_Event event)
 */
 import "C"
 import (
+	video "RenG/RVM/src/core/Graphic/Video"
 	"RenG/RVM/src/core/System/vm"
 	"RenG/RVM/src/core/t"
-	"fmt"
 	"unsafe"
 )
 
@@ -70,11 +70,8 @@ func (s *System) Close() {
 }
 
 // 임시
-func (s *System) Render() {
+func (s *System) Render(v *video.Video) {
 	var quit bool = false
-	st := C.SDL_GetTicks()
-	en := C.SDL_GetTicks()
-	de := 15
 
 	for !quit {
 		for int(C.SDL_PollEvent((*C.SDL_Event)(&s.event))) != 0 {
@@ -86,19 +83,15 @@ func (s *System) Render() {
 
 		C.SDL_RenderClear((*C.SDL_Renderer)(s.renderer))
 		C.SDL_SetRenderDrawColor((*C.SDL_Renderer)(s.renderer), C.uchar(0), C.uchar(0), C.uchar(0), C.uchar(255))
+
+		v.Lock()
+		C.SDL_RenderCopy((*C.SDL_Renderer)(s.renderer), (*C.SDL_Texture)(v.GetTexture()), nil, nil)
+		v.Unlock()
+
 		C.SDL_RenderPresent((*C.SDL_Renderer)(s.renderer))
-
-		en = C.SDL_GetTicks()
-
-		C.SDL_Delay(C.uint(de))
-
-		if en-st > 0 {
-			fmt.Println(1000 / (en - st))
-		}
-
-		if 1000/60-int(C.SDL_GetTicks()-st) >= 0 {
-			de = 1000/60 - int(C.SDL_GetTicks()-st)
-		}
-		st = en
 	}
+}
+
+func (s *System) GetRenderer() *t.SDL_Renderer {
+	return s.renderer
 }

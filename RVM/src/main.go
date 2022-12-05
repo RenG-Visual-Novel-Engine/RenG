@@ -2,6 +2,7 @@ package main
 
 import (
 	audio "RenG/RVM/src/core/Audio"
+	video "RenG/RVM/src/core/Graphic/Video"
 	system "RenG/RVM/src/core/System"
 	"runtime"
 )
@@ -17,8 +18,13 @@ func main() {
 	a := audio.Init()
 	defer a.Close()
 
-	a.PlayMusic("D:\\program\\Go\\src\\RenG\\game\\music\\TrackTribe.mp3", true)
+	v := video.Init()
+	defer v.Close()
 
-	s.Render()
+	a.PlayMusic("D:\\program\\renpy\\SummerFlower_Mode\\game\\sounds\\ed.ogg", true)
+	v.VideoInit("D:\\source\\video\\ed.webm")
+	v.VideoStart(s.GetRenderer())
+
+	s.Render(&v)
 
 }
