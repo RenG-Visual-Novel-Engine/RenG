@@ -4,6 +4,9 @@
 
 #include <SDL.h>
 #include <SDL_thread.h>
+#include <windows.h> 
+
+static SDL_mutex* lock;
 
 typedef struct VideoState {
     AVFormatContext* ctx;
@@ -14,15 +17,15 @@ typedef struct VideoState {
 
 	int videoStream;
 
-    int startTime;
+    unsigned long startTime;
 	int delay;
 
-    SDL_mutex* lock;
+	int nowPlaying;
 
 	SDL_Texture* texture;
 } VideoState;
 
-VideoState* VideoInit(char* path) {
+VideoState* VideoInit(char* path, SDL_Renderer* r) {
     VideoState* v = (VideoState*)malloc(sizeof(VideoState));
 
     AVFormatContext* ctx = avformat_alloc_context();
@@ -84,15 +87,27 @@ VideoState* VideoInit(char* path) {
 		NULL
 	);
 
-	v->lock = SDL_CreateMutex();
+	if (!lock) {
+		lock = SDL_CreateMutex();
+	}
+
+	v->texture = SDL_CreateTexture(
+		r,
+		SDL_PIXELFORMAT_YV12, 
+		SDL_TEXTUREACCESS_STREAMING,
+		v->codec_ctx->width,
+		v->codec_ctx->height
+	);
+
+	v->nowPlaying = 0;
 
     return v;
 }
 
-void DecodeFrame(VideoState* v, int index)
+int DecodeFrame(VideoState* v, int index)
 {
 	if (index < v->codec_ctx->frame_number)
-		return;
+		return 1;
 
 	AVFrame* frame = av_frame_alloc();
 		
@@ -114,7 +129,7 @@ void DecodeFrame(VideoState* v, int index)
 		if (ret == AVERROR_EOF)
 		{
 			av_packet_unref(pkt);
-			break;
+			return 0;
 		}
 
 		ret = avcodec_receive_frame(v->codec_ctx, frame);
@@ -134,24 +149,35 @@ void DecodeFrame(VideoState* v, int index)
 	}
 	// AVFrame* del = v->frame;
 	v->frame = frame;
+
+	return 1;
 }
 
-void Lock(VideoState* v) {
-	SDL_LockMutex(v->lock);
+void Lock() {
+	SDL_LockMutex(lock);
 }
 
-void Unlock(VideoState* v) {
-	SDL_UnlockMutex(v->lock);
+void Unlock() {
+	SDL_UnlockMutex(lock);
 }
 
 int video_thread(void* data) {
 	VideoState* v = (VideoState*)data;
 	SDL_Rect render = { 0, 0, 1920, 1080 }; // TODO
 
-	for (;;) {
-		Lock(v);
+	 // SDL_Delay(400);
 
-		DecodeFrame(v, (clock() - v->startTime) / (1000 / 30));
+	v->startTime = timeGetTime();
+
+	for (;;) {
+		Lock();
+
+		if (!DecodeFrame(v, (int)((timeGetTime() - v->startTime) / (1000.0 / 30.0))))
+		{
+			v->nowPlaying = 0;
+			Unlock();
+			break;
+		}
 	
 		SDL_UpdateYUVTexture(
 			v->texture,
@@ -166,7 +192,7 @@ int video_thread(void* data) {
 
 		av_frame_free(&v->frame);
 
-		Unlock(v);
+		Unlock();
 
 		SDL_Delay(v->delay);
 
@@ -175,17 +201,9 @@ int video_thread(void* data) {
 	return 0;
 }
 
-void Start(VideoState* v, SDL_Renderer* r) {
-	v->texture = SDL_CreateTexture(
-		r,
-		SDL_PIXELFORMAT_YV12, 
-		SDL_TEXTUREACCESS_STREAMING,
-		v->codec_ctx->width,
-		v->codec_ctx->height
-	);
-
+void Start(VideoState* v) {
 	v->delay = 1000 / 30; //TODO
-	v->startTime = clock();
+	v->nowPlaying = 1;
 
 	SDL_CreateThread(video_thread, "video_thread", v);
 }

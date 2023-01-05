@@ -1,15 +1,14 @@
 package audio
 
 /*
-#cgo CFLAGS: -I./../sdl/include
-#cgo LDFLAGS: -L./../sdl/lib -lSDL2 -lSDL2main -lSDL2_mixer
+#cgo CFLAGS: -I./../../../sdl/include
+#cgo LDFLAGS: -L./../../../sdl/lib -lSDL2 -lSDL2main -lSDL2_mixer
 
 #include <SDL.h>
 #include <SDL_mixer.h>
 */
 import "C"
 import (
-	"RenG/RVM/src/core/t"
 	"fmt"
 	"unsafe"
 )
@@ -23,8 +22,8 @@ type Audio struct {
 
 func Init() *Audio {
 	// (frequency, format, channels. chuncksize, device, allowed_changes)
-	if C.Mix_OpenAudioDevice(44100, t.MIX_DEFAULT_FORMAT, 2, 2048, nil,
-		t.SDL_AUDIO_ALLOW_FREQUENCY_CHANGE|t.SDL_AUDIO_ALLOW_CHANNELS_CHANGE) < 0 {
+	if C.Mix_OpenAudioDevice(44100, C.MIX_DEFAULT_FORMAT, 2, 2048, nil,
+		C.SDL_AUDIO_ALLOW_FREQUENCY_CHANGE|C.SDL_AUDIO_ALLOW_CHANNELS_CHANGE) < 0 {
 		return nil
 	}
 	return &Audio{
@@ -41,7 +40,7 @@ func Init() *Audio {
 func (a *Audio) PlayMusic(path string, loop bool) error {
 	m, ok := a.musics[path]
 	if !ok {
-		err := a.addMusic(path)
+		err := a.AddMusic(path)
 		if err != nil {
 			return err
 		}
@@ -58,10 +57,12 @@ func (a *Audio) PlayChannel(channelName string, path string) error {
 }
 
 func (a *Audio) Close() {
+
+	//TODO
 	C.Mix_CloseAudio()
 }
 
-func (a *Audio) addMusic(path string) error {
+func (a *Audio) AddMusic(path string) error {
 	cp := C.CString(path)
 	defer C.free(unsafe.Pointer(cp))
 
@@ -74,7 +75,7 @@ func (a *Audio) addMusic(path string) error {
 	return nil
 }
 
-func (a *Audio) addChunck(path string) error {
+func (a *Audio) AddChunck(path string) error {
 	cp := C.CString(path)
 	defer C.free(unsafe.Pointer(cp))
 

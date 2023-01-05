@@ -1,14 +1,22 @@
 *.cmake
 *.zip
 
-/RenG
-
 /test
 
-/Blue
-
 /src
+
+/RenGLauncher
 
 /RVM/src/core/sdl
 
 /RVM/src/core/ffmpeg
+
+/RVM/src/core/System/bytecode
+
+/RVM/src/core/System/code
+
+/RVM/src/core/System/object
+
+/RVM/src/core/System/vm
+
+/Dream_of_Galaxy
