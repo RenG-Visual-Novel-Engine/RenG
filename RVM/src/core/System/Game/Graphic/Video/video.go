@@ -26,6 +26,12 @@ func Init() *Video {
 	}
 }
 
+func (v *Video) Close() {
+	for _, v := range v.V {
+		C.SDL_DestroyTexture(v.texture)
+	}
+}
+
 func (v *Video) VideoInit(name, path string, r *globaltype.SDL_Renderer) {
 	cpath := C.CString(path)
 	defer C.free(unsafe.Pointer(cpath))
@@ -57,8 +63,4 @@ func (v *Video) Lock() {
 
 func (v *Video) Unlock() {
 	C.Unlock()
-}
-
-func (v *Video) Close() {
-
 }

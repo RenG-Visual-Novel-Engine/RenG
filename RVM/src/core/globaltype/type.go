@@ -15,4 +15,7 @@ type (
 	SDL_Renderer = C.SDL_Renderer
 	SDL_Event    = C.SDL_Event
 	SDL_Texture  = C.SDL_Texture
+	SDL_Surface  = C.SDL_Surface
+
+	TTF_Font = C.TTF_Font
 )

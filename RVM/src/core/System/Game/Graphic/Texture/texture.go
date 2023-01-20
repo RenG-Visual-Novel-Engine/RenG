@@ -11,6 +11,10 @@ package texture
 import "C"
 import "RenG/RVM/src/core/globaltype"
 
+func DestroyTexture(t *globaltype.SDL_Texture) {
+	C.SDL_DestroyTexture((*C.SDL_Texture)(t))
+}
+
 func TextureAlphaChange(t *globaltype.SDL_Texture, value int) {
 	C.SDL_SetTextureAlphaMod((*C.SDL_Texture)(t), C.uchar(value))
 }

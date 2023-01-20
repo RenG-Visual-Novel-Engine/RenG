@@ -1,9 +1,13 @@
 package obj
 
 type Transform struct {
-	Xpos, Ypos   int
-	Xsize, Ysize int
-	Rotate       int
+	Pos    Vector2
+	Size   Vector2
+	Rotate int
+}
+
+type Vector2 struct {
+	X, Y int
 }
 
 type Character struct {

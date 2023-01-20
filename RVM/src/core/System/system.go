@@ -8,18 +8,6 @@ package system
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 #include <SDL_mixer.h>
-
-SDL_Rect CreateRects(int x, int y, int w, int h)
-{
-	SDL_Rect Quad = { x, y, w, h };
-	return Quad;
-}
-
-Uint32 eventType(SDL_Event event)
-{
-	return event.type;
-}
-
 */
 import "C"
 import (
@@ -27,22 +15,24 @@ import (
 	graphic "RenG/RVM/src/core/System/Game/Graphic"
 	"RenG/RVM/src/core/System/game"
 	"RenG/RVM/src/core/globaltype"
+	"log"
 	"os"
 	"unsafe"
 )
 
 type System struct {
 	window *globaltype.SDL_Window
-	event  globaltype.SDL_Event
 
-	quit  bool
 	title string
 
 	Game *game.Game
 	// vm       *vm.VM
 }
 
-func Init(title string, width, height int) *System {
+func Init(title string,
+	width, height int,
+	CursorPath string,
+) *System {
 
 	if C.SDL_Init(C.SDL_INIT_EVERYTHING) < 0 {
 		return nil
@@ -54,7 +44,7 @@ func Init(title string, width, height int) *System {
 	window := C.SDL_CreateWindow(
 		Ctitle, C.SDL_WINDOWPOS_CENTERED, C.SDL_WINDOWPOS_CENTERED,
 		C.int(width), C.int(height),
-		C.SDL_WINDOW_SHOWN|C.SDL_WINDOW_INPUT_FOCUS|C.SDL_WINDOW_MOUSE_FOCUS,
+		C.SDL_WINDOW_HIDDEN|C.SDL_WINDOW_INPUT_FOCUS|C.SDL_WINDOW_MOUSE_FOCUS,
 	)
 	if window == nil {
 		return nil
@@ -67,15 +57,30 @@ func Init(title string, width, height int) *System {
 		return nil
 	}
 
+	C.TTF_Init()
+
+	hint1 := C.CString(C.SDL_HINT_RENDER_SCALE_QUALITY)
+	defer C.free(unsafe.Pointer(hint1))
+
+	hint2 := C.CString("1")
+	defer C.free(unsafe.Pointer(hint2))
+
+	if C.SDL_SetHint(hint1, hint2) == 0 {
+		log.Println("Hint quality Error")
+	}
+
 	path, _ := os.Getwd()
+
+	g := graphic.Init((*globaltype.SDL_Renderer)(renderer), path)
+	g.RegisterCursor(CursorPath)
 
 	return &System{
 		window: (*globaltype.SDL_Window)(window),
-		quit:   false,
 		title:  title,
 		Game: game.Init(
-			graphic.Init((*globaltype.SDL_Renderer)(renderer), path),
+			g,
 			audio.Init(),
+			path,
 		),
 	}
 }
@@ -87,44 +92,19 @@ func (s *System) Close() {
 	C.SDL_Quit()
 }
 
-func (s *System) Start(firstScreen string) {
-	s.Game.Graphic.ActiveScreen(firstScreen)
-	// s.Graphic.Videos.VideoStart(s.Graphic.Renderer)
-	for !s.quit {
-		for int(C.SDL_PollEvent((*C.SDL_Event)(&s.event))) != 0 {
-			switch int(C.eventType((C.SDL_Event)(s.event))) {
-			case 256:
-				s.quit = true
-			}
+func (s *System) WindowStart(firstScreen string) {
+	s.Game.ActiveScreen(firstScreen)
+	C.SDL_ShowWindow((*C.SDL_Window)(s.window))
+
+	for {
+		if s.Game.Event.Update() {
+			break
 		}
+		s.Game.Graphic.Update()
 		s.Game.Graphic.Render()
 	}
 }
 
-// func (s *System)
-
-/*
-// 임시
-func (s *System) Render(v *video.Video) {
-	var quit bool = false
-
-	for !quit {
-		for int(C.SDL_PollEvent((*C.SDL_Event)(&s.event))) != 0 {
-			switch int(C.eventType((C.SDL_Event)(s.event))) {
-			case 256:
-				quit = true
-			}
-		}
-
-		C.SDL_RenderClear((*C.SDL_Renderer)(s.renderer))
-		C.SDL_SetRenderDrawColor((*C.SDL_Renderer)(s.renderer), C.uchar(0), C.uchar(0), C.uchar(0), C.uchar(255))
-
-		v.Lock()
-		C.SDL_RenderCopy((*C.SDL_Renderer)(s.renderer), (*C.SDL_Texture)(v.GetTexture()), nil, nil)
-
-		C.SDL_RenderPresent((*C.SDL_Renderer)(s.renderer))
-
-		v.Unlock()
-	}
+func (s *System) GameStart(firstLabel string) {
+	go s.Game.StartLabel(firstLabel)
 }
-*/

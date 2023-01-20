@@ -1,7 +1,7 @@
 package obj
 
 import (
-	audio "RenG/RVM/src/core/System/Game/Audio"
+	event "RenG/RVM/src/core/System/Game/Event"
 	animation "RenG/RVM/src/core/System/Game/Graphic/Animation"
 )
 
@@ -34,17 +34,17 @@ type Hide struct {
 func (h *Hide) labelObj() {}
 
 type PlayMusic struct {
-	Audio *audio.Audio
-	Path  string
-	Loop  bool
+	Path string
+	Loop bool
 }
 
 func (pa *PlayMusic) screenObj() {}
 func (pa *PlayMusic) labelObj()  {}
 
 type PlayVideo struct {
-	Name string
-	T    Transform
+	Name  string
+	T     Transform
+	Anime *animation.Anime
 }
 
 func (pv *PlayVideo) screenObj() {}
@@ -59,9 +59,18 @@ type Say struct {
 
 func (s *Say) labelObj() {}
 
-type ActiveFunc struct {
-	F func()
+type Key struct {
+	Down, Up func(*event.EVENT_Key)
 }
 
-func (af *ActiveFunc) screenObj() {}
-func (af *ActiveFunc) labelObj()  {}
+func (k *Key) screenObj() {}
+
+type Text struct {
+	Text     string
+	FontName string
+	T        Transform
+	Color    Color
+}
+
+func (t *Text) screenObj() {}
+func (t *Text) labelObj()  {}
