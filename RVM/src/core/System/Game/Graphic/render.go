@@ -32,15 +32,14 @@ import (
 func (g *Graphic) Render() {
 	g.lock.Lock()
 	defer g.lock.Unlock()
-
 	C.SDL_RenderClear((*C.SDL_Renderer)(g.renderer))
 	C.SDL_SetRenderDrawColor(
 		(*C.SDL_Renderer)(g.renderer),
 		C.uchar(0x13), C.uchar(0x13), C.uchar(0x12), C.uchar(0xFF),
 	)
+	g.Video.Lock()
 	for i := 0; i < len(g.renderBuffer); i++ {
 		for j := 0; j < len(g.renderBuffer[i]); j++ {
-			g.videos.Lock()
 			r := C.CreateRect(
 				C.int(g.renderBuffer[i][j].transform.Pos.X),
 				C.int(g.renderBuffer[i][j].transform.Pos.Y),
@@ -56,12 +55,11 @@ func (g *Graphic) Render() {
 				nil,
 				C.SDL_FLIP_NONE,
 			)
-			g.videos.Unlock()
 			C.FreeRect(r)
 		}
 	}
-
 	C.SDL_RenderPresent((*C.SDL_Renderer)(g.renderer))
+	g.Video.Unlock()
 }
 
 func (g *Graphic) AddScreenRenderBuffer() {

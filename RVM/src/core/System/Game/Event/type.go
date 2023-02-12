@@ -9,18 +9,16 @@ package event
 import "C"
 
 type ButtonEvent struct {
-	Down  func(*EVENT_MouseButtonDown)
-	Up    func(*EVENT_MouseButtonUp)
-	Hover func(*EVENT_MouseMotion)
+	Action func(*EVENT_MouseButton)
+	Hover  func(*EVENT_MouseMotion)
 }
 
-type EVENT_MouseButtonDown struct {
-}
-
-type EVENT_MouseButtonUp struct {
+type EVENT_MouseButton struct {
+	X, Y, Button int
 }
 
 type EVENT_MouseMotion struct {
+	X, Y int
 }
 
 type KeyEvent struct {
@@ -40,6 +38,10 @@ const (
 	SDL_MOUSEBUTTONDOWN = C.SDL_MOUSEBUTTONDOWN
 	SDL_MOUSEBUTTONUP   = C.SDL_MOUSEBUTTONUP
 	SDL_MOUSEWHEEL      = C.SDL_MOUSEWHEEL
+
+	SDL_BUTTON_LEFT   = C.SDL_BUTTON_LEFT
+	SDL_BUTTON_RIGHT  = C.SDL_BUTTON_RIGHT
+	SDL_BUTTON_MIDDLE = C.SDL_BUTTON_MIDDLE
 
 	// SDL Key Code
 	SDLK_0 = C.SDLK_0

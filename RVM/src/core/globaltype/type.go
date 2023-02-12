@@ -13,7 +13,6 @@ import "C"
 type (
 	SDL_Window   = C.SDL_Window
 	SDL_Renderer = C.SDL_Renderer
-	SDL_Event    = C.SDL_Event
 	SDL_Texture  = C.SDL_Texture
 	SDL_Surface  = C.SDL_Surface
 

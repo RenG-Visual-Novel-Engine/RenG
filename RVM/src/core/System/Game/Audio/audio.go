@@ -37,7 +37,7 @@ func Init() *Audio {
 	}
 }
 
-func (a *Audio) PlayMusic(path string, loop bool) error {
+func (a *Audio) PlayMusic(path string, loop bool, ms int) error {
 	m, ok := a.musics[path]
 	if !ok {
 		err := a.AddMusic(path)
@@ -47,18 +47,55 @@ func (a *Audio) PlayMusic(path string, loop bool) error {
 		m = a.musics[path]
 	}
 
-	a.music.Play(m, loop)
+	if ms > 0 {
+		a.music.PlayWithFadeIn(m, loop, ms)
+	} else if ms == 0 {
+		a.music.Play(m, loop)
+	}
 
 	return nil
 }
 
+func (a *Audio) StopMusic(ms int) {
+	if ms > 0 {
+		a.music.StopWithFadeOut(ms)
+	} else if ms == 0 {
+		a.music.Stop()
+	}
+}
+
 func (a *Audio) PlayChannel(channelName string, path string) error {
+	channel, ok := a.channels[channelName]
+	if !ok {
+		channel = NewChannel()
+		a.channels[channelName] = channel
+	}
+
+	chunk, ok := a.chunks[path]
+	if !ok {
+		err := a.AddChunck(path)
+		if err != nil {
+			return err
+		}
+		chunk = a.chunks[path]
+	}
+
+	channel.Play(chunk)
+
 	return nil
 }
 
 func (a *Audio) Close() {
 
 	//TODO
+	for _, music := range a.musics {
+		C.Mix_FreeMusic(music)
+	}
+
+	for _, chunk := range a.chunks {
+		C.Mix_FreeChunk(chunk)
+	}
+
 	C.Mix_CloseAudio()
 }
 

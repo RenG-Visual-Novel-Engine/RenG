@@ -10,9 +10,7 @@ package graphic
 */
 import "C"
 import (
-	animation "RenG/RVM/src/core/System/Game/Graphic/Animation"
-	sprite "RenG/RVM/src/core/System/Game/Graphic/Sprite"
-	texture "RenG/RVM/src/core/System/Game/Graphic/Texture"
+	image "RenG/RVM/src/core/System/Game/Graphic/Image"
 	video "RenG/RVM/src/core/System/Game/Graphic/Video"
 	"RenG/RVM/src/core/globaltype"
 	"RenG/RVM/src/core/obj"
@@ -35,19 +33,29 @@ type Graphic struct {
 		transform obj.Transform
 	}
 
-	images map[string]struct {
-		texture *globaltype.SDL_Texture
-		width   int
-		height  int
+	Image *image.Image
+	Video *video.Video
+	fonts map[string]struct {
+		Font        *globaltype.TTF_Font
+		Size        int
+		LimitPixels int
 	}
-	sprites    map[string]*sprite.Sprite
-	videos     *video.Video
-	animations []struct {
-		Anime *animation.Anime
+	textMemPool map[string][]*globaltype.SDL_Texture
+	typingFXs   map[string][]struct {
+		Data []struct {
+			Texture   *globaltype.SDL_Texture
+			Transform obj.Transform
+		}
+		Duration  float64
+		StartTime time.Time
+		Bps       int
+		Index     int
+	}
+	animations map[string][]struct {
+		Anime *obj.Anime
 		Bps   int
 		Index int
 	}
-	fonts map[string]*globaltype.TTF_Font
 }
 
 func Init(r *globaltype.SDL_Renderer, p string) *Graphic {
@@ -57,84 +65,45 @@ func Init(r *globaltype.SDL_Renderer, p string) *Graphic {
 			texture   *globaltype.SDL_Texture
 			transform obj.Transform
 		}{},
-		path: p,
-		images: make(map[string]struct {
-			texture *globaltype.SDL_Texture
-			width   int
-			height  int
+		path:  p,
+		Image: image.Init(r),
+		Video: video.Init(),
+		fonts: make(map[string]struct {
+			Font        *globaltype.TTF_Font
+			Size        int
+			LimitPixels int
 		}),
-		sprites: make(map[string]*sprite.Sprite),
-		videos:  video.Init(),
-		animations: []struct {
-			Anime *animation.Anime
+		textMemPool: make(map[string][]*globaltype.SDL_Texture),
+		typingFXs: make(map[string][]struct {
+			Data []struct {
+				Texture   *globaltype.SDL_Texture
+				Transform obj.Transform
+			}
+			Duration  float64
+			StartTime time.Time
+			Bps       int
+			Index     int
+		}),
+		animations: make(map[string][]struct {
+			Anime *obj.Anime
 			Bps   int
 			Index int
-		}{},
-		fonts: make(map[string]*globaltype.TTF_Font),
+		}),
 	}
 }
 
 func (g *Graphic) Close() {
 	C.SDL_DestroyRenderer((*C.SDL_Renderer)(g.renderer))
 
-	for _, i := range g.images {
-		C.SDL_DestroyTexture((*C.SDL_Texture)(i.texture))
-	}
-
-	g.videos.Close()
+	g.Image.Close()
+	g.Video.Close()
 
 	C.SDL_FreeSurface(g.Cursor)
 }
 
 func (g *Graphic) Update() {
-	// Animation
-
-	for n, anime := range g.animations {
-		s := time.Since(anime.Anime.Time).Seconds()
-
-		if s < anime.Anime.StartTime {
-			continue
-		}
-
-		if s-anime.Anime.StartTime >= anime.Anime.Duration {
-			if !anime.Anime.Loop {
-				if anime.Anime.End != nil {
-					anime.Anime.End()
-				}
-				g.animations = append(g.animations[:n], g.animations[n+1:]...)
-				continue
-			}
-			anime.Anime.Time = time.Now()
-			continue
-		}
-
-		switch anime.Anime.Type {
-		case animation.ANIME_ALPHA:
-			g.videos.Lock()
-			texture.TextureAlphaChange(g.renderBuffer[anime.Bps][anime.Index].texture, anime.Anime.Curve((s-anime.Anime.StartTime)/anime.Anime.Duration))
-			g.videos.Unlock()
-			continue
-		case animation.ANIME_ROTATE:
-			g.videos.Lock()
-			g.renderBuffer[anime.Bps][anime.Index].transform.Rotate = anime.Anime.Curve((s - anime.Anime.StartTime) / anime.Anime.Duration)
-			g.videos.Unlock()
-			continue
-		}
-	}
-}
-
-// key : name, value : path
-func (g *Graphic) RegisterImages(images map[string]string) {
-	for name, path := range images {
-		t, w, h := g.loadImage(g.path + path)
-		g.images[name] = struct {
-			texture *globaltype.SDL_Texture
-			width   int
-			height  int
-		}{
-			t, w, h,
-		}
-	}
+	g.UpdateAnimation()
+	g.UpdateTypingFX()
 }
 
 func (g *Graphic) RegisterCursor(path string) {
@@ -147,38 +116,36 @@ func (g *Graphic) RegisterCursor(path string) {
 	g.Cursor = surface
 }
 
-func (g *Graphic) loadImage(path string) (*globaltype.SDL_Texture, int, int) {
-	cpath := C.CString(path)
-	defer C.free(unsafe.Pointer(cpath))
-
-	surface := C.IMG_Load(cpath)
-	if surface == nil {
-		panic("존재하지 않는 경로로 이미지를 불러왔습니다.")
+func (g *Graphic) RegisterImages(images map[string]string) {
+	for name, path := range images {
+		g.Image.RegisterImage(name, g.path+path)
 	}
-	defer C.SDL_FreeSurface(surface)
-
-	t := C.SDL_CreateTextureFromSurface((*C.SDL_Renderer)(g.renderer), surface)
-
-	C.SDL_SetTextureBlendMode(t, C.SDL_BLENDMODE_BLEND)
-	return (*globaltype.SDL_Texture)(t), int(surface.w), int(surface.h)
 }
 
 func (g *Graphic) RegisterVideos(videos map[string]string) {
 	for name, path := range videos {
-		g.videos.VideoInit(name, g.path+path, g.renderer)
+		g.Video.Register(name, g.path+path, g.renderer)
 	}
 }
 
 func (g *Graphic) RegisterFonts(
 	fonts map[string]struct {
-		Path string
-		Size int
+		Path        string
+		Size        int
+		LimitPixels int
 	},
 ) {
 	for name, font := range fonts {
-		cpath := C.CString(font.Path)
+		cpath := C.CString(g.path + font.Path)
 		defer C.free(unsafe.Pointer(cpath))
-
-		g.fonts[name] = (*globaltype.TTF_Font)(C.TTF_OpenFont(cpath, C.int(font.Size)))
+		g.fonts[name] = struct {
+			Font        *globaltype.TTF_Font
+			Size        int
+			LimitPixels int
+		}{
+			(*globaltype.TTF_Font)(C.TTF_OpenFont(cpath, C.int(font.Size))),
+			font.Size,
+			font.LimitPixels,
+		}
 	}
 }

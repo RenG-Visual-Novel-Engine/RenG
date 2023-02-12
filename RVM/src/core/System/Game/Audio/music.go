@@ -38,8 +38,24 @@ func (m *Music) Play(music *C.Mix_Music, loop bool) {
 	}
 }
 
+func (m *Music) PlayWithFadeIn(music *C.Mix_Music, loop bool, ms int) {
+	if m.IsPlaying() {
+		m.Stop()
+	}
+
+	if loop {
+		C.Mix_FadeInMusic(music, C.int(-1), C.int(ms))
+	} else {
+		C.Mix_FadeInMusic(music, C.int(1), C.int(ms))
+	}
+}
+
 func (m *Music) Stop() {
 	C.Mix_HaltMusic()
+}
+
+func (m *Music) StopWithFadeOut(ms int) {
+	C.Mix_FadeOutMusic(C.int(ms))
 }
 
 func (m *Music) SetVolume(v int) error {

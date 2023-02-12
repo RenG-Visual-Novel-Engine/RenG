@@ -25,13 +25,28 @@ type System struct {
 
 	title string
 
+	// Public : 게임 객체입니다. 여러가지 게임 진행에 필요한 것들이 담겨있습니다.
 	Game *game.Game
-	// vm       *vm.VM
 }
 
+/*
+Public
+
+[title] : 게임 제목
+
+[width], [height] : 창 너비, 높이
+
+[CursorPath] : 커서 이미지 경로
+(사이즈는 조정되지 않으므로 이미지 크기를 맞춰주세요.)
+
+초기화 함수입니다. 이때 윈도우는 생성되지만 화면에 표시되지 않습니다.
+WindowStart() 함수에서 화면에 표시되기 시작합니다.
+*/
 func Init(title string,
 	width, height int,
 	CursorPath string,
+	NowCharacter *string,
+	NowText *string,
 ) *System {
 
 	if C.SDL_Init(C.SDL_INIT_EVERYTHING) < 0 {
@@ -81,6 +96,9 @@ func Init(title string,
 			g,
 			audio.Init(),
 			path,
+			width, height,
+			NowCharacter,
+			NowText,
 		),
 	}
 }
@@ -92,7 +110,9 @@ func (s *System) Close() {
 	C.SDL_Quit()
 }
 
-func (s *System) WindowStart(firstScreen string) {
+func (s *System) WindowStart(
+	firstScreen string,
+) {
 	s.Game.ActiveScreen(firstScreen)
 	C.SDL_ShowWindow((*C.SDL_Window)(s.window))
 
@@ -105,6 +125,10 @@ func (s *System) WindowStart(firstScreen string) {
 	}
 }
 
-func (s *System) GameStart(firstLabel string) {
+func (s *System) GameStart(
+	firstLabel string,
+	sayLabel string,
+) {
+	s.Game.SayScreenName = sayLabel
 	go s.Game.StartLabel(firstLabel)
 }

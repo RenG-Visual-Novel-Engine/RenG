@@ -29,6 +29,6 @@ func NewChannel() *Channel {
 	return ch
 }
 
-//func (c *Channel) Play(chunk *t.Mix_Chunk) error {
+func (c *Channel) Play(chunk *C.Mix_Chunk) {
 
-//}
+}

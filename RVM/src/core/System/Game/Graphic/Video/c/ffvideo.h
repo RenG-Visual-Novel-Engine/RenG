@@ -6,12 +6,14 @@
 #include <SDL_thread.h>
 #include <windows.h> 
 
+#include <stdio.h>
+
 static SDL_mutex* lock;
 
 typedef struct VideoState {
     AVFormatContext* ctx;
 	AVCodecContext* codec_ctx;
-	const AVCodec* codec;
+	AVCodec* codec;
 	struct SwsContext* sws_ctx;
 	AVFrame* frame;
 
@@ -20,10 +22,86 @@ typedef struct VideoState {
     unsigned long startTime;
 	int delay;
 
+	char* path;
+
+// bool
 	int nowPlaying;
+	int stop;
+	int loop;
 
 	SDL_Texture* texture;
 } VideoState;
+
+int initCodec(VideoState* v) 
+{
+	AVFormatContext* ctx = avformat_alloc_context();
+	if (!ctx)
+		return 0;
+	v->ctx = ctx;
+
+    if (avformat_open_input(&ctx, v->path, NULL, NULL))
+		return 0;
+
+	if (avformat_find_stream_info(ctx, NULL))
+		return 0;
+	
+	v->videoStream = -1;
+
+	for (unsigned int i = 0; i < ctx->nb_streams; i++)
+	{
+		if (ctx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
+			v->videoStream = i;
+	}
+
+	if (v->videoStream == -1)
+		return 0;
+
+	AVCodecContext* codec_ctx;
+
+	codec_ctx = avcodec_alloc_context3(NULL);
+	if (!codec_ctx)
+		return 0;
+
+	if (avcodec_parameters_to_context(codec_ctx, ctx->streams[v->videoStream]->codecpar) < 0)
+		return 0;
+
+	codec_ctx->pkt_timebase = ctx->streams[v->videoStream]->time_base;
+
+	AVCodec* codec = (AVCodec*)avcodec_find_decoder(codec_ctx->codec_id);
+	if (!codec)
+		return 0; 
+
+	codec_ctx->codec_id = codec->id;
+
+	if (avcodec_open2(codec_ctx, codec, NULL))
+		return 0;
+
+	v->codec_ctx = codec_ctx;
+	v->codec = codec;
+
+	v->sws_ctx = sws_getContext(
+		v->codec_ctx->width,
+		v->codec_ctx->height,
+		v->codec_ctx->pix_fmt,
+		v->codec_ctx->width,
+		v->codec_ctx->height,
+		AV_PIX_FMT_YUV420P,
+		SWS_BILINEAR,
+		NULL,
+		NULL,
+		NULL
+	);
+
+	return 1;
+}
+
+void destroyCodec(VideoState* v)
+{
+	avcodec_free_context(&v->codec_ctx);
+	avformat_free_context(v->ctx);
+	sws_freeContext(v->sws_ctx);
+	
+}
 
 int DecodeFrame(VideoState* v, int index)
 {
@@ -50,6 +128,7 @@ int DecodeFrame(VideoState* v, int index)
 		if (ret == AVERROR_EOF)
 		{
 			av_packet_unref(pkt);
+
 			return 0;
 		}
 
@@ -77,67 +156,13 @@ int DecodeFrame(VideoState* v, int index)
 VideoState* VideoInit(char* path, SDL_Renderer* r) {
     VideoState* v = (VideoState*)malloc(sizeof(VideoState));
 
-    AVFormatContext* ctx = avformat_alloc_context();
-	if (!ctx)
-		return NULL;
-	v->ctx = ctx;
+	v->path = path;
 
-    if (avformat_open_input(&ctx, path, NULL, NULL))
+	if (!initCodec(v))
 		return NULL;
 
-	if (avformat_find_stream_info(ctx, NULL))
-		return NULL;
-	
-	v->videoStream = 0;
-
-	for (unsigned int i = 0; i < ctx->nb_streams; i++)
-	{
-		if (ctx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
-			v->videoStream = i;
-	}
-
-	if (v->videoStream == -1)
-		return NULL;
-
-	AVCodecContext* codec_ctx;
-
-	codec_ctx = avcodec_alloc_context3(NULL);
-	if (!codec_ctx)
-		return NULL;
-
-	if (avcodec_parameters_to_context(codec_ctx, ctx->streams[v->videoStream]->codecpar) < 0)
-		return NULL;
-
-	codec_ctx->pkt_timebase = ctx->streams[v->videoStream]->time_base;
-
-	const AVCodec* codec = avcodec_find_decoder(codec_ctx->codec_id);
-	if (!codec)
-		return NULL; 
-
-	codec_ctx->codec_id = codec->id;
-
-	if (avcodec_open2(codec_ctx, codec, NULL))
-		return NULL;
-
-	v->codec_ctx = codec_ctx;
-	v->codec = codec;
-
-	v->sws_ctx = sws_getContext(
-		v->codec_ctx->width,
-		v->codec_ctx->height,
-		v->codec_ctx->pix_fmt,
-		v->codec_ctx->width,
-		v->codec_ctx->height,
-		AV_PIX_FMT_YUV420P,
-		SWS_BILINEAR,
-		NULL,
-		NULL,
-		NULL
-	);
-
-	if (!lock) {
+	if (!lock)
 		lock = SDL_CreateMutex();
-	}
 
 	v->texture = SDL_CreateTexture(
 		r,
@@ -188,25 +213,45 @@ int video_thread(void* data) {
 	for (;;) {
 		Lock();
 
-		if (!DecodeFrame(v, (int)((timeGetTime() - v->startTime) / (1000.0 / 30.0))))
+		if (v->stop) 
 		{
 			v->nowPlaying = 0;
 			Unlock();
 			break;
 		}
-	
-		SDL_UpdateYUVTexture(
-			v->texture,
-			&render,
-			v->frame->data[0],
-			v->frame->linesize[0],
-			v->frame->data[1],
-			v->frame->linesize[1],
-			v->frame->data[2],
-			v->frame->linesize[2]
-		);
 
-		av_frame_free(&v->frame);
+		if (!DecodeFrame(v, (int)((timeGetTime() - v->startTime) / (1000.0 / 30.0))))
+		{
+
+			if (v->loop)
+			{
+				destroyCodec(v);
+				initCodec(v);
+				v->startTime = timeGetTime();
+				Unlock();
+				continue;
+			}
+			v->nowPlaying = 0;
+			Unlock();
+			break;
+		}
+
+		if (v->frame) {
+			
+			SDL_UpdateYUVTexture(
+				v->texture,
+				&render,
+				v->frame->data[0],
+				v->frame->linesize[0],
+				v->frame->data[1],
+				v->frame->linesize[1],
+				v->frame->data[2],
+				v->frame->linesize[2]
+			);
+		
+			av_frame_free(&v->frame);
+
+		}
 
 		Unlock();
 
@@ -217,9 +262,11 @@ int video_thread(void* data) {
 	return 0;
 }
 
-void Start(VideoState* v) {
-	v->delay = 1000 / 30; //TODO
+void Start(VideoState* v, int Loop) {
+	v->delay = 10; //TODO
 	v->nowPlaying = 1;
+	v->loop = Loop;
+	v->stop = 0;
 
 	SDL_CreateThread(video_thread, "video_thread", v);
 }
