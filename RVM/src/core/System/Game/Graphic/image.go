@@ -5,6 +5,20 @@ import (
 	"log"
 )
 
+func (g *Graphic) GetCurrentTexturePosition(bps, index int) (x, y int) {
+	g.lock.Lock()
+	defer g.lock.Unlock()
+
+	return g.renderBuffer[bps][index].transform.Pos.X, g.renderBuffer[bps][index].transform.Pos.Y
+}
+
+func (g *Graphic) GetCurrentTextureSize(bps, index int) (x, y int) {
+	g.lock.Lock()
+	defer g.lock.Unlock()
+
+	return g.renderBuffer[bps][index].transform.Size.X, g.renderBuffer[bps][index].transform.Size.Y
+}
+
 func (g *Graphic) SetVideoAlphaByName(name string, alpha int) {
 	g.lock.Lock()
 	defer g.lock.Unlock()

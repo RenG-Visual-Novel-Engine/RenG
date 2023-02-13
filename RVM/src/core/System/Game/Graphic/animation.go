@@ -2,7 +2,6 @@ package graphic
 
 import (
 	"RenG/RVM/src/core/obj"
-	"fmt"
 	"time"
 )
 
@@ -21,7 +20,6 @@ func (g *Graphic) UpdateAnimation() {
 			if s-anime.Anime.StartTime >= anime.Anime.Duration {
 				if !anime.Anime.Loop {
 					g.animations[name] = append(g.animations[name][:n], g.animations[name][n+1:]...)
-					fmt.Println(screen, len(screen))
 					if anime.Anime.End != nil {
 						g.lock.Unlock()
 						anime.Anime.End()

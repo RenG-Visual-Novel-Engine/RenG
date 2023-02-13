@@ -33,6 +33,10 @@ func (g *Game) InActiveScreen(name string) {
 	delete(g.screenBps, name)
 
 	g.Event.DeleteAllScreenEvent(name)
+	g.Graphic.DeleteAnimationByScreenName(name)
+	g.Graphic.DeleteTypingFXByScreenName(name)
+	g.Graphic.DestroyScreenTextTexture(name)
+	g.Graphic.ScreenVideoAllStop(name)
 
 	for target, target_bps := range g.screenBps {
 		if target_bps > bps {
@@ -43,18 +47,13 @@ func (g *Game) InActiveScreen(name string) {
 		}
 	}
 
-	g.Graphic.DeleteAnimationByScreenName(name)
-	g.Graphic.DeleteTypingFXByScreenName(name)
-	g.Graphic.DestroyScreenTextTexture(name)
-	g.Graphic.ScreenVideoAllStop(name)
-
 	g.Graphic.DeleteScreenRenderBuffer(bps)
 }
 
 func (g *Game) GetScreenBps(screenName string) int {
 	g.lock.Lock()
 	defer g.lock.Unlock()
-	
+
 	return g.screenBps[screenName]
 }
 

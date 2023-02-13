@@ -167,19 +167,23 @@ func (g *Game) evalButton(b *obj.Button, name string, bps int) {
 		if b.Action != nil {
 			g.Event.AddButtonEvent(name, event.ButtonEvent{
 				Action: func(e *event.EVENT_MouseButton) {
-					if e.X > b.T.Pos.X &&
-						e.Y > b.T.Pos.Y &&
-						e.X < b.T.Pos.X+b.T.Size.X &&
-						e.Y < b.T.Pos.Y+b.T.Size.Y &&
+					var xpos, ypos int = g.Graphic.GetCurrentTexturePosition(bps, index)
+					var xsize, ysize int = g.Graphic.GetCurrentTextureSize(bps, index)
+					if e.X > xpos &&
+						e.Y > ypos &&
+						e.X < xpos+xsize &&
+						e.Y < ypos+ysize &&
 						e.Button == event.SDL_BUTTON_LEFT {
 						b.Action()
 					}
 				},
 				Hover: func(e *event.EVENT_MouseMotion) {
-					if e.X > b.T.Pos.X &&
-						e.Y > b.T.Pos.Y &&
-						e.X < b.T.Pos.X+b.T.Size.X &&
-						e.Y < b.T.Pos.Y+b.T.Size.Y {
+					var xpos, ypos int = g.Graphic.GetCurrentTexturePosition(bps, index)
+					var xsize, ysize int = g.Graphic.GetCurrentTextureSize(bps, index)
+					if e.X > xpos &&
+						e.Y > ypos &&
+						e.X < xpos+xsize &&
+						e.Y < ypos+ysize {
 						g.Graphic.ChangeTextureByBps(g.screenBps[name], index, b.HoverImageName)
 					} else {
 						g.Graphic.ChangeTextureByBps(g.screenBps[name], index, b.MainImageName)
@@ -191,10 +195,12 @@ func (g *Game) evalButton(b *obj.Button, name string, bps int) {
 		if b.Action != nil {
 			g.Event.AddButtonEvent(name, event.ButtonEvent{
 				Action: func(e *event.EVENT_MouseButton) {
-					if e.X > b.T.Pos.X &&
-						e.Y > b.T.Pos.Y &&
-						e.X < b.T.Pos.X+b.T.Size.X &&
-						e.Y < b.T.Pos.Y+b.T.Size.Y {
+					var xpos, ypos int = g.Graphic.GetCurrentTexturePosition(bps, index)
+					var xsize, ysize int = g.Graphic.GetCurrentTextureSize(bps, index)
+					if e.X > xpos &&
+						e.Y > ypos &&
+						e.X < xpos+xsize &&
+						e.Y < ypos+ysize {
 						b.Action()
 					}
 				},
