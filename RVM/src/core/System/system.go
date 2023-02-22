@@ -11,9 +11,9 @@ package system
 */
 import "C"
 import (
+	game "RenG/RVM/src/core/System/Game"
 	audio "RenG/RVM/src/core/System/Game/Audio"
 	graphic "RenG/RVM/src/core/System/Game/Graphic"
-	"RenG/RVM/src/core/System/game"
 	"RenG/RVM/src/core/globaltype"
 	"log"
 	"os"
@@ -23,7 +23,8 @@ import (
 type System struct {
 	window *globaltype.SDL_Window
 
-	title string
+	Title           string
+	IsNowFullScreen bool
 
 	// Public : 게임 객체입니다. 여러가지 게임 진행에 필요한 것들이 담겨있습니다.
 	Game *game.Game
@@ -86,12 +87,13 @@ func Init(title string,
 
 	path, _ := os.Getwd()
 
-	g := graphic.Init((*globaltype.SDL_Renderer)(renderer), path)
+	g := graphic.Init((*globaltype.SDL_Window)(window), (*globaltype.SDL_Renderer)(renderer), path, width, height)
 	g.RegisterCursor(CursorPath)
 
 	return &System{
-		window: (*globaltype.SDL_Window)(window),
-		title:  title,
+		window:          (*globaltype.SDL_Window)(window),
+		Title:           title,
+		IsNowFullScreen: false,
 		Game: game.Init(
 			g,
 			audio.Init(),
@@ -125,10 +127,12 @@ func (s *System) WindowStart(
 	}
 }
 
-func (s *System) GameStart(
-	firstLabel string,
-	sayLabel string,
-) {
-	s.Game.SayScreenName = sayLabel
-	go s.Game.StartLabel(firstLabel)
+func (s *System) ToggleFullScreen() {
+	if !s.IsNowFullScreen {
+		C.SDL_SetWindowFullscreen((*C.SDL_Window)(s.window), C.SDL_WINDOW_FULLSCREEN_DESKTOP)
+		s.IsNowFullScreen = true
+	} else {
+		C.SDL_SetWindowFullscreen((*C.SDL_Window)(s.window), 0)
+		s.IsNowFullScreen = false
+	}
 }

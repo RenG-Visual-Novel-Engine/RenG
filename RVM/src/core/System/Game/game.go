@@ -5,16 +5,15 @@ import (
 	event "RenG/RVM/src/core/System/Game/Event"
 	graphic "RenG/RVM/src/core/System/Game/Graphic"
 	"RenG/RVM/src/core/obj"
+	"strconv"
+	"strings"
 	"sync"
 )
 
 type Game struct {
 	Graphic *graphic.Graphic
-
-	Audio *audio.Audio
-
-	// Private : 임의로 접근하지 마세요.
-	Event *event.Event
+	Audio   *audio.Audio
+	Event   *event.Event
 
 	lock sync.Mutex
 
@@ -25,6 +24,8 @@ type Game struct {
 	screenBps map[string]int
 	labels    map[string]*obj.Label
 
+	NowlabelName   string
+	NowlabelIndex  int
 	labelCallStack []string
 
 	TextSpeed float64
@@ -38,8 +39,8 @@ type Game struct {
 	// Private : Say 명령어로 변경된 대사가 저장됩니다.
 	nowText *string
 
-	// Private : 현재 재생 중인 음악의 Path가 저장됩니다.
-	nowMusic string
+	// Public : 현재 재생 중인 음악의 Path가 저장됩니다.
+	NowMusic string
 }
 
 func Init(g *graphic.Graphic, a *audio.Audio, p string, w, h int, nN *string, nT *string) *Game {
@@ -67,11 +68,64 @@ func (g *Game) Close() {
 }
 
 func (g *Game) GameStart(
-	firstLabel string,
+	firstLabel,
 	sayLabel string,
 ) {
 	g.SayScreenName = sayLabel
-	go g.StartLabel(firstLabel)
+	go g.StartLabel(firstLabel, 0)
+}
+
+func (g *Game) GameLoad(
+	currentLabel,
+	sayLabel,
+	textureData,
+	currentMusicName string,
+	currentIndex int,
+) {
+	g.SayScreenName = sayLabel
+	g.NowMusic = currentMusicName
+	screenNames := strings.Split(textureData, "|")
+
+	// Loop 저장
+	g.Audio.PlayMusic(g.path+currentMusicName, true, 1000)
+
+	for _, screenName := range screenNames {
+		bps, err := strconv.Atoi(strings.Split(screenName, "-")[0])
+		if err != nil {
+			panic(err)
+		}
+		g.screenBps[strings.Split(strings.Split(screenName, "-")[1], "&")[0]] = bps
+		g.Graphic.AddScreenRenderBuffer()
+
+		for _, texture := range strings.Split(strings.Split(strings.Split(screenName, "-")[1], "&")[1], ",") {
+			data := strings.Split(texture, "#")
+			switch data[0] {
+			case "V":
+				// TODO : transform, loop 저장
+				g.Graphic.AddScreenTextureRenderBuffer(
+					bps,
+					g.Graphic.GetVideoTexture(data[1]),
+					obj.Transform{
+						Pos:  obj.Vector2{X: 0, Y: 0},
+						Size: obj.Vector2{X: 1280, Y: 720},
+					},
+				)
+				g.Graphic.VideoStart(strings.Split(strings.Split(screenName, "-")[1], "&")[0], data[1], true)
+			case "I":
+				// TODO : transform 저장
+				g.Graphic.AddScreenTextureRenderBuffer(
+					bps,
+					g.Graphic.Image.GetImageTexture(data[1]),
+					obj.Transform{
+						Pos:  obj.Vector2{X: 0, Y: 0},
+						Size: obj.Vector2{X: 1280, Y: 720},
+					},
+				)
+			}
+		}
+	}
+
+	go g.StartLabel(currentLabel, currentIndex)
 }
 
 func (g *Game) Register(

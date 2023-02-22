@@ -58,6 +58,10 @@ func (m *Music) StopWithFadeOut(ms int) {
 	C.Mix_FadeOutMusic(C.int(ms))
 }
 
+func (m *Music) GetVolume() (volume int) {
+	return m.volume
+}
+
 func (m *Music) SetVolume(v int) error {
 	if v < 0 || v > 128 {
 		return fmt.Errorf("Music Volume value range 0 ~ 128, got=%d", v)

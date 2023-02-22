@@ -30,21 +30,28 @@ import (
 )
 
 func (g *Graphic) Render() {
+	g.sayLock.Lock()
+	defer g.sayLock.Unlock()
+
 	g.lock.Lock()
-	defer g.lock.Unlock()
+
 	C.SDL_RenderClear((*C.SDL_Renderer)(g.renderer))
 	C.SDL_SetRenderDrawColor(
 		(*C.SDL_Renderer)(g.renderer),
 		C.uchar(0x13), C.uchar(0x13), C.uchar(0x12), C.uchar(0xFF),
 	)
+
+	x, y := g.GetCurrentWindowSize()
+
 	g.Video.Lock()
+
 	for i := 0; i < len(g.renderBuffer); i++ {
 		for j := 0; j < len(g.renderBuffer[i]); j++ {
 			r := C.CreateRect(
-				C.int(g.renderBuffer[i][j].transform.Pos.X),
-				C.int(g.renderBuffer[i][j].transform.Pos.Y),
-				C.int(g.renderBuffer[i][j].transform.Size.X),
-				C.int(g.renderBuffer[i][j].transform.Size.Y),
+				C.int(float32(g.renderBuffer[i][j].transform.Pos.X)*float32(x)/float32(g.width)),
+				C.int(float32(g.renderBuffer[i][j].transform.Pos.Y)*float32(y)/float32(g.height)),
+				C.int(float32(g.renderBuffer[i][j].transform.Size.X)*float32(x)/float32(g.width)),
+				C.int(float32(g.renderBuffer[i][j].transform.Size.Y)*float32(y)/float32(g.height)),
 			)
 			C.SDL_RenderCopyEx(
 				(*C.SDL_Renderer)(g.renderer),
@@ -58,8 +65,12 @@ func (g *Graphic) Render() {
 			C.FreeRect(r)
 		}
 	}
+
 	C.SDL_RenderPresent((*C.SDL_Renderer)(g.renderer))
+
 	g.Video.Unlock()
+
+	g.lock.Unlock()
 }
 
 func (g *Graphic) AddScreenRenderBuffer() {
@@ -98,6 +109,33 @@ func (g *Graphic) AddScreenTextureRenderBuffer(
 		})
 }
 
+func (g *Graphic) DeleteScreenTextureRenderBuffer(bps, index int) {
+	g.lock.Lock()
+	defer g.lock.Unlock()
+
+	g.renderBuffer[bps] = append(g.renderBuffer[bps][:index], g.renderBuffer[bps][index+1:]...)
+}
+
+func (g *Graphic) GetCurrentRenderBufferTextureNameByBPS(bps int) []string {
+	g.lock.Lock()
+	defer g.lock.Unlock()
+
+	var ret []string
+
+	for _, t := range g.renderBuffer[bps] {
+		name := "I#" + g.Image.GetImgaeTextureName(t.texture)
+		if name == "I#" {
+			name = "V#" + g.Video.GetVideoNameByTexture(t.texture)
+		}
+
+		if name != "I#" && name != "V#" {
+			ret = append(ret, name)
+		}
+	}
+
+	return ret
+}
+
 func (g *Graphic) GetCurrentTopRenderBps() int {
 	g.lock.Lock()
 	defer g.lock.Unlock()
@@ -110,4 +148,10 @@ func (g *Graphic) GetCurrentTopScreenIndexByBps(bps int) int {
 	defer g.lock.Unlock()
 
 	return len(g.renderBuffer[bps]) - 1
+}
+
+func (g *Graphic) GetCurrentWindowSize() (x, y int) {
+	var xsize, ysize C.int
+	C.SDL_GetWindowSize((*C.SDL_Window)(g.window), &xsize, &ysize)
+	return int(xsize), int(ysize)
 }

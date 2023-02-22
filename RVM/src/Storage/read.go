@@ -4,7 +4,6 @@ import (
 	"crypto/sha256"
 	"encoding/binary"
 	"errors"
-	"fmt"
 	"io"
 )
 
@@ -48,7 +47,7 @@ func (s *Storage) GetStringValue(key string) string {
 		getKeyValue := make([]byte, 32)
 		_, err := s.f.ReadAt(getKeyValue, int64(offset))
 		if errors.Is(err, io.EOF) {
-			return fmt.Sprintf("%s 키에 해당하는 값이 존재하지 않습니다.", getKeyValue)
+			return ""
 		}
 
 		if string(hashKey) == string(getKeyValue) {

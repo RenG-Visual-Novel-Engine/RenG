@@ -22,3 +22,10 @@ func (g *Graphic) GetVideoTexture(name string) *globaltype.SDL_Texture {
 
 	return (*globaltype.SDL_Texture)(g.Video.GetVideoTexture(name))
 }
+
+func (g *Graphic) GetNowPlaying(name string) bool {
+	g.lock.Lock()
+	defer g.lock.Unlock()
+
+	return g.Video.GetNowPlaying(name)
+}

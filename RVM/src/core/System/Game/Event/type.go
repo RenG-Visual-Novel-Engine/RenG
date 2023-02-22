@@ -8,9 +8,23 @@ package event
 */
 import "C"
 
+type MouseClickEvent struct {
+	Down func(*EVENT_MouseButton)
+	Up   func(*EVENT_MouseButton)
+}
+
+type BarEvent struct {
+	IsNowDown bool
+	Down      func(*EVENT_MouseButton) bool
+	Up        func(*EVENT_MouseButton)
+	Scroll    func(*EVENT_MouseMotion)
+}
+
 type ButtonEvent struct {
-	Action func(*EVENT_MouseButton)
-	Hover  func(*EVENT_MouseMotion)
+	IsNowDown bool
+	Down      func(*EVENT_MouseButton) bool
+	Up        func(*EVENT_MouseButton)
+	Hover     func(*EVENT_MouseMotion)
 }
 
 type EVENT_MouseButton struct {
@@ -18,7 +32,7 @@ type EVENT_MouseButton struct {
 }
 
 type EVENT_MouseMotion struct {
-	X, Y int
+	X, Y, Xrel, Yrel int
 }
 
 type KeyEvent struct {

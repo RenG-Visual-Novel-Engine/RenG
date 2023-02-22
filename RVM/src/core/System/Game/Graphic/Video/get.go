@@ -7,6 +7,20 @@ package video
 #include <SDL.h>
 */
 import "C"
+import "RenG/RVM/src/core/globaltype"
+
+func (v *Video) GetVideoNameByTexture(t *globaltype.SDL_Texture) string {
+	v.Lock()
+	defer v.Unlock()
+
+	for name, video := range v.V {
+		if video.texture == (*C.SDL_Texture)(t) {
+			return name
+		}
+	}
+
+	return ""
+}
 
 func (v *Video) GetVideoTexture(name string) *C.SDL_Texture {
 	v.Lock()
@@ -17,6 +31,7 @@ func (v *Video) GetVideoTexture(name string) *C.SDL_Texture {
 	}
 	return nil
 }
+
 func (v *Video) GetNowPlaying(name string) bool {
 	v.Lock()
 	defer v.Unlock()

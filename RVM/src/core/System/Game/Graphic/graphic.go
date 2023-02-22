@@ -20,12 +20,15 @@ import (
 )
 
 type Graphic struct {
+	window   *globaltype.SDL_Window
 	renderer *globaltype.SDL_Renderer
 	Cursor   *C.SDL_Surface
 
-	path string
+	path          string
+	width, height int
 
-	lock sync.Mutex
+	lock    sync.Mutex
+	sayLock sync.Mutex
 
 	// screenBps -> targetScreentextures > texture
 	renderBuffer [][]struct {
@@ -51,23 +54,25 @@ type Graphic struct {
 		Bps       int
 		Index     int
 	}
-	animations map[string][]struct {
+	animations map[string]map[int][]struct {
 		Anime *obj.Anime
 		Bps   int
-		Index int
 	}
 }
 
-func Init(r *globaltype.SDL_Renderer, p string) *Graphic {
+func Init(window *globaltype.SDL_Window, r *globaltype.SDL_Renderer, p string, w, h int) *Graphic {
 	return &Graphic{
+		window:   window,
 		renderer: r,
 		renderBuffer: [][]struct {
 			texture   *globaltype.SDL_Texture
 			transform obj.Transform
 		}{},
-		path:  p,
-		Image: image.Init(r),
-		Video: video.Init(),
+		path:   p,
+		width:  w,
+		height: h,
+		Image:  image.Init(r),
+		Video:  video.Init(),
 		fonts: make(map[string]struct {
 			Font        *globaltype.TTF_Font
 			Size        int
@@ -84,10 +89,9 @@ func Init(r *globaltype.SDL_Renderer, p string) *Graphic {
 			Bps       int
 			Index     int
 		}),
-		animations: make(map[string][]struct {
+		animations: make(map[string]map[int][]struct {
 			Anime *obj.Anime
 			Bps   int
-			Index int
 		}),
 	}
 }
@@ -148,4 +152,12 @@ func (g *Graphic) RegisterFonts(
 			font.LimitPixels,
 		}
 	}
+}
+
+func (g *Graphic) SayLock() {
+	g.sayLock.Lock()
+}
+
+func (g *Graphic) SayUnlock() {
+	g.sayLock.Unlock()
 }

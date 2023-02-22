@@ -10,8 +10,8 @@ func (s *Show) screenObj() {}
 func (s *Show) labelObj()  {}
 
 type Hide struct {
-	Name  string
-	Anime []*Anime
+	TextureIndex int
+	Anime        *Anime
 }
 
 func (h *Hide) labelObj() {}

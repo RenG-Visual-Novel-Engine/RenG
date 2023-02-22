@@ -1,8 +1,8 @@
 package event
 
-func (e *Event) buttonDown() {
+func (e *Event) barDown() {
 	e.lock.Lock()
-	events, ok := e.Button[e.TopScreenName]
+	events, ok := e.Bar[e.TopScreenName]
 	e.lock.Unlock()
 	if !ok {
 		return
@@ -18,9 +18,9 @@ func (e *Event) buttonDown() {
 	}
 }
 
-func (e *Event) buttonUp() {
+func (e *Event) barUp() {
 	e.lock.Lock()
-	events, ok := e.Button[e.TopScreenName]
+	events, ok := e.Bar[e.TopScreenName]
 	e.lock.Unlock()
 	if !ok {
 		return
@@ -37,27 +37,30 @@ func (e *Event) buttonUp() {
 	}
 }
 
-func (e *Event) buttonHover() {
+func (e *Event) barScroll() {
 	e.lock.Lock()
-	events, ok := e.Button[e.TopScreenName]
+	events, ok := e.Bar[e.TopScreenName]
 	e.lock.Unlock()
 	if !ok {
 		return
 	}
 	for _, event := range events {
-		event.Hover(&EVENT_MouseMotion{
-			X: int(e.getMouseMotionEvent().x),
-			Y: int(e.getMouseMotionEvent().y),
-		})
+		if event.IsNowDown {
+			event.Scroll(&EVENT_MouseMotion{
+				X:    int(e.getMouseMotionEvent().x),
+				Y:    int(e.getMouseMotionEvent().y),
+				Xrel: int(e.getMouseMotionEvent().xrel),
+				Yrel: int(e.getMouseMotionEvent().yrel),
+			})
+		}
 	}
-
 }
 
 /* -- Util -- */
 
-func (e *Event) AddButtonEvent(screenName string, be ButtonEvent) {
+func (e *Event) AddBarEvent(screenName string, be BarEvent) {
 	e.lock.Lock()
 	defer e.lock.Unlock()
 
-	e.Button[screenName] = append(e.Button[screenName], be)
+	e.Bar[screenName] = append(e.Bar[screenName], be)
 }

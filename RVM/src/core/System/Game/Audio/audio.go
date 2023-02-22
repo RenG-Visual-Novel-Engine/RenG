@@ -14,8 +14,8 @@ import (
 )
 
 type Audio struct {
-	music    *Music
-	channels map[string]*Channel
+	Music    *Music
+	Channels map[string]*Channel
 	musics   map[string]*C.Mix_Music
 	chunks   map[string]*C.Mix_Chunk
 }
@@ -27,62 +27,14 @@ func Init() *Audio {
 		return nil
 	}
 	return &Audio{
-		music: NewMusic(),
-		channels: map[string]*Channel{
+		Music: NewMusic(),
+		Channels: map[string]*Channel{
 			"sound": NewChannel(),
 			"voice": NewChannel(),
 		},
 		musics: make(map[string]*C.Mix_Music),
 		chunks: make(map[string]*C.Mix_Chunk),
 	}
-}
-
-func (a *Audio) PlayMusic(path string, loop bool, ms int) error {
-	m, ok := a.musics[path]
-	if !ok {
-		err := a.AddMusic(path)
-		if err != nil {
-			return err
-		}
-		m = a.musics[path]
-	}
-
-	if ms > 0 {
-		a.music.PlayWithFadeIn(m, loop, ms)
-	} else if ms == 0 {
-		a.music.Play(m, loop)
-	}
-
-	return nil
-}
-
-func (a *Audio) StopMusic(ms int) {
-	if ms > 0 {
-		a.music.StopWithFadeOut(ms)
-	} else if ms == 0 {
-		a.music.Stop()
-	}
-}
-
-func (a *Audio) PlayChannel(channelName string, path string) error {
-	channel, ok := a.channels[channelName]
-	if !ok {
-		channel = NewChannel()
-		a.channels[channelName] = channel
-	}
-
-	chunk, ok := a.chunks[path]
-	if !ok {
-		err := a.AddChunck(path)
-		if err != nil {
-			return err
-		}
-		chunk = a.chunks[path]
-	}
-
-	channel.Play(chunk)
-
-	return nil
 }
 
 func (a *Audio) Close() {
@@ -97,6 +49,58 @@ func (a *Audio) Close() {
 	}
 
 	C.Mix_CloseAudio()
+}
+
+func (a *Audio) MakeChan(chanName string) {
+	a.Channels[chanName] = NewChannel()
+}
+
+func (a *Audio) PlayMusic(path string, loop bool, ms int) error {
+	m, ok := a.musics[path]
+	if !ok {
+		err := a.AddMusic(path)
+		if err != nil {
+			return err
+		}
+		m = a.musics[path]
+	}
+
+	if ms > 0 {
+		a.Music.PlayWithFadeIn(m, loop, ms)
+	} else if ms == 0 {
+		a.Music.Play(m, loop)
+	}
+
+	return nil
+}
+
+func (a *Audio) StopMusic(ms int) {
+	if ms > 0 {
+		a.Music.StopWithFadeOut(ms)
+	} else if ms == 0 {
+		a.Music.Stop()
+	}
+}
+
+func (a *Audio) PlayChannel(channelName string, path string) error {
+	channel, ok := a.Channels[channelName]
+	if !ok {
+		channel = NewChannel()
+		a.Channels[channelName] = channel
+	}
+
+	chunk, ok := a.chunks[path]
+	if !ok {
+		err := a.AddChunck(path)
+		if err != nil {
+			return err
+		}
+		chunk = a.chunks[path]
+	}
+
+	channel.Play(chunk)
+
+	return nil
 }
 
 func (a *Audio) AddMusic(path string) error {
