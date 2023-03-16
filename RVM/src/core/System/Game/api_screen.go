@@ -6,6 +6,14 @@ import (
 	"strconv"
 )
 
+func (g *Game) IsActiveScreen(name string) bool {
+	g.lock.Lock()
+	defer g.lock.Unlock()
+
+	_, ok := g.screens[name]
+	return ok
+}
+
 func (g *Game) ActiveScreen(name string) {
 	g.lock.Lock()
 	defer g.lock.Unlock()
@@ -34,20 +42,22 @@ func (g *Game) InActiveScreen(name string) {
 	}
 	delete(g.screenBps, name)
 
-	for target, target_bps := range g.screenBps {
-		if target_bps > bps {
-			g.screenBps[target] = target_bps - 1
-		}
-		if bps == 0 && target_bps == 1 {
-			g.Event.TopScreenName = target
-		}
-	}
-
 	g.Event.DeleteAllScreenEvent(name)
 	g.Graphic.DeleteAnimationByScreenName(name)
 	g.Graphic.DeleteTypingFXByScreenName(name)
 	g.Graphic.DestroyScreenTextTexture(name)
 	g.Graphic.ScreenVideoAllStop(name)
+
+	for target, target_bps := range g.screenBps {
+		if target_bps > bps {
+			g.screenBps[target] = target_bps - 1
+			g.Graphic.UpdateTypingFXScreenBPS(target, target_bps-1)
+			g.Graphic.UpdateAnimationScreenBPS(target, target_bps-1)
+		}
+		if bps == 0 && target_bps == 1 {
+			g.Event.TopScreenName = target
+		}
+	}
 
 	g.Graphic.DeleteScreenRenderBuffer(bps)
 }
@@ -74,11 +84,11 @@ func (g *Game) GetShowScreenNamesWithoutSayScreen() []string {
 	return ret
 }
 
-func (g *Game) GetScreenTextureNames(screenName string) []string {
+func (g *Game) GetScreenTextureNamesANDTransform(screenName string) []string {
 	g.lock.Lock()
 	defer g.lock.Unlock()
 
-	return g.Graphic.GetCurrentRenderBufferTextureNameByBPS(g.screenBps[screenName])
+	return g.Graphic.GetCurrentRenderBufferTextureNameANDTransformByBPS(g.screenBps[screenName])
 }
 
 func (g *Game) ShowTexture(textureName, screenName string, T obj.Transform) (textureIndex int) {

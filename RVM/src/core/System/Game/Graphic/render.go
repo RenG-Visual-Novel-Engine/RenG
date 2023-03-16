@@ -27,13 +27,15 @@ import "C"
 import (
 	"RenG/RVM/src/core/globaltype"
 	"RenG/RVM/src/core/obj"
+	"strconv"
+	"strings"
 )
 
 func (g *Graphic) Render() {
+	g.userLock.Lock()
 	g.sayLock.Lock()
-	defer g.sayLock.Unlock()
-
 	g.lock.Lock()
+	g.Video.Lock()
 
 	C.SDL_RenderClear((*C.SDL_Renderer)(g.renderer))
 	C.SDL_SetRenderDrawColor(
@@ -42,8 +44,6 @@ func (g *Graphic) Render() {
 	)
 
 	x, y := g.GetCurrentWindowSize()
-
-	g.Video.Lock()
 
 	for i := 0; i < len(g.renderBuffer); i++ {
 		for j := 0; j < len(g.renderBuffer[i]); j++ {
@@ -69,8 +69,9 @@ func (g *Graphic) Render() {
 	C.SDL_RenderPresent((*C.SDL_Renderer)(g.renderer))
 
 	g.Video.Unlock()
-
 	g.lock.Unlock()
+	g.sayLock.Unlock()
+	g.userLock.Unlock()
 }
 
 func (g *Graphic) AddScreenRenderBuffer() {
@@ -116,7 +117,7 @@ func (g *Graphic) DeleteScreenTextureRenderBuffer(bps, index int) {
 	g.renderBuffer[bps] = append(g.renderBuffer[bps][:index], g.renderBuffer[bps][index+1:]...)
 }
 
-func (g *Graphic) GetCurrentRenderBufferTextureNameByBPS(bps int) []string {
+func (g *Graphic) GetCurrentRenderBufferTextureNameANDTransformByBPS(bps int) []string {
 	g.lock.Lock()
 	defer g.lock.Unlock()
 
@@ -125,11 +126,25 @@ func (g *Graphic) GetCurrentRenderBufferTextureNameByBPS(bps int) []string {
 	for _, t := range g.renderBuffer[bps] {
 		name := "I#" + g.Image.GetImgaeTextureName(t.texture)
 		if name == "I#" {
-			name = "V#" + g.Video.GetVideoNameByTexture(t.texture)
+			name = "V#"
+			v, l := g.Video.GetVideoNameANDLoopByTexture(t.texture)
+			name += v + "?" + strconv.Itoa(l)
 		}
 
+		format := strings.Join(
+			[]string{
+				name,
+				strconv.Itoa(t.transform.Pos.X),
+				strconv.Itoa(t.transform.Pos.Y),
+				strconv.Itoa(t.transform.Size.X),
+				strconv.Itoa(t.transform.Size.Y),
+				strconv.Itoa(t.transform.Rotate),
+			},
+			"?",
+		)
+
 		if name != "I#" && name != "V#" {
-			ret = append(ret, name)
+			ret = append(ret, format)
 		}
 	}
 

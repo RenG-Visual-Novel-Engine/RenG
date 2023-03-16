@@ -1,10 +1,7 @@
 package main
 
 import (
-	"fmt"
-	"os"
-	"os/exec"
-	"runtime"
+	steam "RenG/Steam"
 )
 
 // Start Point
@@ -25,6 +22,8 @@ func main() {
 	}
 }
 */
+
+/*
 func main() {
 	if runtime.GOOS == "windows" {
 		root, err := os.Getwd()
@@ -33,5 +32,14 @@ func main() {
 		}
 		cmd := exec.Command("core\\RenG", "-r", fmt.Sprintf("%s\\game", root))
 		cmd.Run()
+	}
+}
+*/
+
+func main() {
+	s := steam.Init()
+	if s.SteamAPI_Init() {
+		s.GetAppID(s.SteamUtils())
+		s.SteamAPI_ShutDown()
 	}
 }

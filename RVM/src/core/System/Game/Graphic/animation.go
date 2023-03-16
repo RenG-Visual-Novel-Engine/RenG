@@ -9,6 +9,12 @@ func (g *Graphic) UpdateAnimation() {
 	g.lock.Lock()
 	defer g.lock.Unlock()
 
+	var DeleteStack []struct {
+		name         string
+		textureIndex int
+		animeIndex   int
+	}
+
 	for name, screen := range g.animations {
 		for textureIndex, animes := range screen {
 			for n, anime := range animes {
@@ -31,12 +37,22 @@ func (g *Graphic) UpdateAnimation() {
 					case obj.ANIME_XPOS:
 						g.Video.Lock()
 						g.renderBuffer[anime.Bps][textureIndex].transform.Pos.X = anime.Anime.Curve(1)
+						g.Video.Unlock()
 					case obj.ANIME_YPOS:
 						g.Video.Lock()
 						g.renderBuffer[anime.Bps][textureIndex].transform.Pos.Y = anime.Anime.Curve(1)
+						g.Video.Unlock()
 					}
 					if !anime.Anime.Loop {
-						g.animations[name][textureIndex] = append(g.animations[name][textureIndex][:n], g.animations[name][textureIndex][n+1:]...)
+						DeleteStack = append(DeleteStack, struct {
+							name         string
+							textureIndex int
+							animeIndex   int
+						}{
+							name:         name,
+							textureIndex: textureIndex,
+							animeIndex:   n,
+						})
 						if anime.Anime.End != nil {
 							g.lock.Unlock()
 							anime.Anime.End()
@@ -70,6 +86,21 @@ func (g *Graphic) UpdateAnimation() {
 			}
 		}
 	}
+
+	if len(DeleteStack) != 0 {
+		for _, data := range DeleteStack {
+			g.animations[data.name][data.textureIndex] = append(g.animations[data.name][data.textureIndex][:data.animeIndex], g.animations[data.name][data.textureIndex][data.animeIndex+1:]...)
+
+			for target, temp := range DeleteStack {
+				if data.name == temp.name && data.textureIndex == temp.textureIndex {
+					if data.animeIndex < temp.animeIndex {
+						DeleteStack[target].animeIndex--
+					}
+				}
+			}
+
+		}
+	}
 }
 
 func (g *Graphic) AddAnimation(
@@ -96,6 +127,17 @@ func (g *Graphic) AddAnimation(
 		Anime: anime,
 		Bps:   bps,
 	})
+}
+
+func (g *Graphic) UpdateAnimationScreenBPS(screenName string, bps int) {
+	g.lock.Lock()
+	defer g.lock.Unlock()
+
+	for i, screen := range g.animations[screenName] {
+		for n, _ := range screen {
+			g.animations[screenName][i][n].Bps = bps
+		}
+	}
 }
 
 func (g *Graphic) DeleteAnimationByTextureIndex(screenName string, textureIndex int) {

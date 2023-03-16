@@ -17,6 +17,8 @@ type Button struct {
 	Anime          []*Anime
 	Down           func(e *event.EVENT_MouseButton)
 	Up             func(e *event.EVENT_MouseButton)
+	Hover          func(e *event.EVENT_MouseMotion)
+	UnHover        func(e *event.EVENT_MouseMotion)
 }
 
 func (b *Button) screenObj() {}

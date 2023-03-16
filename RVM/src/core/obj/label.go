@@ -14,3 +14,21 @@ type Say struct {
 }
 
 func (s *Say) labelObj() {}
+
+type Pause struct {
+	Time float32
+}
+
+func (p *Pause) labelObj() {}
+
+type Call struct {
+	LabelName string
+}
+
+func (c *Call) labelObj() {}
+
+type Jump struct {
+	LabelName string
+}
+
+func (j *Jump) labelObj() {}

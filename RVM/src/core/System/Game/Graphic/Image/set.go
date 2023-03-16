@@ -8,12 +8,13 @@ package image
 #include <SDL_image.h>
 */
 import "C"
-import "log"
+import (
+	"log"
+)
 
 func (i *Image) SetImageAlpha(name string, alpha int) {
 	i.lock.Lock()
 	defer i.lock.Unlock()
-
 	if image, ok := i.images[name]; !ok {
 		log.Fatalf("Image Name Error : got - %s", name)
 	} else {

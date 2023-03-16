@@ -27,8 +27,9 @@ type Graphic struct {
 	path          string
 	width, height int
 
-	lock    sync.Mutex
-	sayLock sync.Mutex
+	lock     sync.Mutex
+	userLock sync.Mutex
+	sayLock  sync.Mutex
 
 	// screenBps -> targetScreentextures > texture
 	renderBuffer [][]struct {
@@ -160,4 +161,12 @@ func (g *Graphic) SayLock() {
 
 func (g *Graphic) SayUnlock() {
 	g.sayLock.Unlock()
+}
+
+func (g *Graphic) RenderLock() {
+	g.userLock.Lock()
+}
+
+func (g *Graphic) RenderUnlock() {
+	g.userLock.Unlock()
 }

@@ -78,7 +78,7 @@ func Init(title string,
 	hint1 := C.CString(C.SDL_HINT_RENDER_SCALE_QUALITY)
 	defer C.free(unsafe.Pointer(hint1))
 
-	hint2 := C.CString("1")
+	hint2 := C.CString("2")
 	defer C.free(unsafe.Pointer(hint2))
 
 	if C.SDL_SetHint(hint1, hint2) == 0 {

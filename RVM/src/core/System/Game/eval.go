@@ -31,6 +31,12 @@ func (g *Game) evalShow(s *obj.Show, name string, bps int) {
 			case obj.ANIME_ROTATE:
 				g.Graphic.SetRotateByBps(bps, g.Graphic.GetCurrentTopScreenIndexByBps(bps), int(anime.InitValue))
 				g.Graphic.AddAnimation(name, anime, bps, g.Graphic.GetCurrentTopScreenIndexByBps(bps))
+			case obj.ANIME_XPOS:
+				g.Graphic.SetCurrentTextureXPosition(bps, g.Graphic.GetCurrentTopScreenIndexByBps(bps), int(anime.InitValue))
+				g.Graphic.AddAnimation(name, anime, bps, g.Graphic.GetCurrentTopScreenIndexByBps(bps))
+			case obj.ANIME_YPOS:
+				g.Graphic.SetCurrentTextureYPosition(bps, g.Graphic.GetCurrentTopScreenIndexByBps(bps), int(anime.InitValue))
+				g.Graphic.AddAnimation(name, anime, bps, g.Graphic.GetCurrentTopScreenIndexByBps(bps))
 			}
 		}
 	}
@@ -164,61 +170,49 @@ func (g *Game) evalButton(b *obj.Button, name string, bps int) {
 		}
 	}
 
-	if b.HoverImageName != "" {
-		if b.Down != nil && b.Up != nil {
-			g.Event.AddButtonEvent(name, event.ButtonEvent{
-				Down: func(e *event.EVENT_MouseButton) bool {
-					var xpos, ypos int = g.Graphic.GetCurrentTexturePosition(g.screenBps[name], index)
-					var xsize, ysize int = g.Graphic.GetCurrentTextureSize(g.screenBps[name], index)
-					if g.Graphic.GetFixedRealXSize(e.X) > xpos &&
-						g.Graphic.GetFixedRealYSize(e.Y) > ypos &&
-						g.Graphic.GetFixedRealXSize(e.X) < xpos+xsize &&
-						g.Graphic.GetFixedRealYSize(e.Y) < ypos+ysize &&
-						e.Button == event.SDL_BUTTON_LEFT {
-						b.Down(e)
-						return true
-					}
-					return false
-				},
-				Up: func(e *event.EVENT_MouseButton) {
-					b.Up(e)
-				},
-				Hover: func(e *event.EVENT_MouseMotion) {
-					var xpos, ypos int = g.Graphic.GetCurrentTexturePosition(g.screenBps[name], index)
-					var xsize, ysize int = g.Graphic.GetCurrentTextureSize(g.screenBps[name], index)
-					if g.Graphic.GetFixedRealXSize(e.X) > xpos &&
-						g.Graphic.GetFixedRealYSize(e.Y) > ypos &&
-						g.Graphic.GetFixedRealXSize(e.X) < xpos+xsize &&
-						g.Graphic.GetFixedRealYSize(e.Y) < ypos+ysize {
+	var e event.ButtonEvent
+
+	if b.Down != nil && b.Up != nil {
+		e.Down = func(e *event.EVENT_MouseButton) bool {
+			var xpos, ypos int = g.Graphic.GetCurrentTexturePosition(g.screenBps[name], index)
+			var xsize, ysize int = g.Graphic.GetCurrentTextureSize(g.screenBps[name], index)
+			if g.Graphic.GetFixedRealXSize(e.X) > xpos &&
+				g.Graphic.GetFixedRealYSize(e.Y) > ypos &&
+				g.Graphic.GetFixedRealXSize(e.X) < xpos+xsize &&
+				g.Graphic.GetFixedRealYSize(e.Y) < ypos+ysize &&
+				e.Button == event.SDL_BUTTON_LEFT {
+				b.Down(e)
+				return true
+			}
+			return false
+		}
+
+		e.Up = func(e *event.EVENT_MouseButton) {
+			b.Up(e)
+		}
+
+		if b.Hover != nil && b.UnHover != nil {
+			e.Hover = func(e *event.EVENT_MouseMotion) {
+				var xpos, ypos int = g.Graphic.GetCurrentTexturePosition(g.screenBps[name], index)
+				var xsize, ysize int = g.Graphic.GetCurrentTextureSize(g.screenBps[name], index)
+				if g.Graphic.GetFixedRealXSize(e.X) >= xpos &&
+					g.Graphic.GetFixedRealYSize(e.Y) >= ypos &&
+					g.Graphic.GetFixedRealXSize(e.X) <= xpos+xsize &&
+					g.Graphic.GetFixedRealYSize(e.Y) <= ypos+ysize {
+					if b.HoverImageName != "" {
 						g.Graphic.ChangeTextureByBps(g.screenBps[name], index, b.HoverImageName)
-					} else {
+					}
+					b.Hover(e)
+				} else {
+					if b.HoverImageName != "" {
 						g.Graphic.ChangeTextureByBps(g.screenBps[name], index, b.MainImageName)
 					}
-				},
-			})
+					b.UnHover(e)
+				}
+			}
 		}
-	} else {
-		if b.Down != nil && b.Up != nil {
-			g.Event.AddButtonEvent(name, event.ButtonEvent{
-				Down: func(e *event.EVENT_MouseButton) bool {
-					var xpos, ypos int = g.Graphic.GetCurrentTexturePosition(g.screenBps[name], index)
-					var xsize, ysize int = g.Graphic.GetCurrentTextureSize(g.screenBps[name], index)
-					if g.Graphic.GetFixedRealXSize(e.X) > xpos &&
-						g.Graphic.GetFixedRealYSize(e.Y) > ypos &&
-						g.Graphic.GetFixedRealXSize(e.X) < xpos+xsize &&
-						g.Graphic.GetFixedRealYSize(e.Y) < ypos+ysize &&
-						e.Button == event.SDL_BUTTON_LEFT {
-						b.Down(e)
-						return true
-					}
-					return false
-				},
-				Up: func(e *event.EVENT_MouseButton) {
-					b.Up(e)
-				},
-				Hover: func(e *event.EVENT_MouseMotion) {},
-			})
-		}
+
+		g.Event.AddButtonEvent(name, e)
 	}
 }
 
@@ -439,4 +433,56 @@ func (g *Game) echoTransform(t obj.Transform, width, height int) obj.Transform {
 	t.Size.Y = height
 
 	return t
+}
+
+/*-------------- LABEL OBJECT -------------*/
+
+func (g *Game) evalHide(h *obj.Hide, name string, bps int) {
+	if h.Anime != nil {
+		if h.Anime.End != nil {
+			temp := h.Anime.End
+			h.Anime.End = func() {
+				temp()
+				g.Graphic.DeleteAnimationByTextureIndex(name, h.TextureIndex)
+				g.Graphic.DeleteScreenTextureRenderBuffer(bps, h.TextureIndex)
+			}
+		} else {
+			h.Anime.End = func() {
+				g.Graphic.DeleteAnimationByTextureIndex(name, h.TextureIndex)
+				g.Graphic.DeleteScreenTextureRenderBuffer(bps, h.TextureIndex)
+			}
+		}
+		g.Graphic.AddAnimation(name, h.Anime, bps, h.TextureIndex)
+	} else {
+		g.Graphic.DeleteAnimationByTextureIndex(name, h.TextureIndex)
+		g.Graphic.DeleteScreenTextureRenderBuffer(bps, h.TextureIndex)
+	}
+}
+
+func (g *Game) evalSay(s *obj.Say) {
+	*g.nowName = s.Character.Name
+	*g.nowText = s.Text
+
+	g.Graphic.SayLock()
+	g.InActiveScreen(g.SayScreenName)
+	g.ActiveScreen(g.SayScreenName)
+	g.Graphic.SayUnlock()
+
+	lock := make(chan int)
+	g.Event.AddMouseClickEvent(g.SayScreenName, event.MouseClickEvent{
+		Down: func(e *event.EVENT_MouseButton) {},
+		Up: func(e *event.EVENT_MouseButton) {
+			if buttons, ok := g.Event.Button[g.SayScreenName]; !ok {
+				lock <- 0
+			} else {
+				for _, button := range buttons {
+					if button.IsNowDown {
+						return
+					}
+				}
+				lock <- 0
+			}
+		},
+	})
+	<-lock
 }

@@ -11,8 +11,5 @@ import "C"
 import "RenG/RVM/src/core/globaltype"
 
 func (i *Image) ChangeTextureAlpha(t *globaltype.SDL_Texture, alpha int) {
-	i.lock.Lock()
-	defer i.lock.Unlock()
-
 	C.SDL_SetTextureAlphaMod((*C.SDL_Texture)(t), C.uchar(alpha))
 }

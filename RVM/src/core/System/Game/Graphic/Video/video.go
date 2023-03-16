@@ -8,6 +8,11 @@ package video
 #cgo LDFLAGS: -lwinmm
 #cgo LDFLAGS: -L./../../../../ffmpeg/lib -lavcodec -lavformat -lavutil -lswscale
 
+
+
+
+
+
 #include <ffvideo.h>
 */
 import "C"

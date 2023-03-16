@@ -45,10 +45,12 @@ func (e *Event) buttonHover() {
 		return
 	}
 	for _, event := range events {
-		event.Hover(&EVENT_MouseMotion{
-			X: int(e.getMouseMotionEvent().x),
-			Y: int(e.getMouseMotionEvent().y),
-		})
+		if event.Hover != nil {
+			event.Hover(&EVENT_MouseMotion{
+				X: int(e.getMouseMotionEvent().x),
+				Y: int(e.getMouseMotionEvent().y),
+			})
+		}
 	}
 
 }

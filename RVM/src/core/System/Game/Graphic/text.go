@@ -98,6 +98,15 @@ func (g *Graphic) RegisterTypingFX(
 	})
 }
 
+func (g *Graphic) UpdateTypingFXScreenBPS(screenName string, bps int) {
+	g.lock.Lock()
+	defer g.lock.Unlock()
+
+	for n, _ := range g.typingFXs[screenName] {
+		g.typingFXs[screenName][n].Bps = bps
+	}
+}
+
 func (g *Graphic) DeleteTypingFXByScreenName(screenName string) {
 	g.lock.Lock()
 	defer g.lock.Unlock()

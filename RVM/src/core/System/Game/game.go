@@ -22,11 +22,8 @@ type Game struct {
 
 	screens   map[string]*obj.Screen
 	screenBps map[string]int
-	labels    map[string]*obj.Label
 
-	NowlabelName   string
-	NowlabelIndex  int
-	labelCallStack []string
+	LabelManager *LabelManager
 
 	TextSpeed float64
 
@@ -45,19 +42,24 @@ type Game struct {
 
 func Init(g *graphic.Graphic, a *audio.Audio, p string, w, h int, nN *string, nT *string) *Game {
 	return &Game{
-		Graphic:        g,
-		Audio:          a,
-		Event:          event.Init(),
-		width:          w,
-		height:         h,
-		path:           p,
-		screens:        make(map[string]*obj.Screen),
-		screenBps:      make(map[string]int),
-		labels:         make(map[string]*obj.Label),
-		labelCallStack: []string{},
-		TextSpeed:      40.0,
-		nowName:        nN,
-		nowText:        nT,
+		Graphic:   g,
+		Audio:     a,
+		Event:     event.Init(),
+		width:     w,
+		height:    h,
+		path:      p,
+		screens:   make(map[string]*obj.Screen),
+		screenBps: make(map[string]int),
+		LabelManager: &LabelManager{
+			labels: make(map[string]*obj.Label),
+			labelCallStack: []struct {
+				Name  string
+				Index int
+			}{},
+		},
+		TextSpeed: 40.0,
+		nowName:   nN,
+		nowText:   nT,
 	}
 }
 
@@ -70,24 +72,50 @@ func (g *Game) Close() {
 func (g *Game) GameStart(
 	firstLabel,
 	sayLabel string,
+	data *struct {
+		Time                  string
+		Data                  string
+		CurrentLabelName      string
+		CurrentMusicName      string
+		CurrentLabelIndex     int
+		CurrentLabelCallStack []struct {
+			Name  string
+			Index int
+		}
+	},
 ) {
-	g.SayScreenName = sayLabel
-	go g.StartLabel(firstLabel, 0)
+	if data != nil {
+		g.loadData(data)
+	}
+
+	if data != nil {
+		go g.startLabel(data.CurrentLabelName, data.CurrentLabelIndex, sayLabel)
+	} else {
+		go g.startLabel(firstLabel, 0, sayLabel)
+	}
 }
 
-func (g *Game) GameLoad(
-	currentLabel,
-	sayLabel,
-	textureData,
-	currentMusicName string,
-	currentIndex int,
+func (g *Game) loadData(
+	data *struct {
+		Time                  string
+		Data                  string
+		CurrentLabelName      string
+		CurrentMusicName      string
+		CurrentLabelIndex     int
+		CurrentLabelCallStack []struct {
+			Name  string
+			Index int
+		}
+	},
 ) {
-	g.SayScreenName = sayLabel
-	g.NowMusic = currentMusicName
-	screenNames := strings.Split(textureData, "|")
+	g.LabelManager.SetCallStack(data.CurrentLabelCallStack[:len(data.CurrentLabelCallStack)-1])
+	g.LabelManager.SetNowLabelName(data.CurrentLabelName)
+	g.LabelManager.SetNowLabelIndex(data.CurrentLabelIndex)
 
-	// Loop 저장
-	g.Audio.PlayMusic(g.path+currentMusicName, true, 1000)
+	g.NowMusic = data.CurrentMusicName
+	g.Audio.PlayMusic(g.path+data.CurrentMusicName, true, 1000)
+
+	screenNames := strings.Split(data.Data, "|")
 
 	for _, screenName := range screenNames {
 		bps, err := strconv.Atoi(strings.Split(screenName, "-")[0])
@@ -102,30 +130,65 @@ func (g *Game) GameLoad(
 			switch data[0] {
 			case "V":
 				// TODO : transform, loop 저장
+
+				param := strings.Split(data[1], "?")
+
+				isLoop, _ := strconv.Atoi(param[1])
+				xPos, _ := strconv.Atoi(param[2])
+				yPos, _ := strconv.Atoi(param[3])
+				xSize, _ := strconv.Atoi(param[4])
+				ySize, _ := strconv.Atoi(param[5])
+				rotate, _ := strconv.Atoi(param[6])
+
 				g.Graphic.AddScreenTextureRenderBuffer(
 					bps,
-					g.Graphic.GetVideoTexture(data[1]),
+					g.Graphic.GetVideoTexture(strings.Split(data[1], "?")[0]),
 					obj.Transform{
-						Pos:  obj.Vector2{X: 0, Y: 0},
-						Size: obj.Vector2{X: 1280, Y: 720},
+						Pos: obj.Vector2{
+							X: xPos,
+							Y: yPos,
+						},
+						Size: obj.Vector2{
+							X: xSize,
+							Y: ySize,
+						},
+						Rotate: rotate,
 					},
 				)
-				g.Graphic.VideoStart(strings.Split(strings.Split(screenName, "-")[1], "&")[0], data[1], true)
+
+				g.Graphic.VideoStart(
+					strings.Split(strings.Split(screenName, "-")[1], "&")[0],
+					param[0],
+					!(isLoop == 0),
+				)
 			case "I":
 				// TODO : transform 저장
+				param := strings.Split(data[1], "?")
+
+				xPos, _ := strconv.Atoi(param[1])
+				yPos, _ := strconv.Atoi(param[2])
+				xSize, _ := strconv.Atoi(param[3])
+				ySize, _ := strconv.Atoi(param[4])
+				rotate, _ := strconv.Atoi(param[5])
+
 				g.Graphic.AddScreenTextureRenderBuffer(
 					bps,
-					g.Graphic.Image.GetImageTexture(data[1]),
+					g.Graphic.Image.GetImageTexture(param[0]),
 					obj.Transform{
-						Pos:  obj.Vector2{X: 0, Y: 0},
-						Size: obj.Vector2{X: 1280, Y: 720},
+						Pos: obj.Vector2{
+							X: xPos,
+							Y: yPos,
+						},
+						Size: obj.Vector2{
+							X: xSize,
+							Y: ySize,
+						},
+						Rotate: rotate,
 					},
 				)
 			}
 		}
 	}
-
-	go g.StartLabel(currentLabel, currentIndex)
 }
 
 func (g *Game) Register(
@@ -157,6 +220,6 @@ func (g *Game) registerScreens(screens map[string]*obj.Screen) {
 
 func (g *Game) registerLabels(labels map[string]*obj.Label) {
 	for name, label := range labels {
-		g.labels[name] = label
+		g.LabelManager.labels[name] = label
 	}
 }

@@ -166,7 +166,7 @@ VideoState* VideoInit(char* path, SDL_Renderer* r) {
 
 	v->texture = SDL_CreateTexture(
 		r,
-		SDL_PIXELFORMAT_YV12, 
+		SDL_PIXELFORMAT_IYUV, 
 		SDL_TEXTUREACCESS_STREAMING,
 		v->codec_ctx->width,
 		v->codec_ctx->height
@@ -176,7 +176,7 @@ VideoState* VideoInit(char* path, SDL_Renderer* r) {
 
 	DecodeFrame(v, 0);
 
-	SDL_Rect render = { 0, 0, 1920, 1080 };
+	SDL_Rect render = { 0, 0, 1280, 720 };
 
 	SDL_UpdateYUVTexture(
 		v->texture,
@@ -204,7 +204,7 @@ void Unlock() {
 
 int video_thread(void* data) {
 	VideoState* v = (VideoState*)data;
-	SDL_Rect render = { 0, 0, 1920, 1080 }; // TODO
+	SDL_Rect render = { 0, 0, 1280, 720 }; // TODO
 
 	 // SDL_Delay(400);
 
@@ -220,7 +220,7 @@ int video_thread(void* data) {
 			break;
 		}
 
-		if (!DecodeFrame(v, (int)((timeGetTime() - v->startTime) / (1000.0 / 30.0))))
+		if (!DecodeFrame(v, (int)((timeGetTime() - v->startTime) / (1000.0 / 60.0))))
 		{
 
 			if (v->loop)

@@ -1,5 +1,12 @@
 package obj
 
+type Code struct {
+	Func func()
+}
+
+func (c *Code) labelObj()  {}
+func (c *Code) screenObj() {}
+
 type Vector2 struct {
 	X, Y int
 }

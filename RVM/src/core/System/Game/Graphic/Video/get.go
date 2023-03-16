@@ -9,17 +9,17 @@ package video
 import "C"
 import "RenG/RVM/src/core/globaltype"
 
-func (v *Video) GetVideoNameByTexture(t *globaltype.SDL_Texture) string {
+func (v *Video) GetVideoNameANDLoopByTexture(t *globaltype.SDL_Texture) (string, int) {
 	v.Lock()
 	defer v.Unlock()
 
 	for name, video := range v.V {
 		if video.texture == (*C.SDL_Texture)(t) {
-			return name
+			return name, int(video.loop)
 		}
 	}
 
-	return ""
+	return "", 0
 }
 
 func (v *Video) GetVideoTexture(name string) *C.SDL_Texture {
