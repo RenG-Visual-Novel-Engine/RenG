@@ -50,19 +50,21 @@ func (g *Graphic) UpdateTypingFX() {
 	g.lock.Lock()
 	defer g.lock.Unlock()
 
-	for _, screen := range g.typingFXs {
+	for key, screen := range g.typingFXs {
 		for n, typingFX := range screen {
 			s := time.Since(typingFX.StartTime).Seconds()
 
 			if s >= typingFX.Duration {
 				g.renderBuffer[typingFX.Bps][typingFX.Index].texture = typingFX.Data[len(typingFX.Data)-1].Texture
-				g.renderBuffer[typingFX.Bps][typingFX.Index].transform = typingFX.Data[len(typingFX.Data)-1].Transform
-				screen = append(screen[:n], screen[n+1:]...)
+				g.renderBuffer[typingFX.Bps][typingFX.Index].transform.Size.X = typingFX.Data[int(math.Round(float64(len(typingFX.Data)-1)*(s/typingFX.Duration)))].Transform.Size.X
+				g.renderBuffer[typingFX.Bps][typingFX.Index].transform.Size.Y = typingFX.Data[int(math.Round(float64(len(typingFX.Data)-1)*(s/typingFX.Duration)))].Transform.Size.Y
+				g.typingFXs[key] = append(g.typingFXs[key][:n], g.typingFXs[key][n+1:]...)
 				continue
 			}
 
 			g.renderBuffer[typingFX.Bps][typingFX.Index].texture = typingFX.Data[int(math.Round(float64(len(typingFX.Data)-1)*(s/typingFX.Duration)))].Texture
-			g.renderBuffer[typingFX.Bps][typingFX.Index].transform = typingFX.Data[int(math.Round(float64(len(typingFX.Data)-1)*(s/typingFX.Duration)))].Transform
+			g.renderBuffer[typingFX.Bps][typingFX.Index].transform.Size.X = typingFX.Data[int(math.Round(float64(len(typingFX.Data)-1)*(s/typingFX.Duration)))].Transform.Size.X
+			g.renderBuffer[typingFX.Bps][typingFX.Index].transform.Size.Y = typingFX.Data[int(math.Round(float64(len(typingFX.Data)-1)*(s/typingFX.Duration)))].Transform.Size.Y
 		}
 	}
 }

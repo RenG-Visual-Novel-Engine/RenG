@@ -13,12 +13,12 @@ func (g *Game) evalShow(s *obj.Show, name string, bps int) {
 	if s.T.Size.X != 0 && s.T.Size.Y != 0 {
 		s.T = g.echoTransform(s.T, s.T.Size.X, s.T.Size.Y)
 	} else {
-		s.T = g.echoTransform(s.T, g.Graphic.Image.GetImageWidth(s.Name), g.Graphic.Image.GetImageHeight(s.Name))
+		s.T = g.echoTransform(s.T, g.Graphic.Image_Manager.GetImageWidth(s.Name), g.Graphic.Image_Manager.GetImageHeight(s.Name))
 	}
 
 	g.Graphic.AddScreenTextureRenderBuffer(
 		bps,
-		g.Graphic.Image.GetImageTexture(s.Name),
+		g.Graphic.Image_Manager.GetImageTexture(s.Name),
 		s.T,
 	)
 
@@ -26,7 +26,7 @@ func (g *Game) evalShow(s *obj.Show, name string, bps int) {
 		for _, anime := range s.Anime {
 			switch anime.Type {
 			case obj.ANIME_ALPHA:
-				g.Graphic.Image.SetImageAlpha(s.Name, int(anime.InitValue))
+				g.Graphic.Image_Manager.SetImageAlpha(s.Name, int(anime.InitValue))
 				g.Graphic.AddAnimation(name, anime, bps, g.Graphic.GetCurrentTopScreenIndexByBps(bps))
 			case obj.ANIME_ROTATE:
 				g.Graphic.SetRotateByBps(bps, g.Graphic.GetCurrentTopScreenIndexByBps(bps), int(anime.InitValue))
@@ -58,6 +58,12 @@ func (g *Game) evalPlayVideo(pv *obj.PlayVideo, name string, bps int) {
 				g.Graphic.AddAnimation(name, anime, bps, g.Graphic.GetCurrentTopScreenIndexByBps(bps))
 			case obj.ANIME_ROTATE:
 				g.Graphic.SetRotateByBps(bps, g.Graphic.GetCurrentTopScreenIndexByBps(bps), int(anime.InitValue))
+				g.Graphic.AddAnimation(name, anime, bps, g.Graphic.GetCurrentTopScreenIndexByBps(bps))
+			case obj.ANIME_XPOS:
+				g.Graphic.SetCurrentTextureXPosition(bps, g.Graphic.GetCurrentTopScreenIndexByBps(bps), int(anime.InitValue))
+				g.Graphic.AddAnimation(name, anime, bps, g.Graphic.GetCurrentTopScreenIndexByBps(bps))
+			case obj.ANIME_YPOS:
+				g.Graphic.SetCurrentTextureYPosition(bps, g.Graphic.GetCurrentTopScreenIndexByBps(bps), int(anime.InitValue))
 				g.Graphic.AddAnimation(name, anime, bps, g.Graphic.GetCurrentTopScreenIndexByBps(bps))
 			}
 		}
@@ -146,12 +152,12 @@ func (g *Game) evalButton(b *obj.Button, name string, bps int) {
 	if b.T.Size.X != 0 && b.T.Size.Y != 0 {
 		b.T = g.echoTransform(b.T, b.T.Size.X, b.T.Size.Y)
 	} else {
-		b.T = g.echoTransform(b.T, g.Graphic.Image.GetImageWidth(b.MainImageName), g.Graphic.Image.GetImageHeight(b.MainImageName))
+		b.T = g.echoTransform(b.T, g.Graphic.Image_Manager.GetImageWidth(b.MainImageName), g.Graphic.Image_Manager.GetImageHeight(b.MainImageName))
 	}
 
 	g.Graphic.AddScreenTextureRenderBuffer(
 		bps,
-		g.Graphic.Image.GetImageTexture(b.MainImageName),
+		g.Graphic.Image_Manager.GetImageTexture(b.MainImageName),
 		b.T,
 	)
 
@@ -161,10 +167,16 @@ func (g *Game) evalButton(b *obj.Button, name string, bps int) {
 		for _, anime := range b.Anime {
 			switch anime.Type {
 			case obj.ANIME_ALPHA:
-				g.Graphic.Image.SetImageAlpha(b.MainImageName, int(anime.InitValue))
+				g.Graphic.Image_Manager.SetImageAlpha(b.MainImageName, int(anime.InitValue))
 				g.Graphic.AddAnimation(name, anime, bps, g.Graphic.GetCurrentTopScreenIndexByBps(bps))
 			case obj.ANIME_ROTATE:
 				g.Graphic.SetRotateByBps(bps, g.Graphic.GetCurrentTopScreenIndexByBps(bps), int(anime.InitValue))
+				g.Graphic.AddAnimation(name, anime, bps, g.Graphic.GetCurrentTopScreenIndexByBps(bps))
+			case obj.ANIME_XPOS:
+				g.Graphic.SetCurrentTextureXPosition(bps, g.Graphic.GetCurrentTopScreenIndexByBps(bps), int(anime.InitValue))
+				g.Graphic.AddAnimation(name, anime, bps, g.Graphic.GetCurrentTopScreenIndexByBps(bps))
+			case obj.ANIME_YPOS:
+				g.Graphic.SetCurrentTextureYPosition(bps, g.Graphic.GetCurrentTopScreenIndexByBps(bps), int(anime.InitValue))
 				g.Graphic.AddAnimation(name, anime, bps, g.Graphic.GetCurrentTopScreenIndexByBps(bps))
 			}
 		}
@@ -180,7 +192,7 @@ func (g *Game) evalButton(b *obj.Button, name string, bps int) {
 				g.Graphic.GetFixedRealYSize(e.Y) > ypos &&
 				g.Graphic.GetFixedRealXSize(e.X) < xpos+xsize &&
 				g.Graphic.GetFixedRealYSize(e.Y) < ypos+ysize &&
-				e.Button == event.SDL_BUTTON_LEFT {
+				e.Button == event.RENG_BUTTON_LEFT {
 				b.Down(e)
 				return true
 			}
@@ -200,12 +212,12 @@ func (g *Game) evalButton(b *obj.Button, name string, bps int) {
 					g.Graphic.GetFixedRealXSize(e.X) <= xpos+xsize &&
 					g.Graphic.GetFixedRealYSize(e.Y) <= ypos+ysize {
 					if b.HoverImageName != "" {
-						g.Graphic.ChangeTextureByBps(g.screenBps[name], index, b.HoverImageName)
+						g.Graphic.ChangeTextureByBpsUseImageManager(g.screenBps[name], index, b.HoverImageName)
 					}
 					b.Hover(e)
 				} else {
 					if b.HoverImageName != "" {
-						g.Graphic.ChangeTextureByBps(g.screenBps[name], index, b.MainImageName)
+						g.Graphic.ChangeTextureByBpsUseImageManager(g.screenBps[name], index, b.MainImageName)
 					}
 					b.UnHover(e)
 				}
@@ -232,12 +244,12 @@ func (g *Game) evalBar(b *obj.Bar, name string, bps int) {
 	if b.FrameImageT.Size.X != 0 && b.FrameImageT.Size.Y != 0 {
 		b.FrameImageT = g.echoTransform(b.FrameImageT, b.FrameImageT.Size.X, b.FrameImageT.Size.Y)
 	} else {
-		b.FrameImageT = g.echoTransform(b.FrameImageT, g.Graphic.Image.GetImageWidth(b.FrameImageName), g.Graphic.Image.GetImageHeight(b.FrameImageName))
+		b.FrameImageT = g.echoTransform(b.FrameImageT, g.Graphic.Image_Manager.GetImageWidth(b.FrameImageName), g.Graphic.Image_Manager.GetImageHeight(b.FrameImageName))
 	}
 
 	g.Graphic.AddScreenTextureRenderBuffer(
 		bps,
-		g.Graphic.Image.GetImageTexture(b.FrameImageName),
+		g.Graphic.Image_Manager.GetImageTexture(b.FrameImageName),
 		b.FrameImageT,
 	)
 
@@ -245,13 +257,15 @@ func (g *Game) evalBar(b *obj.Bar, name string, bps int) {
 
 	if b.IsVertical {
 		b.FrameImageT.Pos.Y += b.StartPadding
-		b.FrameImageT.Size.Y -= b.StartPadding + b.EndPadding
+		b.FrameImageT.Flip.X = g.Graphic.Image_Manager.GetImageWidth(b.GaugeImageName)
+		b.FrameImageT.Flip.Y = int(float64(b.FrameImageT.Size.Y) * percent)
 		b.FrameImageT.Size.Y = int(float64(b.FrameImageT.Size.Y) * percent)
 		b.FrameImageT.Pos.X += b.SidePadding
 		b.FrameImageT.Size.X -= b.SidePadding * 2
 	} else {
 		b.FrameImageT.Pos.X += b.StartPadding
-		b.FrameImageT.Size.X -= b.StartPadding + b.EndPadding
+		b.FrameImageT.Flip.X = int(float64(b.FrameImageT.Size.X) * percent)
+		b.FrameImageT.Flip.Y = g.Graphic.Image_Manager.GetImageHeight(b.GaugeImageName)
 		b.FrameImageT.Size.X = int(float64(b.FrameImageT.Size.X) * percent)
 		b.FrameImageT.Pos.Y += b.SidePadding
 		b.FrameImageT.Size.Y -= b.SidePadding * 2
@@ -259,26 +273,29 @@ func (g *Game) evalBar(b *obj.Bar, name string, bps int) {
 
 	g.Graphic.AddScreenTextureRenderBuffer(
 		bps,
-		g.Graphic.Image.GetImageTexture(b.GaugeImageName),
+		g.Graphic.Image_Manager.GetImageTexture(b.GaugeImageName),
 		b.FrameImageT,
 	)
 
 	gaugeIndex := g.Graphic.GetCurrentTopScreenIndexByBps(bps)
 
 	if b.IsVertical {
-		b.FrameImageT.Pos.X = b.FrameImageT.Pos.X + ((b.FrameImageT.Size.X) / 2) - b.CursorSize.X/2
-		b.FrameImageT.Pos.Y = b.FrameImageT.Pos.Y + b.FrameImageT.Size.Y - b.CursorSize.Y/2
+		b.FrameImageT.Pos.X = b.FrameImageT.Pos.X + ((b.FrameImageT.Flip.X) / 2) - g.Graphic.Image_Manager.GetImageWidth(b.CursorImageName)/2
+		b.FrameImageT.Pos.Y = b.FrameImageT.Pos.Y + b.FrameImageT.Flip.Y - g.Graphic.Image_Manager.GetImageHeight(b.CursorImageName)/2
 	} else {
-		b.FrameImageT.Pos.Y = b.FrameImageT.Pos.Y - ((b.FrameImageT.Size.Y) / 2) + b.CursorSize.Y/2
-		b.FrameImageT.Pos.X = b.FrameImageT.Pos.X + b.FrameImageT.Size.X - b.CursorSize.X/2
+		b.FrameImageT.Pos.Y = b.FrameImageT.Pos.Y + ((b.FrameImageT.Size.Y) / 2) - g.Graphic.Image_Manager.GetImageHeight(b.CursorImageName)/2
+		b.FrameImageT.Pos.X = b.FrameImageT.Pos.X + b.FrameImageT.Flip.X - g.Graphic.Image_Manager.GetImageWidth(b.CursorImageName)/2
 	}
 
-	b.FrameImageT.Size.X = b.CursorSize.X
-	b.FrameImageT.Size.Y = b.CursorSize.Y
+	b.FrameImageT.Flip.X = 0
+	b.FrameImageT.Flip.Y = 0
+
+	b.FrameImageT.Size.X = g.Graphic.Image_Manager.GetImageWidth(b.CursorImageName)
+	b.FrameImageT.Size.Y = g.Graphic.Image_Manager.GetImageHeight(b.CursorImageName)
 
 	g.Graphic.AddScreenTextureRenderBuffer(
 		bps,
-		g.Graphic.Image.GetImageTexture(b.CursorImageName),
+		g.Graphic.Image_Manager.GetImageTexture(b.CursorImageName),
 		b.FrameImageT,
 	)
 
@@ -294,38 +311,41 @@ func (g *Game) evalBar(b *obj.Bar, name string, bps int) {
 						bps := g.screenBps[name]
 						var xpos, ypos int = g.Graphic.GetCurrentTexturePosition(g.screenBps[name], cursorIndex)
 						var xsize, ysize int = g.Graphic.GetCurrentTextureSize(g.screenBps[name], cursorIndex)
-						if g.Graphic.GetFixedRealXSize(e.X) > xpos &&
-							g.Graphic.GetFixedRealYSize(e.Y) > ypos &&
-							g.Graphic.GetFixedRealXSize(e.X) < xpos+xsize &&
-							g.Graphic.GetFixedRealYSize(e.Y) < ypos+ysize &&
-							e.Button == event.SDL_BUTTON_LEFT {
-							g.Graphic.ChangeTextureByBps(g.screenBps[name], cursorIndex, b.CursorHoverImageName)
+						if g.Graphic.GetFixedRealXSize(e.X) > xpos+xsize/2-b.CursorSize.X/2 &&
+							g.Graphic.GetFixedRealYSize(e.Y) > ypos+ysize/2-b.CursorSize.Y/2 &&
+							g.Graphic.GetFixedRealXSize(e.X) < xpos+xsize/2+b.CursorSize.X/2 &&
+							g.Graphic.GetFixedRealYSize(e.Y) < ypos+ysize/2+b.CursorSize.Y/2 &&
+							e.Button == event.RENG_BUTTON_LEFT {
+							g.Graphic.ChangeTextureByBpsUseImageManager(g.screenBps[name], cursorIndex, b.CursorHoverImageName)
 							if b.IsVertical {
 								if g.Graphic.GetFixedRealYSize(e.Y) >= g.Graphic.GetCurrentTextureYPosition(bps, frameIndex)+g.Graphic.GetCurrentTextureYSize(bps, frameIndex)-b.EndPadding {
-									g.Graphic.SetCurrentTextureYSize(bps, gaugeIndex, g.Graphic.GetCurrentTextureYSize(bps, frameIndex)-(b.StartPadding+b.EndPadding))
-									g.Graphic.SetCurrentTextureYPosition(bps, cursorIndex, g.Graphic.GetCurrentTextureYPosition(bps, gaugeIndex)+g.Graphic.GetCurrentTextureYSize(bps, gaugeIndex)-b.CursorSize.Y/2)
+									g.Graphic.SetCurrentTextureYFlip(bps, gaugeIndex, g.Graphic.GetCurrentTextureYSize(bps, frameIndex)-(b.StartPadding+b.EndPadding))
+									g.Graphic.SetCurrentTextureYPosition(bps, cursorIndex, g.Graphic.GetCurrentTextureYPosition(bps, gaugeIndex)+g.Graphic.GetCurrentTextureYFlip(bps, gaugeIndex)-g.Graphic.Image_Manager.GetImageHeight(b.CursorImageName)/2)
 									b.Down(e, b.MaxValue)
 								} else if g.Graphic.GetFixedRealYSize(e.Y) <= g.Graphic.GetCurrentTextureYPosition(bps, gaugeIndex) {
-									g.Graphic.SetCurrentTextureYSize(bps, gaugeIndex, 0)
-									g.Graphic.SetCurrentTextureYPosition(bps, cursorIndex, g.Graphic.GetCurrentTextureYPosition(bps, gaugeIndex)-b.CursorSize.Y/2)
+									g.Graphic.SetCurrentTextureYFlip(bps, gaugeIndex, 0)
+									g.Graphic.SetCurrentTextureYPosition(bps, cursorIndex, g.Graphic.GetCurrentTextureYPosition(bps, gaugeIndex)-g.Graphic.Image_Manager.GetImageHeight(b.CursorImageName)/2)
 									b.Down(e, b.MinValue)
 								} else {
-									g.Graphic.SetCurrentTextureYSize(bps, gaugeIndex, g.Graphic.GetFixedRealYSize(e.Y)-g.Graphic.GetCurrentTextureYPosition(bps, gaugeIndex))
-									g.Graphic.SetCurrentTextureYPosition(bps, cursorIndex, g.Graphic.GetCurrentTextureYPosition(bps, gaugeIndex)+g.Graphic.GetCurrentTextureYSize(bps, gaugeIndex)-b.CursorSize.X/2)
+									g.Graphic.SetCurrentTextureYFlip(bps, gaugeIndex, g.Graphic.GetFixedRealYSize(e.Y)-g.Graphic.GetCurrentTextureYPosition(bps, gaugeIndex))
+									g.Graphic.SetCurrentTextureYPosition(bps, cursorIndex, g.Graphic.GetCurrentTextureYPosition(bps, gaugeIndex)+g.Graphic.GetCurrentTextureYFlip(bps, gaugeIndex)-g.Graphic.Image_Manager.GetImageWidth(b.CursorImageName)/2)
 									b.Down(e, b.MinValue+int(float64(b.MaxValue-b.MinValue)*(float64(g.Graphic.GetFixedRealYSize(e.Y)-g.Graphic.GetCurrentTextureYPosition(bps, gaugeIndex))/float64(g.Graphic.GetCurrentTextureYSize(bps, frameIndex)-(b.StartPadding+b.EndPadding)))))
 								}
 							} else {
 								if g.Graphic.GetFixedRealXSize(e.X) >= g.Graphic.GetCurrentTextureXPosition(bps, frameIndex)+g.Graphic.GetCurrentTextureXSize(bps, frameIndex)-b.EndPadding {
+									g.Graphic.SetCurrentTextureXFlip(bps, gaugeIndex, g.Graphic.GetCurrentTextureXSize(bps, frameIndex)-(b.StartPadding+b.EndPadding))
 									g.Graphic.SetCurrentTextureXSize(bps, gaugeIndex, g.Graphic.GetCurrentTextureXSize(bps, frameIndex)-(b.StartPadding+b.EndPadding))
-									g.Graphic.SetCurrentTextureXPosition(bps, cursorIndex, g.Graphic.GetCurrentTextureXPosition(bps, gaugeIndex)+g.Graphic.GetCurrentTextureXSize(bps, gaugeIndex)-b.CursorSize.X/2)
+									g.Graphic.SetCurrentTextureXPosition(bps, cursorIndex, g.Graphic.GetCurrentTextureXPosition(bps, gaugeIndex)+g.Graphic.GetCurrentTextureXFlip(bps, gaugeIndex)-g.Graphic.Image_Manager.GetImageWidth(b.CursorImageName)/2)
 									b.Down(e, b.MaxValue)
 								} else if g.Graphic.GetFixedRealXSize(e.X) <= g.Graphic.GetCurrentTextureXPosition(bps, gaugeIndex) {
+									g.Graphic.SetCurrentTextureXFlip(bps, gaugeIndex, 0)
 									g.Graphic.SetCurrentTextureXSize(bps, gaugeIndex, 0)
-									g.Graphic.SetCurrentTextureXPosition(bps, cursorIndex, g.Graphic.GetCurrentTextureXPosition(bps, gaugeIndex)-b.CursorSize.X/2)
+									g.Graphic.SetCurrentTextureXPosition(bps, cursorIndex, g.Graphic.GetCurrentTextureXPosition(bps, gaugeIndex)-g.Graphic.Image_Manager.GetImageWidth(b.CursorImageName)/2)
 									b.Down(e, b.MinValue)
 								} else {
+									g.Graphic.SetCurrentTextureXFlip(bps, gaugeIndex, g.Graphic.GetFixedRealXSize(e.X)-g.Graphic.GetCurrentTextureXPosition(bps, gaugeIndex))
 									g.Graphic.SetCurrentTextureXSize(bps, gaugeIndex, g.Graphic.GetFixedRealXSize(e.X)-g.Graphic.GetCurrentTextureXPosition(bps, gaugeIndex))
-									g.Graphic.SetCurrentTextureXPosition(bps, cursorIndex, g.Graphic.GetCurrentTextureXPosition(bps, gaugeIndex)+g.Graphic.GetCurrentTextureXSize(bps, gaugeIndex)-b.CursorSize.X/2)
+									g.Graphic.SetCurrentTextureXPosition(bps, cursorIndex, g.Graphic.GetCurrentTextureXPosition(bps, gaugeIndex)+g.Graphic.GetCurrentTextureXFlip(bps, gaugeIndex)-g.Graphic.Image_Manager.GetImageWidth(b.CursorImageName)/2)
 									b.Down(e, b.MinValue+int(float64(b.MaxValue-b.MinValue)*(float64(g.Graphic.GetFixedRealXSize(e.X)-g.Graphic.GetCurrentTextureXPosition(bps, gaugeIndex))/float64(g.Graphic.GetCurrentTextureXSize(bps, frameIndex)-(b.StartPadding+b.EndPadding)))))
 								}
 							}
@@ -335,33 +355,36 @@ func (g *Game) evalBar(b *obj.Bar, name string, bps int) {
 					},
 					Up: func(e *event.EVENT_MouseButton) {
 						bps := g.screenBps[name]
-						g.Graphic.ChangeTextureByBps(g.screenBps[name], cursorIndex, b.CursorImageName)
+						g.Graphic.ChangeTextureByBpsUseImageManager(g.screenBps[name], cursorIndex, b.CursorImageName)
 						if b.IsVertical {
 							if g.Graphic.GetFixedRealYSize(e.Y) >= g.Graphic.GetCurrentTextureYPosition(bps, frameIndex)+g.Graphic.GetCurrentTextureYSize(bps, frameIndex)-b.EndPadding {
-								g.Graphic.SetCurrentTextureYSize(bps, gaugeIndex, g.Graphic.GetCurrentTextureYSize(bps, frameIndex)-(b.StartPadding+b.EndPadding))
-								g.Graphic.SetCurrentTextureYPosition(bps, cursorIndex, g.Graphic.GetCurrentTextureYPosition(bps, gaugeIndex)+g.Graphic.GetCurrentTextureYSize(bps, gaugeIndex)-b.CursorSize.Y/2)
+								g.Graphic.SetCurrentTextureYFlip(bps, gaugeIndex, g.Graphic.GetCurrentTextureYSize(bps, frameIndex)-(b.StartPadding+b.EndPadding))
+								g.Graphic.SetCurrentTextureYPosition(bps, cursorIndex, g.Graphic.GetCurrentTextureYPosition(bps, gaugeIndex)+g.Graphic.GetCurrentTextureYFlip(bps, gaugeIndex)-g.Graphic.Image_Manager.GetImageHeight(b.CursorImageName)/2)
 								b.Up(e, b.MaxValue)
 							} else if g.Graphic.GetFixedRealYSize(e.Y) <= g.Graphic.GetCurrentTextureYPosition(bps, gaugeIndex) {
-								g.Graphic.SetCurrentTextureYSize(bps, gaugeIndex, 0)
-								g.Graphic.SetCurrentTextureYPosition(bps, cursorIndex, g.Graphic.GetCurrentTextureYPosition(bps, gaugeIndex)-b.CursorSize.Y/2)
+								g.Graphic.SetCurrentTextureYFlip(bps, gaugeIndex, 0)
+								g.Graphic.SetCurrentTextureYPosition(bps, cursorIndex, g.Graphic.GetCurrentTextureYPosition(bps, gaugeIndex)-g.Graphic.Image_Manager.GetImageHeight(b.CursorImageName)/2)
 								b.Up(e, b.MinValue)
 							} else {
-								g.Graphic.SetCurrentTextureYSize(bps, gaugeIndex, g.Graphic.GetFixedRealYSize(e.Y)-g.Graphic.GetCurrentTextureYPosition(bps, gaugeIndex))
-								g.Graphic.SetCurrentTextureYPosition(bps, cursorIndex, g.Graphic.GetCurrentTextureYPosition(bps, gaugeIndex)+g.Graphic.GetCurrentTextureYSize(bps, gaugeIndex)-b.CursorSize.Y/2)
+								g.Graphic.SetCurrentTextureYFlip(bps, gaugeIndex, g.Graphic.GetFixedRealYSize(e.Y)-g.Graphic.GetCurrentTextureYPosition(bps, gaugeIndex))
+								g.Graphic.SetCurrentTextureYPosition(bps, cursorIndex, g.Graphic.GetCurrentTextureYPosition(bps, gaugeIndex)+g.Graphic.GetCurrentTextureYFlip(bps, gaugeIndex)-g.Graphic.Image_Manager.GetImageHeight(b.CursorImageName)/2)
 								b.Up(e, b.MinValue+int(float64(b.MaxValue-b.MinValue)*(float64(g.Graphic.GetFixedRealYSize(e.Y)-g.Graphic.GetCurrentTextureYPosition(bps, gaugeIndex))/float64(g.Graphic.GetCurrentTextureYSize(bps, frameIndex)-(b.StartPadding+b.EndPadding)))))
 							}
 						} else {
 							if g.Graphic.GetFixedRealXSize(e.X) >= g.Graphic.GetCurrentTextureXPosition(bps, frameIndex)+g.Graphic.GetCurrentTextureXSize(bps, frameIndex)-b.EndPadding {
+								g.Graphic.SetCurrentTextureXFlip(bps, gaugeIndex, g.Graphic.GetCurrentTextureXSize(bps, frameIndex)-(b.StartPadding+b.EndPadding))
 								g.Graphic.SetCurrentTextureXSize(bps, gaugeIndex, g.Graphic.GetCurrentTextureXSize(bps, frameIndex)-(b.StartPadding+b.EndPadding))
-								g.Graphic.SetCurrentTextureXPosition(bps, cursorIndex, g.Graphic.GetCurrentTextureXPosition(bps, gaugeIndex)+g.Graphic.GetCurrentTextureXSize(bps, gaugeIndex)-b.CursorSize.X/2)
+								g.Graphic.SetCurrentTextureXPosition(bps, cursorIndex, g.Graphic.GetCurrentTextureXPosition(bps, gaugeIndex)+g.Graphic.GetCurrentTextureXFlip(bps, gaugeIndex)-g.Graphic.Image_Manager.GetImageWidth(b.CursorImageName)/2)
 								b.Up(e, b.MaxValue)
 							} else if g.Graphic.GetFixedRealXSize(e.X) <= g.Graphic.GetCurrentTextureXPosition(bps, gaugeIndex) {
+								g.Graphic.SetCurrentTextureXFlip(bps, gaugeIndex, 0)
 								g.Graphic.SetCurrentTextureXSize(bps, gaugeIndex, 0)
-								g.Graphic.SetCurrentTextureXPosition(bps, cursorIndex, g.Graphic.GetCurrentTextureXPosition(bps, gaugeIndex)-b.CursorSize.X/2)
+								g.Graphic.SetCurrentTextureXPosition(bps, cursorIndex, g.Graphic.GetCurrentTextureXPosition(bps, gaugeIndex)-g.Graphic.Image_Manager.GetImageWidth(b.CursorImageName)/2)
 								b.Up(e, b.MinValue)
 							} else {
+								g.Graphic.SetCurrentTextureXFlip(bps, gaugeIndex, g.Graphic.GetFixedRealXSize(e.X)-g.Graphic.GetCurrentTextureXPosition(bps, gaugeIndex))
 								g.Graphic.SetCurrentTextureXSize(bps, gaugeIndex, g.Graphic.GetFixedRealXSize(e.X)-g.Graphic.GetCurrentTextureXPosition(bps, gaugeIndex))
-								g.Graphic.SetCurrentTextureXPosition(bps, cursorIndex, g.Graphic.GetCurrentTextureXPosition(bps, gaugeIndex)+g.Graphic.GetCurrentTextureXSize(bps, gaugeIndex)-b.CursorSize.X/2)
+								g.Graphic.SetCurrentTextureXPosition(bps, cursorIndex, g.Graphic.GetCurrentTextureXPosition(bps, gaugeIndex)+g.Graphic.GetCurrentTextureXFlip(bps, gaugeIndex)-g.Graphic.Image_Manager.GetImageWidth(b.CursorImageName)/2)
 								b.Up(e, b.MinValue+int(float64(b.MaxValue-b.MinValue)*(float64(g.Graphic.GetFixedRealXSize(e.X)-g.Graphic.GetCurrentTextureXPosition(bps, gaugeIndex))/float64(g.Graphic.GetCurrentTextureXSize(bps, frameIndex)-(b.StartPadding+b.EndPadding)))))
 							}
 						}
@@ -370,30 +393,33 @@ func (g *Game) evalBar(b *obj.Bar, name string, bps int) {
 						bps := g.screenBps[name]
 						if b.IsVertical {
 							if g.Graphic.GetFixedRealYSize(e.Y) >= g.Graphic.GetCurrentTextureYPosition(bps, frameIndex)+g.Graphic.GetCurrentTextureYSize(bps, frameIndex)-b.EndPadding {
-								g.Graphic.SetCurrentTextureYSize(bps, gaugeIndex, g.Graphic.GetCurrentTextureYSize(bps, frameIndex)-(b.StartPadding+b.EndPadding))
-								g.Graphic.SetCurrentTextureYPosition(bps, cursorIndex, g.Graphic.GetCurrentTextureYPosition(bps, gaugeIndex)+g.Graphic.GetCurrentTextureYSize(bps, gaugeIndex)-b.CursorSize.Y/2)
+								g.Graphic.SetCurrentTextureYFlip(bps, gaugeIndex, g.Graphic.GetCurrentTextureYSize(bps, frameIndex)-(b.StartPadding+b.EndPadding))
+								g.Graphic.SetCurrentTextureYPosition(bps, cursorIndex, g.Graphic.GetCurrentTextureYPosition(bps, gaugeIndex)+g.Graphic.GetCurrentTextureYFlip(bps, gaugeIndex)-g.Graphic.Image_Manager.GetImageHeight(b.CursorImageName)/2)
 								b.Scroll(e, b.MaxValue)
 							} else if g.Graphic.GetFixedRealYSize(e.Y) <= g.Graphic.GetCurrentTextureYPosition(bps, gaugeIndex) {
-								g.Graphic.SetCurrentTextureYSize(bps, gaugeIndex, 0)
-								g.Graphic.SetCurrentTextureYPosition(bps, cursorIndex, g.Graphic.GetCurrentTextureYPosition(bps, gaugeIndex)-b.CursorSize.Y/2)
+								g.Graphic.SetCurrentTextureYFlip(bps, gaugeIndex, 0)
+								g.Graphic.SetCurrentTextureYPosition(bps, cursorIndex, g.Graphic.GetCurrentTextureYPosition(bps, gaugeIndex)-g.Graphic.Image_Manager.GetImageHeight(b.CursorImageName)/2)
 								b.Scroll(e, b.MinValue)
 							} else {
-								g.Graphic.SetCurrentTextureYSize(bps, gaugeIndex, g.Graphic.GetFixedRealYSize(e.Y)-g.Graphic.GetCurrentTextureYPosition(bps, gaugeIndex))
-								g.Graphic.SetCurrentTextureYPosition(bps, cursorIndex, g.Graphic.GetCurrentTextureYPosition(bps, gaugeIndex)+g.Graphic.GetCurrentTextureYSize(bps, gaugeIndex)-b.CursorSize.Y/2)
+								g.Graphic.SetCurrentTextureYFlip(bps, gaugeIndex, g.Graphic.GetFixedRealYSize(e.Y)-g.Graphic.GetCurrentTextureYPosition(bps, gaugeIndex))
+								g.Graphic.SetCurrentTextureYPosition(bps, cursorIndex, g.Graphic.GetCurrentTextureYPosition(bps, gaugeIndex)+g.Graphic.GetCurrentTextureYFlip(bps, gaugeIndex)-g.Graphic.Image_Manager.GetImageHeight(b.CursorImageName)/2)
 								b.Scroll(e, b.MinValue+int(float64(b.MaxValue-b.MinValue)*(float64(g.Graphic.GetFixedRealYSize(e.Y)-g.Graphic.GetCurrentTextureYPosition(bps, gaugeIndex))/float64(g.Graphic.GetCurrentTextureYSize(bps, frameIndex)-(b.StartPadding+b.EndPadding)))))
 							}
 						} else {
 							if g.Graphic.GetFixedRealXSize(e.X) >= g.Graphic.GetCurrentTextureXPosition(bps, frameIndex)+g.Graphic.GetCurrentTextureXSize(bps, frameIndex)-b.EndPadding {
+								g.Graphic.SetCurrentTextureXFlip(bps, gaugeIndex, g.Graphic.GetCurrentTextureXSize(bps, frameIndex)-(b.StartPadding+b.EndPadding))
 								g.Graphic.SetCurrentTextureXSize(bps, gaugeIndex, g.Graphic.GetCurrentTextureXSize(bps, frameIndex)-(b.StartPadding+b.EndPadding))
-								g.Graphic.SetCurrentTextureXPosition(bps, cursorIndex, g.Graphic.GetCurrentTextureXPosition(bps, gaugeIndex)+g.Graphic.GetCurrentTextureXSize(bps, gaugeIndex)-b.CursorSize.X/2)
+								g.Graphic.SetCurrentTextureXPosition(bps, cursorIndex, g.Graphic.GetCurrentTextureXPosition(bps, gaugeIndex)+g.Graphic.GetCurrentTextureXFlip(bps, gaugeIndex)-g.Graphic.Image_Manager.GetImageWidth(b.CursorImageName)/2)
 								b.Scroll(e, b.MaxValue)
 							} else if g.Graphic.GetFixedRealXSize(e.X) <= g.Graphic.GetCurrentTextureXPosition(bps, gaugeIndex) {
+								g.Graphic.SetCurrentTextureXFlip(bps, gaugeIndex, 0)
 								g.Graphic.SetCurrentTextureXSize(bps, gaugeIndex, 0)
-								g.Graphic.SetCurrentTextureXPosition(bps, cursorIndex, g.Graphic.GetCurrentTextureXPosition(bps, gaugeIndex)-b.CursorSize.X/2)
+								g.Graphic.SetCurrentTextureXPosition(bps, cursorIndex, g.Graphic.GetCurrentTextureXPosition(bps, gaugeIndex)-g.Graphic.Image_Manager.GetImageWidth(b.CursorImageName)/2)
 								b.Scroll(e, b.MinValue)
 							} else {
+								g.Graphic.SetCurrentTextureXFlip(bps, gaugeIndex, g.Graphic.GetFixedRealXSize(e.X)-g.Graphic.GetCurrentTextureXPosition(bps, gaugeIndex))
 								g.Graphic.SetCurrentTextureXSize(bps, gaugeIndex, g.Graphic.GetFixedRealXSize(e.X)-g.Graphic.GetCurrentTextureXPosition(bps, gaugeIndex))
-								g.Graphic.SetCurrentTextureXPosition(bps, cursorIndex, g.Graphic.GetCurrentTextureXPosition(bps, gaugeIndex)+g.Graphic.GetCurrentTextureXSize(bps, gaugeIndex)-b.CursorSize.X/2)
+								g.Graphic.SetCurrentTextureXPosition(bps, cursorIndex, g.Graphic.GetCurrentTextureXPosition(bps, gaugeIndex)+g.Graphic.GetCurrentTextureXFlip(bps, gaugeIndex)-g.Graphic.Image_Manager.GetImageWidth(b.CursorImageName)/2)
 								b.Scroll(e, b.MinValue+int(float64(b.MaxValue-b.MinValue)*(float64(g.Graphic.GetFixedRealXSize(e.X)-g.Graphic.GetCurrentTextureXPosition(bps, gaugeIndex))/float64(g.Graphic.GetCurrentTextureXSize(bps, frameIndex)-(b.StartPadding+b.EndPadding)))))
 							}
 						}
@@ -472,6 +498,9 @@ func (g *Game) evalSay(s *obj.Say) {
 	g.Event.AddMouseClickEvent(g.SayScreenName, event.MouseClickEvent{
 		Down: func(e *event.EVENT_MouseButton) {},
 		Up: func(e *event.EVENT_MouseButton) {
+			if e.Button != event.RENG_BUTTON_LEFT {
+				return
+			}
 			if buttons, ok := g.Event.Button[g.SayScreenName]; !ok {
 				lock <- 0
 			} else {

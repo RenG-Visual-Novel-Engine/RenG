@@ -11,6 +11,7 @@ package graphic
 import "C"
 import (
 	image "RenG/RVM/src/core/System/Game/Graphic/Image"
+	sprite "RenG/RVM/src/core/System/Game/Graphic/Sprite"
 	video "RenG/RVM/src/core/System/Game/Graphic/Video"
 	"RenG/RVM/src/core/globaltype"
 	"RenG/RVM/src/core/obj"
@@ -37,8 +38,10 @@ type Graphic struct {
 		transform obj.Transform
 	}
 
-	Image *image.Image
-	Video *video.Video
+	Image_Manager  *image.Image
+	Video_Manager  *video.Video
+	Sprite_Manager *sprite.Sprite
+
 	fonts map[string]struct {
 		Font        *globaltype.TTF_Font
 		Size        int
@@ -59,6 +62,14 @@ type Graphic struct {
 		Anime *obj.Anime
 		Bps   int
 	}
+	sprites map[string][]struct {
+		Name      string
+		Bps       int
+		Index     int
+		Duration  float64
+		Loop      bool
+		StartTime time.Time
+	}
 }
 
 func Init(window *globaltype.SDL_Window, r *globaltype.SDL_Renderer, p string, w, h int) *Graphic {
@@ -69,11 +80,12 @@ func Init(window *globaltype.SDL_Window, r *globaltype.SDL_Renderer, p string, w
 			texture   *globaltype.SDL_Texture
 			transform obj.Transform
 		}{},
-		path:   p,
-		width:  w,
-		height: h,
-		Image:  image.Init(r),
-		Video:  video.Init(),
+		path:           p,
+		width:          w,
+		height:         h,
+		Image_Manager:  image.Init(r),
+		Video_Manager:  video.Init(),
+		Sprite_Manager: sprite.Init(r),
 		fonts: make(map[string]struct {
 			Font        *globaltype.TTF_Font
 			Size        int
@@ -94,14 +106,23 @@ func Init(window *globaltype.SDL_Window, r *globaltype.SDL_Renderer, p string, w
 			Anime *obj.Anime
 			Bps   int
 		}),
+		sprites: make(map[string][]struct {
+			Name      string
+			Bps       int
+			Index     int
+			Duration  float64
+			Loop      bool
+			StartTime time.Time
+		}),
 	}
 }
 
 func (g *Graphic) Close() {
 	C.SDL_DestroyRenderer((*C.SDL_Renderer)(g.renderer))
 
-	g.Image.Close()
-	g.Video.Close()
+	g.Image_Manager.Close()
+	g.Video_Manager.Close()
+	g.Sprite_Manager.Close()
 
 	C.SDL_FreeSurface(g.Cursor)
 }
@@ -109,6 +130,7 @@ func (g *Graphic) Close() {
 func (g *Graphic) Update() {
 	g.UpdateAnimation()
 	g.UpdateTypingFX()
+	g.UpdateSprite()
 }
 
 func (g *Graphic) RegisterCursor(path string) {
@@ -121,26 +143,32 @@ func (g *Graphic) RegisterCursor(path string) {
 	g.Cursor = surface
 }
 
-func (g *Graphic) RegisterImages(images map[string]string) {
-	for name, path := range images {
-		g.Image.RegisterImage(name, g.path+path)
+func (g *Graphic) RegisterImages(images *map[string]string) {
+	for name, path := range *images {
+		g.Image_Manager.RegisterImage(name, g.path+path)
 	}
 }
 
-func (g *Graphic) RegisterVideos(videos map[string]string) {
-	for name, path := range videos {
-		g.Video.Register(name, g.path+path, g.renderer)
+func (g *Graphic) RegisterVideos(videos *map[string]string) {
+	for name, path := range *videos {
+		g.Video_Manager.RegisterVideo(name, g.path+path, g.renderer)
+	}
+}
+
+func (g *Graphic) RegisterSprites(sprites *map[string]string) {
+	for name, path := range *sprites {
+		g.Sprite_Manager.RegisterSprite(name, g.path+path)
 	}
 }
 
 func (g *Graphic) RegisterFonts(
-	fonts map[string]struct {
+	fonts *map[string]struct {
 		Path        string
 		Size        int
 		LimitPixels int
 	},
 ) {
-	for name, font := range fonts {
+	for name, font := range *fonts {
 		cpath := C.CString(g.path + font.Path)
 		defer C.free(unsafe.Pointer(cpath))
 		g.fonts[name] = struct {

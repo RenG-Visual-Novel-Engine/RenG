@@ -1,17 +1,13 @@
 package video
 
 /*
+
 #cgo CFLAGS: -I./../../../../sdl/include
 #cgo CFLAGS: -I./../../../../ffmpeg/include
 #cgo CFLAGS: -I./c
 #cgo LDFLAGS: -L./../../../../sdl/lib -lSDL2 -lSDL2main
 #cgo LDFLAGS: -lwinmm
 #cgo LDFLAGS: -L./../../../../ffmpeg/lib -lavcodec -lavformat -lavutil -lswscale
-
-
-
-
-
 
 #include <ffvideo.h>
 */
@@ -38,7 +34,7 @@ func (v *Video) Close() {
 	}
 }
 
-func (v *Video) Register(name, path string, r *globaltype.SDL_Renderer) {
+func (v *Video) RegisterVideo(name, path string, r *globaltype.SDL_Renderer) {
 	v.V[name] = C.VideoInit(C.CString(path), (*C.SDL_Renderer)(r))
 }
 
@@ -56,6 +52,18 @@ func (v *Video) VideoStart(ScreenName, VideoName string, loop bool) {
 		C.Start(v.V[VideoName], 1)
 	} else {
 		C.Start(v.V[VideoName], 0)
+	}
+}
+
+func (v *Video) ToggleVideoPause(VideoName string) *C.AVFrame {
+	v.Lock()
+	defer v.Unlock()
+
+	if v.V[VideoName].pause == 1 {
+		C.PauseToggleVideo(v.V[VideoName], C.int(0))
+		return nil
+	} else {
+		return C.PauseToggleVideo(v.V[VideoName], C.int(1))
 	}
 }
 

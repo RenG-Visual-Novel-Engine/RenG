@@ -45,12 +45,14 @@ func (g *Game) InActiveScreen(name string) {
 	g.Event.DeleteAllScreenEvent(name)
 	g.Graphic.DeleteAnimationByScreenName(name)
 	g.Graphic.DeleteTypingFXByScreenName(name)
+	g.Graphic.DeleteSpriteByScreenName(name)
 	g.Graphic.DestroyScreenTextTexture(name)
 	g.Graphic.ScreenVideoAllStop(name)
 
 	for target, target_bps := range g.screenBps {
 		if target_bps > bps {
 			g.screenBps[target] = target_bps - 1
+			g.Graphic.UpdateSpriteScreenBPS(target, target_bps-1)
 			g.Graphic.UpdateTypingFXScreenBPS(target, target_bps-1)
 			g.Graphic.UpdateAnimationScreenBPS(target, target_bps-1)
 		}
@@ -60,6 +62,16 @@ func (g *Game) InActiveScreen(name string) {
 	}
 
 	g.Graphic.DeleteScreenRenderBuffer(bps)
+}
+
+// out : last screen index
+func (g *Game) EvalComponent(screenName string, component *[]obj.ScreenObject) int {
+	g.lock.Lock()
+	defer g.lock.Unlock()
+
+	g.screenEval(*component, screenName, g.screenBps[screenName])
+
+	return g.Graphic.GetCurrentTopScreenIndexByBps(g.screenBps[screenName])
 }
 
 func (g *Game) GetScreenBps(screenName string) int {
@@ -98,12 +110,12 @@ func (g *Game) ShowTexture(textureName, screenName string, T obj.Transform) (tex
 	if T.Size.X != 0 && T.Size.Y != 0 {
 		T = g.echoTransform(T, T.Size.X, T.Size.Y)
 	} else {
-		T = g.echoTransform(T, g.Graphic.Image.GetImageWidth(textureName), g.Graphic.Image.GetImageHeight(textureName))
+		T = g.echoTransform(T, g.Graphic.Image_Manager.GetImageWidth(textureName), g.Graphic.Image_Manager.GetImageHeight(textureName))
 	}
 
 	g.Graphic.AddScreenTextureRenderBuffer(
 		g.screenBps[screenName],
-		g.Graphic.Image.GetImageTexture(textureName),
+		g.Graphic.Image_Manager.GetImageTexture(textureName),
 		T,
 	)
 

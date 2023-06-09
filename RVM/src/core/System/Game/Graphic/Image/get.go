@@ -1,5 +1,13 @@
 package image
 
+/*
+#cgo CFLAGS: -I./../../../../sdl/include
+#cgo LDFLAGS: -L./../../../../sdl/lib -lSDL2 -lSDL2main -lSDL2_image
+
+#include <SDL.h>
+#include <SDL_image.h>
+*/
+import "C"
 import "RenG/RVM/src/core/globaltype"
 
 func (i *Image) GetImgaeTextureName(t *globaltype.SDL_Texture) string {
@@ -33,7 +41,7 @@ func (i *Image) GetImageWidth(name string) int {
 	if image, ok := i.images[name]; !ok {
 		return 0
 	} else {
-		return image.width
+		return int(image.surface.w)
 	}
 }
 
@@ -44,6 +52,6 @@ func (i *Image) GetImageHeight(name string) int {
 	if image, ok := i.images[name]; !ok {
 		return 0
 	} else {
-		return image.height
+		return int(image.surface.h)
 	}
 }

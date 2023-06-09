@@ -27,6 +27,11 @@ typedef struct VideoState {
 // bool
 	int nowPlaying;
 	int stop;
+
+	int pause;
+	unsigned long pause_time;
+	unsigned long pause_start_time;
+
 	int loop;
 
 	SDL_Texture* texture;
@@ -106,7 +111,7 @@ void destroyCodec(VideoState* v)
 int DecodeFrame(VideoState* v, int index)
 {
 	if (index < v->codec_ctx->frame_number)
-		return 1;
+		return -1;
 
 	AVFrame* frame = av_frame_alloc();
 		
@@ -202,6 +207,23 @@ void Unlock() {
 	SDL_UnlockMutex(lock);
 }
 
+AVFrame* PauseToggleVideo(VideoState* v, int pause) {
+	v->pause = pause;
+
+	if (!pause)
+	{
+		return NULL;
+	}
+
+	if (!v->frame) {
+		while (DecodeFrame(v, (int)((timeGetTime() - v->startTime) / (1000.0 / 60.0))) != 1) {
+
+		}
+	}
+
+	return v->frame;
+}
+
 int video_thread(void* data) {
 	VideoState* v = (VideoState*)data;
 	SDL_Rect render = { 0, 0, 1280, 720 }; // TODO
@@ -212,6 +234,30 @@ int video_thread(void* data) {
 
 	for (;;) {
 		Lock();
+
+		if (v->pause == 1)
+		{
+			if (!v->pause_time)
+			{
+				v->pause_time = timeGetTime();
+				v->pause_start_time = v->startTime;
+			}
+		} 
+		else if (v->pause == 0 && v->pause_time != 0)
+		{
+			v->pause_time = 0;
+			v->pause_start_time = 0;
+			av_frame_free(&v->frame);
+		} else {
+			if (v->frame) {
+				av_frame_free(&v->frame);
+			}
+		}
+
+		if (v->pause_time)
+		{
+			v->startTime = timeGetTime() - v->pause_time + v->pause_start_time;
+		}
 
 		if (v->stop) 
 		{
@@ -237,7 +283,7 @@ int video_thread(void* data) {
 		}
 
 		if (v->frame) {
-			
+
 			SDL_UpdateYUVTexture(
 				v->texture,
 				&render,
@@ -248,9 +294,6 @@ int video_thread(void* data) {
 				v->frame->data[2],
 				v->frame->linesize[2]
 			);
-		
-			av_frame_free(&v->frame);
-
 		}
 
 		Unlock();
@@ -267,6 +310,9 @@ void Start(VideoState* v, int Loop) {
 	v->nowPlaying = 1;
 	v->loop = Loop;
 	v->stop = 0;
+	v->pause = 0;
+	v->pause_time = 0;
+	v->pause_start_time = 0;
 
 	SDL_CreateThread(video_thread, "video_thread", v);
 }

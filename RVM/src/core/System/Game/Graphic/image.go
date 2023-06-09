@@ -5,6 +5,13 @@ import (
 	"log"
 )
 
+func (g *Graphic) GetTexture(bps, index int) *globaltype.SDL_Texture {
+	g.lock.Lock()
+	defer g.lock.Unlock()
+
+	return g.renderBuffer[bps][index].texture
+}
+
 func (g *Graphic) GetCurrentTextureXPosition(bps, index int) (x int) {
 	g.lock.Lock()
 	defer g.lock.Unlock()
@@ -29,6 +36,19 @@ func (g *Graphic) GetCurrentTextureYSize(bps, index int) (y int) {
 	defer g.lock.Unlock()
 
 	return g.renderBuffer[bps][index].transform.Size.Y
+}
+
+func (g *Graphic) GetCurrentTextureXFlip(bps, index int) (x int) {
+	g.lock.Lock()
+	defer g.lock.Unlock()
+	return g.renderBuffer[bps][index].transform.Flip.X
+}
+
+func (g *Graphic) GetCurrentTextureYFlip(bps, index int) (y int) {
+	g.lock.Lock()
+	defer g.lock.Unlock()
+
+	return g.renderBuffer[bps][index].transform.Flip.Y
 }
 
 func (g *Graphic) GetCurrentTexturePosition(bps, index int) (x, y int) {
@@ -73,20 +93,34 @@ func (g *Graphic) SetCurrentTextureYSize(bps, index, value int) {
 	g.renderBuffer[bps][index].transform.Size.Y = value
 }
 
+func (g *Graphic) SetCurrentTextureXFlip(bps, index, value int) {
+	g.lock.Lock()
+	defer g.lock.Unlock()
+
+	g.renderBuffer[bps][index].transform.Flip.X = value
+}
+
+func (g *Graphic) SetCurrentTextureYFlip(bps, index, value int) {
+	g.lock.Lock()
+	defer g.lock.Unlock()
+
+	g.renderBuffer[bps][index].transform.Flip.Y = value
+}
+
 func (g *Graphic) SetVideoAlphaByName(name string, alpha int) {
 	g.lock.Lock()
 	defer g.lock.Unlock()
 
-	g.Video.Lock()
-	_, ok := g.Video.V[name]
+	g.Video_Manager.Lock()
+	_, ok := g.Video_Manager.V[name]
 	if !ok {
-		g.Video.Unlock()
+		g.Video_Manager.Unlock()
 		log.Printf("Video Name Error : got - %s", name)
 		return
 	}
-	g.Video.Unlock()
-	g.Image.ChangeTextureAlpha(
-		(*globaltype.SDL_Texture)(g.Video.GetVideoTexture(name)),
+	g.Video_Manager.Unlock()
+	g.Image_Manager.ChangeTextureAlpha(
+		(*globaltype.SDL_Texture)(g.Video_Manager.GetVideoTexture(name)),
 		alpha,
 	)
 }
@@ -95,30 +129,49 @@ func (g *Graphic) SetAlphaByBps(bps, index, alpha int) {
 	g.lock.Lock()
 	defer g.lock.Unlock()
 
-	g.Video.Lock()
-	g.Image.ChangeTextureAlpha(
+	g.Video_Manager.Lock()
+	g.Image_Manager.ChangeTextureAlpha(
 		g.renderBuffer[bps][index].texture,
 		alpha,
 	)
-	g.Video.Unlock()
+	g.Video_Manager.Unlock()
 }
 
 func (g *Graphic) SetRotateByBps(bps, index, alpha int) {
 	g.lock.Lock()
 	defer g.lock.Unlock()
 
-	g.Video.Lock()
+	g.Video_Manager.Lock()
 	g.renderBuffer[bps][index].transform.Rotate = alpha
-	g.Video.Unlock()
+	g.Video_Manager.Unlock()
 }
 
-func (g *Graphic) ChangeTextureByBps(bps, index int, changeImageName string) {
+func (g *Graphic) ChangeTextureByBpsUseImageManager(bps, index int, changeImageName string) {
 	g.lock.Lock()
 	defer g.lock.Unlock()
 
-	if g.renderBuffer[bps][index].texture != g.Image.GetImageTexture(changeImageName) {
-		g.renderBuffer[bps][index].texture = g.Image.GetImageTexture(changeImageName)
+	if g.renderBuffer[bps][index].texture != g.Image_Manager.GetImageTexture(changeImageName) {
+		g.renderBuffer[bps][index].texture = g.Image_Manager.GetImageTexture(changeImageName)
 	}
+}
+
+func (g *Graphic) ChangeTextureByBps(bps, index int, texture *globaltype.SDL_Texture) {
+	g.lock.Lock()
+	defer g.lock.Unlock()
+
+	if g.renderBuffer[bps][index].texture != texture {
+		g.renderBuffer[bps][index].texture = texture
+	}
+}
+
+func (g *Graphic) ChangeTextureTransformByBps(bps, index int, xpos, ypos, xsize, ysize int) {
+	g.lock.Lock()
+	defer g.lock.Unlock()
+
+	g.renderBuffer[bps][index].transform.Pos.X = xpos
+	g.renderBuffer[bps][index].transform.Pos.Y = ypos
+	g.renderBuffer[bps][index].transform.Size.X = xsize
+	g.renderBuffer[bps][index].transform.Size.Y = ysize
 }
 
 // Real -> Change

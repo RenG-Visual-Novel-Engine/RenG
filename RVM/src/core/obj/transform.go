@@ -3,6 +3,7 @@ package obj
 type Transform struct {
 	Pos    Vector2
 	Size   Vector2
+	Flip   Vector2
 	Rotate int
 
 	Type SpecialTransform

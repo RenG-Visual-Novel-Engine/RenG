@@ -173,7 +173,7 @@ func (g *Game) loadData(
 
 				g.Graphic.AddScreenTextureRenderBuffer(
 					bps,
-					g.Graphic.Image.GetImageTexture(param[0]),
+					g.Graphic.Image_Manager.GetImageTexture(param[0]),
 					obj.Transform{
 						Pos: obj.Vector2{
 							X: xPos,
@@ -192,11 +192,12 @@ func (g *Game) loadData(
 }
 
 func (g *Game) Register(
-	screens map[string]*obj.Screen,
-	labels map[string]*obj.Label,
-	images map[string]string,
-	videos map[string]string,
-	fonts map[string]struct {
+	screens *map[string]*obj.Screen,
+	labels *map[string]*obj.Label,
+	images *map[string]string,
+	videos *map[string]string,
+	sprites *map[string]string,
+	fonts *map[string]struct {
 		Path        string
 		Size        int
 		LimitPixels int
@@ -207,19 +208,19 @@ func (g *Game) Register(
 	g.Graphic.RegisterImages(images)
 	g.Graphic.RegisterVideos(videos)
 	g.Graphic.RegisterImages(images)
-	g.Graphic.RegisterVideos(videos)
+	g.Graphic.RegisterSprites(sprites)
 	g.Graphic.RegisterFonts(fonts)
 }
 
 // key : name, value : ui.Screen
-func (g *Game) registerScreens(screens map[string]*obj.Screen) {
-	for name, screen := range screens {
+func (g *Game) registerScreens(screens *map[string]*obj.Screen) {
+	for name, screen := range *screens {
 		g.screens[name] = screen
 	}
 }
 
-func (g *Game) registerLabels(labels map[string]*obj.Label) {
-	for name, label := range labels {
+func (g *Game) registerLabels(labels *map[string]*obj.Label) {
+	for name, label := range *labels {
 		g.LabelManager.labels[name] = label
 	}
 }

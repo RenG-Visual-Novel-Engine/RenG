@@ -27,21 +27,21 @@ func (g *Graphic) UpdateAnimation() {
 				if s-anime.Anime.StartTime >= anime.Anime.Duration {
 					switch anime.Anime.Type {
 					case obj.ANIME_ALPHA:
-						g.Video.Lock()
-						g.Image.ChangeTextureAlpha(g.renderBuffer[anime.Bps][textureIndex].texture, anime.Anime.Curve(1))
-						g.Video.Unlock()
+						g.Video_Manager.Lock()
+						g.Image_Manager.ChangeTextureAlpha(g.renderBuffer[anime.Bps][textureIndex].texture, anime.Anime.Curve(1))
+						g.Video_Manager.Unlock()
 					case obj.ANIME_ROTATE:
-						g.Video.Lock()
+						g.Video_Manager.Lock()
 						g.renderBuffer[anime.Bps][textureIndex].transform.Rotate = anime.Anime.Curve(1)
-						g.Video.Unlock()
+						g.Video_Manager.Unlock()
 					case obj.ANIME_XPOS:
-						g.Video.Lock()
+						g.Video_Manager.Lock()
 						g.renderBuffer[anime.Bps][textureIndex].transform.Pos.X = anime.Anime.Curve(1)
-						g.Video.Unlock()
+						g.Video_Manager.Unlock()
 					case obj.ANIME_YPOS:
-						g.Video.Lock()
+						g.Video_Manager.Lock()
 						g.renderBuffer[anime.Bps][textureIndex].transform.Pos.Y = anime.Anime.Curve(1)
-						g.Video.Unlock()
+						g.Video_Manager.Unlock()
 					}
 					if !anime.Anime.Loop {
 						DeleteStack = append(DeleteStack, struct {
@@ -67,21 +67,21 @@ func (g *Graphic) UpdateAnimation() {
 
 				switch anime.Anime.Type {
 				case obj.ANIME_ALPHA:
-					g.Video.Lock()
-					g.Image.ChangeTextureAlpha(g.renderBuffer[anime.Bps][textureIndex].texture, anime.Anime.Curve((s-anime.Anime.StartTime)/anime.Anime.Duration))
-					g.Video.Unlock()
+					g.Video_Manager.Lock()
+					g.Image_Manager.ChangeTextureAlpha(g.renderBuffer[anime.Bps][textureIndex].texture, anime.Anime.Curve((s-anime.Anime.StartTime)/anime.Anime.Duration))
+					g.Video_Manager.Unlock()
 				case obj.ANIME_ROTATE:
-					g.Video.Lock()
+					g.Video_Manager.Lock()
 					g.renderBuffer[anime.Bps][textureIndex].transform.Rotate = anime.Anime.Curve((s - anime.Anime.StartTime) / anime.Anime.Duration)
-					g.Video.Unlock()
+					g.Video_Manager.Unlock()
 				case obj.ANIME_XPOS:
-					g.Video.Lock()
+					g.Video_Manager.Lock()
 					g.renderBuffer[anime.Bps][textureIndex].transform.Pos.X = anime.Anime.Curve((s - anime.Anime.StartTime) / anime.Anime.Duration)
-					g.Video.Unlock()
+					g.Video_Manager.Unlock()
 				case obj.ANIME_YPOS:
-					g.Video.Lock()
+					g.Video_Manager.Lock()
 					g.renderBuffer[anime.Bps][textureIndex].transform.Pos.Y = anime.Anime.Curve((s - anime.Anime.StartTime) / anime.Anime.Duration)
-					g.Video.Unlock()
+					g.Video_Manager.Unlock()
 				}
 			}
 		}

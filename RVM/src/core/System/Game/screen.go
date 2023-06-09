@@ -13,7 +13,9 @@ func (g *Game) screenEval(
 	for _, object := range so {
 		switch object := object.(type) {
 		case *obj.Code:
+			g.lock.Unlock()
 			object.Func()
+			g.lock.Lock()
 		case *obj.Show:
 			g.evalShow(object, name, bps)
 		case *obj.PlayMusic:

@@ -35,7 +35,7 @@ func (g *Graphic) Render() {
 	g.userLock.Lock()
 	g.sayLock.Lock()
 	g.lock.Lock()
-	g.Video.Lock()
+	g.Video_Manager.Lock()
 
 	C.SDL_RenderClear((*C.SDL_Renderer)(g.renderer))
 	C.SDL_SetRenderDrawColor(
@@ -47,28 +47,47 @@ func (g *Graphic) Render() {
 
 	for i := 0; i < len(g.renderBuffer); i++ {
 		for j := 0; j < len(g.renderBuffer[i]); j++ {
-			r := C.CreateRect(
+			r1 := C.CreateRect(
 				C.int(float32(g.renderBuffer[i][j].transform.Pos.X)*float32(x)/float32(g.width)),
 				C.int(float32(g.renderBuffer[i][j].transform.Pos.Y)*float32(y)/float32(g.height)),
 				C.int(float32(g.renderBuffer[i][j].transform.Size.X)*float32(x)/float32(g.width)),
 				C.int(float32(g.renderBuffer[i][j].transform.Size.Y)*float32(y)/float32(g.height)),
 			)
-			C.SDL_RenderCopyEx(
-				(*C.SDL_Renderer)(g.renderer),
-				(*C.SDL_Texture)(g.renderBuffer[i][j].texture),
-				nil,
-				r,
-				C.double(g.renderBuffer[i][j].transform.Rotate),
-				nil,
-				C.SDL_FLIP_NONE,
-			)
-			C.FreeRect(r)
+			if g.renderBuffer[i][j].transform.Flip.X != 0 || g.renderBuffer[i][j].transform.Flip.Y != 0 {
+				r2 := C.CreateRect(
+					C.int(0),
+					C.int(0),
+					C.int(g.renderBuffer[i][j].transform.Flip.X),
+					C.int(g.renderBuffer[i][j].transform.Flip.Y),
+				)
+				C.SDL_RenderCopyEx(
+					(*C.SDL_Renderer)(g.renderer),
+					(*C.SDL_Texture)(g.renderBuffer[i][j].texture),
+					r2,
+					r1,
+					C.double(g.renderBuffer[i][j].transform.Rotate),
+					nil,
+					C.SDL_FLIP_NONE,
+				)
+				C.FreeRect(r2)
+			} else {
+				C.SDL_RenderCopyEx(
+					(*C.SDL_Renderer)(g.renderer),
+					(*C.SDL_Texture)(g.renderBuffer[i][j].texture),
+					nil,
+					r1,
+					C.double(g.renderBuffer[i][j].transform.Rotate),
+					nil,
+					C.SDL_FLIP_NONE,
+				)
+			}
+			C.FreeRect(r1)
 		}
 	}
 
 	C.SDL_RenderPresent((*C.SDL_Renderer)(g.renderer))
 
-	g.Video.Unlock()
+	g.Video_Manager.Unlock()
 	g.lock.Unlock()
 	g.sayLock.Unlock()
 	g.userLock.Unlock()
@@ -124,10 +143,10 @@ func (g *Graphic) GetCurrentRenderBufferTextureNameANDTransformByBPS(bps int) []
 	var ret []string
 
 	for _, t := range g.renderBuffer[bps] {
-		name := "I#" + g.Image.GetImgaeTextureName(t.texture)
+		name := "I#" + g.Image_Manager.GetImgaeTextureName(t.texture)
 		if name == "I#" {
 			name = "V#"
-			v, l := g.Video.GetVideoNameANDLoopByTexture(t.texture)
+			v, l := g.Video_Manager.GetVideoNameANDLoopByTexture(t.texture)
 			name += v + "?" + strconv.Itoa(l)
 		}
 

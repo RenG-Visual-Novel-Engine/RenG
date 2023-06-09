@@ -6,26 +6,26 @@ func (g *Graphic) VideoStart(ScreenName, VideoName string, loop bool) {
 	g.lock.Lock()
 	defer g.lock.Unlock()
 
-	g.Video.VideoStart(ScreenName, VideoName, loop)
+	g.Video_Manager.VideoStart(ScreenName, VideoName, loop)
 }
 
 func (g *Graphic) ScreenVideoAllStop(ScreenName string) {
 	g.lock.Lock()
 	defer g.lock.Unlock()
 
-	g.Video.ScreenVideoAllStop(ScreenName)
+	g.Video_Manager.ScreenVideoAllStop(ScreenName)
 }
 
 func (g *Graphic) GetVideoTexture(name string) *globaltype.SDL_Texture {
 	g.lock.Lock()
 	defer g.lock.Unlock()
 
-	return (*globaltype.SDL_Texture)(g.Video.GetVideoTexture(name))
+	return (*globaltype.SDL_Texture)(g.Video_Manager.GetVideoTexture(name))
 }
 
 func (g *Graphic) GetNowPlaying(name string) bool {
 	g.lock.Lock()
 	defer g.lock.Unlock()
 
-	return g.Video.GetNowPlaying(name)
+	return g.Video_Manager.GetNowPlaying(name)
 }
